@@ -949,10 +949,10 @@
             { name: '2 ovos + claras', grams: 450, protein: 55, carbs: 2, calories: 330, fat: 12 }
         ];
         const PLAN_CARB_OPTIONS = [
-            { name: 'Arroz/quinoa/grão/cuscuz', grams: 80, protein: 3, carbs: 24, fat: 1, calories: 115 },
-            { name: 'Batata', grams: 150, protein: 3, carbs: 26, fat: 0, calories: 120 },
-            { name: 'Massa', grams: 70, protein: 4, carbs: 22, fat: 1, calories: 110 },
-            { name: 'Feijão', grams: 120, protein: 9, carbs: 28, fat: 1, calories: 150 }
+            { name: 'Arroz/quinoa/grão/cuscuz', grams: 80, protein: 3, carbs: 24, fat: 1, calories: 115, priority: 1 },
+            { name: 'Batata', grams: 150, protein: 3, carbs: 26, fat: 0, calories: 120, priority: 2 },
+            { name: 'Massa', grams: 70, protein: 4, carbs: 22, fat: 1, calories: 110, priority: 3 },
+            { name: 'Feijão', grams: 120, protein: 9, carbs: 28, fat: 1, calories: 150, priority: 4 }
         ];
         const PLAN_SNACK_OPTIONS = [
             { name: 'Pão + queijo magro + bebida proteica', calories: 430, protein: 35, carbs: 48, fat: 10, detail: 'Pão 80g + 2 fatias queijo magro + bebida vegetal proteica chocolate' },
@@ -1128,6 +1128,23 @@
                 .sort((a, b) => a.diff - b.diff)[0];
         }
 
+        function getCarbOption(mealKey, neededCarbs) {
+            const defaultNames = mealKey === 'dinner'
+                ? ['Batata', 'Arroz/quinoa/grão/cuscuz', 'Massa']
+                : ['Arroz/quinoa/grão/cuscuz', 'Batata', 'Massa'];
+            const options = PLAN_CARB_OPTIONS.filter(o => {
+                if (o.name === 'Feijão') return neededCarbs >= 34;
+                return true;
+            });
+            return options
+                .map(o => {
+                    const basePenalty = defaultNames.indexOf(o.name) >= 0 ? defaultNames.indexOf(o.name) * 2 : 10;
+                    const beanPenalty = o.name === 'Feijão' ? 18 : 0;
+                    return { ...o, score: Math.abs(o.carbs - neededCarbs) + basePenalty + beanPenalty };
+                })
+                .sort((a, b) => a.score - b.score)[0];
+        }
+
         function buildMealPlan(mealKey, consumed, dayTotals, meta) {
             const split = PLAN_MEAL_SPLIT[mealKey];
             const targets = {
@@ -1143,7 +1160,7 @@
                 fat: Math.max(0, targets.fat - consumed.fat)
             };
             const proteinOption = getBestOption(PLAN_PROTEIN_OPTIONS, remaining.protein || targets.protein, 'protein');
-            const carbOption = getBestOption(PLAN_CARB_OPTIONS, remaining.carbs || targets.carbs, 'carbs');
+            const carbOption = getCarbOption(mealKey, remaining.carbs || targets.carbs);
             const proteinGrams = scalePortion(proteinOption, remaining.protein || targets.protein, 'protein');
             const carbGrams = scalePortion(carbOption, remaining.carbs || targets.carbs, 'carbs');
             const proteinMacros = scaleMacros(proteinOption, proteinGrams);
@@ -1198,7 +1215,7 @@
             dinner.remaining.carbs = Math.max(dinner.remaining.carbs, Math.round(dayRemaining.carbs * 0.45));
             dinner.remaining.calories = Math.max(dinner.remaining.calories, Math.round(dayRemaining.calories * 0.45));
             dinner.proteinOption = getBestOption(PLAN_PROTEIN_OPTIONS, dinner.remaining.protein || dinner.targets.protein, 'protein');
-            dinner.carbOption = getBestOption(PLAN_CARB_OPTIONS, dinner.remaining.carbs || dinner.targets.carbs, 'carbs');
+            dinner.carbOption = getCarbOption('dinner', dinner.remaining.carbs || dinner.targets.carbs);
             dinner.proteinGrams = scalePortion(dinner.proteinOption, dinner.remaining.protein || dinner.targets.protein, 'protein');
             dinner.carbGrams = scalePortion(dinner.carbOption, dinner.remaining.carbs || dinner.targets.carbs, 'carbs');
             dinner.proteinMacros = scaleMacros(dinner.proteinOption, dinner.proteinGrams);
