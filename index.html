@@ -562,6 +562,9 @@
 
             <!-- Foto corporal -->
             <div class="tab-title" style="margin-top:4px;">📸 Foto Corporal</div>
+            <div class="section-box" style="font-size:10px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;">
+                As fotos servem para acompanhar evolução visual. A app não calcula gordura corporal, medidas ou outros dados biométricos automaticamente.
+            </div>
             <div class="meal-form">
                 <div class="form-group">
                     <label>Tipo de Foto</label>
@@ -596,6 +599,9 @@
 
         <div id="perfil" class="content">
             <div class="tab-title">⚙️ Meu Perfil</div>
+            <div class="section-box" style="font-size:10px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;">
+                Os dados são guardados neste dispositivo/browser. Se mudares de telemóvel ou limpares dados do navegador, podes perder o histórico.
+            </div>
             <div class="meal-form">
                 <div class="form-group">
                     <label>Nome</label>
@@ -1322,18 +1328,21 @@
             return { type: 'snack', label: split.label, targets, consumed, remaining, snackOption: option, status };
         }
 
-        function renderAdaptivePlan(totalCal, totalProt, totalCarbs, totalFat, meta, plan = getTodayPlan()) {
-            const container = document.getElementById('adaptivePlan');
-            if (!container) return;
-
+        function getCurrentAdaptiveMeals() {
+            const todayMeals = appData.meals.filter(m => m.date === getTodayKey());
+            const totalCal = todayMeals.reduce((s, m) => s + m.calories, 0);
+            const totalProt = todayMeals.reduce((s, m) => s + m.protein, 0);
+            const totalCarbs = todayMeals.reduce((s, m) => s + m.carbs, 0);
+            const totalFat = todayMeals.reduce((s, m) => s + m.fat, 0);
+            const meta = calculateCalorieGoal();
+            const plan = getTodayPlan();
             const lunch = buildMealPlan('lunch', getMealTotals('Almoço'), { totalCal, totalProt, totalCarbs, totalFat }, meta, plan.lunchProtein, plan.lunchCarb);
             const snack = buildSnackPlan(getMealTotals('Lanche'), meta, plan.snackPreference);
             const dinnerBase = getMealTotals('Jantar');
             const dayRemaining = {
                 calories: Math.max(0, meta - totalCal),
                 protein: Math.max(0, PLAN_TARGETS.protein - totalProt),
-                carbs: Math.max(0, PLAN_TARGETS.carbs - totalCarbs),
-                fat: Math.max(0, PLAN_TARGETS.fat - totalFat)
+                carbs: Math.max(0, PLAN_TARGETS.carbs - totalCarbs)
             };
             const dinner = buildMealPlan('dinner', dinnerBase, { totalCal, totalProt, totalCarbs, totalFat }, meta, plan.dinnerProtein, plan.dinnerCarb);
             dinner.remaining.protein = Math.max(dinner.remaining.protein, Math.round(dayRemaining.protein * 0.55));
@@ -1346,6 +1355,55 @@
             dinner.proteinMacros = scaleMacros(dinner.proteinOption, dinner.proteinGrams);
             dinner.carbMacros = scaleMacros(dinner.carbOption, dinner.carbGrams);
             dinner.suggestedMacros = sumMacros(dinner.proteinMacros, dinner.carbMacros);
+            return { lunch, snack, dinner };
+        }
+
+        function registerPlannedMeal(mealKey) {
+            const meals = getCurrentAdaptiveMeals();
+            const m = meals[mealKey];
+            if (!m) return;
+            const today = getTodayKey();
+            const mealType = mealKey === 'lunch' ? '🍽️ Almoço' : mealKey === 'dinner' ? '🍗 Jantar' : '🥤 Lanche';
+            const meal = {
+                date: today,
+                time: new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }),
+                type: mealType,
+                name: mealKey === 'snack'
+                    ? m.snackOption.name
+                    : `${m.proteinOption.name} + ${m.carbOption.name} + legumes/sopa`,
+                quantity: mealKey === 'snack' ? 100 : m.proteinGrams + m.carbGrams + 200,
+                calories: mealKey === 'snack' ? m.snackOption.calories : m.suggestedMacros.calories,
+                protein: mealKey === 'snack' ? m.snackOption.protein : m.suggestedMacros.protein,
+                carbs: mealKey === 'snack' ? m.snackOption.carbs : m.suggestedMacros.carbs,
+                fat: mealKey === 'snack' ? m.snackOption.fat : m.suggestedMacros.fat,
+                source: 'planned'
+            };
+            appData.meals.push(meal);
+            const plan = getTodayPlan();
+            if (mealKey === 'lunch') {
+                plan.lunchComplete = true;
+                plan.lunchVeg = true;
+            } else if (mealKey === 'dinner') {
+                plan.dinnerComplete = true;
+                plan.dinnerVeg = true;
+            } else if (mealKey === 'snack') {
+                plan.snackDone = true;
+            }
+            saveTodayPlan(plan);
+            saveData();
+            updateAllUI();
+
+            const msg = document.createElement('div');
+            msg.textContent = '✅ Refeição do plano registada!';
+            msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#d4edda;color:#155724;padding:10px 20px;border-radius:6px;font-size:11px;z-index:10000;';
+            document.body.appendChild(msg); setTimeout(() => msg.remove(), 2000);
+        }
+
+        function renderAdaptivePlan(totalCal, totalProt, totalCarbs, totalFat, meta, plan = getTodayPlan()) {
+            const container = document.getElementById('adaptivePlan');
+            if (!container) return;
+
+            const { lunch, snack, dinner } = getCurrentAdaptiveMeals();
 
             const carbSelect = (mealKey, selected) => `
                 <select onchange="setPlanChoice('${mealKey}Carb', this.value)" style="width:100%;padding:8px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);font-size:11px;margin:8px 0;">
@@ -1360,7 +1418,9 @@
                     ${PLAN_SNACK_OPTIONS.map(o => `<option value="${o.name}" ${o.name === selected ? 'selected' : ''}>${o.name}</option>`).join('')}
                 </select>`;
 
-            const cards = [lunch, snack, dinner].map(m => `
+            const cards = [lunch, snack, dinner].map(m => {
+                const mealKey = m.type === 'snack' ? 'snack' : m.label.includes('Almoço') ? 'lunch' : 'dinner';
+                return `
                 <div class="section-box">
                     <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px;">
                         <strong style="font-size:12px;">${m.label}</strong>
@@ -1377,6 +1437,7 @@
                         <span>P:${m.snackOption.protein}g · C:${m.snackOption.carbs}g · G:${m.snackOption.fat}g · ${m.snackOption.calories} kcal</span>
                     </div>
                     <div style="font-size:10px;color:var(--text-secondary);margin-top:6px;">Lanche próprio para o teu horário de treino; podes dividir em 2 partes.</div>
+                    <button class="btn" onclick="registerPlannedMeal('snack')" style="margin-top:10px;margin-bottom:0;">Registar Lanche</button>
                     ` : `
                     <div style="font-size:11px;line-height:1.55;margin-top:8px;color:var(--text-primary);">
                         Proteína escolhida:
@@ -1389,9 +1450,10 @@
                         Combinação atual: <strong>${m.suggestedMacros.calories} kcal · P:${m.suggestedMacros.protein}g C:${m.suggestedMacros.carbs}g G:${m.suggestedMacros.fat}g</strong>
                     </div>
                     <div style="font-size:10px;color:var(--text-secondary);margin-top:6px;">Quantidades ajustadas ao que falta nesta refeição e ao total do dia.</div>
+                    <button class="btn" onclick="registerPlannedMeal('${mealKey}')" style="margin-top:10px;margin-bottom:0;">Registar Refeição</button>
                     `}
                 </div>
-            `).join('');
+            `; }).join('');
 
             container.innerHTML = cards;
         }
