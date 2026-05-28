@@ -158,6 +158,11 @@
         .icon-btn { background: #667eea; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 5px; transition: all 0.2s; }
         .icon-btn:active { transform: scale(0.95); }
         .icon-btn.delete { background: #ff6b6b; }
+        .action-card { background: var(--bg-secondary); border-radius: 10px; padding: 14px; margin-bottom: 14px; border-left: 4px solid #667eea; }
+        .action-card-title { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; font-weight: 700; }
+        .action-card-main { font-size: 15px; color: var(--text-primary); font-weight: 800; margin-bottom: 5px; }
+        .action-card-sub { font-size: 11px; color: var(--text-secondary); line-height: 1.45; margin-bottom: 10px; }
+        .action-card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         
         /* Setup Modal - ESCONDIDO POR PADRÃO */
         #setupModal { 
@@ -200,6 +205,8 @@
         </div>
 
         <div id="dashboard" class="content active">
+
+            <div id="nextActionCard" class="action-card"></div>
 
             <!-- STREAK -->
             <div id="streakBar" style="display:flex; align-items:center; gap:10px; background:var(--bg-secondary); border-radius:10px; padding:10px 14px; margin-bottom:12px;">
@@ -1272,6 +1279,39 @@
             `).join('');
 
             container.innerHTML = cards;
+        }
+
+        function getNextMealInfo() {
+            const hour = new Date().getHours();
+            if (hour < 14) return { type: 'Almoço', label: 'Almoço 12h-13h', tab: 'plano' };
+            if (hour < 20) return { type: 'Lanche', label: 'Lanche 17h-18h', tab: 'plano' };
+            return { type: 'Jantar', label: 'Jantar 21h-22h', tab: 'plano' };
+        }
+
+        function updateNextAction(totalCal, totalProt, totalCarbs, totalFat, meta) {
+            const card = document.getElementById('nextActionCard');
+            if (!card) return;
+            const meal = getNextMealInfo();
+            const remaining = {
+                calories: Math.max(0, meta - totalCal),
+                protein: Math.max(0, PLAN_TARGETS.protein - totalProt),
+                carbs: Math.max(0, PLAN_TARGETS.carbs - totalCarbs),
+                fat: Math.max(0, PLAN_TARGETS.fat - totalFat)
+            };
+            let message = 'Segue o plano e regista a refeição quando terminares.';
+            if (remaining.protein > 70) message = 'Prioridade: proteína. Escolhe uma fonte magra e mantém legumes/sopa.';
+            else if (remaining.carbs > 100) message = 'Ainda tens margem para hidratos. Escolhe arroz, batata, massa ou feijão no Plano.';
+            else if (remaining.calories < 350) message = 'Pouca margem calórica. Mantém proteína/legumes e reduz hidratos.';
+
+            card.innerHTML = `
+                <div class="action-card-title">PRÓXIMA AÇÃO</div>
+                <div class="action-card-main">${meal.label}</div>
+                <div class="action-card-sub">${message}<br>Falta hoje: ${remaining.calories} kcal · P:${Math.round(remaining.protein)}g C:${Math.round(remaining.carbs)}g G:${Math.round(remaining.fat)}g</div>
+                <div class="action-card-row">
+                    <button class="btn" onclick="showTab('plano', document.querySelectorAll('.nav-btn')[1])" style="margin:0;">Ver Plano</button>
+                    <button class="btn btn-secondary" onclick="showTab('registar', document.querySelectorAll('.nav-btn')[2])" style="margin:0;">Registar</button>
+                </div>
+            `;
         }
 
         function getWeightLog() {
@@ -2377,6 +2417,7 @@
             const deficit = calculateCalorieDeficit();
             const remaining = Math.max(0, meta - totalCal);
             const pct = Math.min((totalCal / meta) * 100, 100);
+            updateNextAction(totalCal, totalProt, totalCarbs, totalFat, meta);
 
             // Calorias
             document.getElementById('todayCalories').textContent = Math.round(totalCal);
