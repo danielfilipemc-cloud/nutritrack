@@ -954,6 +954,12 @@
             { name: 'Massa', grams: 70, carbs: 22, calories: 110 },
             { name: 'Feijão', grams: 120, carbs: 28, calories: 150 }
         ];
+        const PLAN_SNACK_OPTIONS = [
+            { name: 'Pão + queijo magro + bebida proteica', calories: 430, protein: 35, carbs: 48, fat: 10, detail: 'Pão 80g + 2 fatias queijo magro + bebida vegetal proteica chocolate' },
+            { name: 'Panquecas de aveia + bebida proteica', calories: 420, protein: 32, carbs: 52, fat: 9, detail: '60g aveia + 1 ovo + 1/2 banana + bebida vegetal proteica chocolate' },
+            { name: 'Iogurte grego + aveia + fruta', calories: 360, protein: 32, carbs: 42, fat: 8, detail: 'Iogurte grego natural + 40g aveia + frutos vermelhos ou banana' },
+            { name: 'Whey + banana + aveia', calories: 390, protein: 34, carbs: 50, fat: 7, detail: '1 dose whey + 1 banana + 40g aveia' }
+        ];
 
         function getTodayKey() {
             return new Date().toISOString().split('T')[0];
@@ -1125,12 +1131,38 @@
             return { label: split.label, targets, consumed, remaining, proteinOption, carbOption, proteinGrams, carbGrams, status };
         }
 
+        function buildSnackPlan(consumed, meta) {
+            const split = PLAN_MEAL_SPLIT.snack;
+            const targets = {
+                calories: Math.round(meta * split.calories),
+                protein: Math.round(PLAN_TARGETS.protein * split.protein),
+                carbs: Math.round(PLAN_TARGETS.carbs * split.carbs),
+                fat: Math.round(PLAN_TARGETS.fat * split.fat)
+            };
+            const remaining = {
+                calories: Math.max(0, targets.calories - consumed.calories),
+                protein: Math.max(0, targets.protein - consumed.protein),
+                carbs: Math.max(0, targets.carbs - consumed.carbs),
+                fat: Math.max(0, targets.fat - consumed.fat)
+            };
+            const option = PLAN_SNACK_OPTIONS
+                .map(o => ({
+                    ...o,
+                    score: Math.abs((remaining.calories || targets.calories) - o.calories) +
+                           Math.abs((remaining.protein || targets.protein) - o.protein) * 8 +
+                           Math.abs((remaining.carbs || targets.carbs) - o.carbs) * 3
+                }))
+                .sort((a, b) => a.score - b.score)[0];
+            const status = consumed.calories >= targets.calories * 0.85 ? 'Já está quase cumprido' : 'Ainda por cumprir';
+            return { type: 'snack', label: split.label, targets, consumed, remaining, snackOption: option, status };
+        }
+
         function renderAdaptivePlan(totalCal, totalProt, totalCarbs, totalFat, meta) {
             const container = document.getElementById('adaptivePlan');
             if (!container) return;
 
             const lunch = buildMealPlan('lunch', getMealTotals('Almoço'), { totalCal, totalProt, totalCarbs, totalFat }, meta);
-            const snack = buildMealPlan('snack', getMealTotals('Lanche'), { totalCal, totalProt, totalCarbs, totalFat }, meta);
+            const snack = buildSnackPlan(getMealTotals('Lanche'), meta);
             const dinnerBase = getMealTotals('Jantar');
             const dayRemaining = {
                 calories: Math.max(0, meta - totalCal),
@@ -1155,12 +1187,21 @@
                     </div>
                     <div class="analysis-item"><span>Alvo</span><span class="analysis-value">${m.targets.calories} kcal · P:${m.targets.protein} C:${m.targets.carbs} G:${m.targets.fat}</span></div>
                     <div class="analysis-item"><span>Já registado</span><span class="analysis-value">${m.consumed.calories} kcal · P:${Math.round(m.consumed.protein)} C:${Math.round(m.consumed.carbs)} G:${Math.round(m.consumed.fat)}</span></div>
+                    ${m.type === 'snack' ? `
+                    <div style="font-size:11px;line-height:1.55;margin-top:8px;color:var(--text-primary);">
+                        Opção: <strong>${m.snackOption.name}</strong><br>
+                        <span>${m.snackOption.detail}</span><br>
+                        <span>P:${m.snackOption.protein}g · C:${m.snackOption.carbs}g · G:${m.snackOption.fat}g · ${m.snackOption.calories} kcal</span>
+                    </div>
+                    <div style="font-size:10px;color:var(--text-secondary);margin-top:6px;">Lanche próprio para o teu horário de treino; podes dividir em 2 partes.</div>
+                    ` : `
                     <div style="font-size:11px;line-height:1.55;margin-top:8px;color:var(--text-primary);">
                         Proteína: <strong>${m.proteinGrams}g ${m.proteinOption.name}</strong><br>
                         Hidrato: <strong>${m.carbGrams}g ${m.carbOption.name}</strong><br>
                         Legumes/sopa: <strong>200g</strong>
                     </div>
                     <div style="font-size:10px;color:var(--text-secondary);margin-top:6px;">Quantidades ajustadas ao que falta nesta refeição e ao total do dia.</div>
+                    `}
                 </div>
             `).join('');
 
