@@ -1012,7 +1012,9 @@
                 snackDone: false,
                 dinnerComplete: false,
                 dinnerVeg: false,
-                avoidNuts: true
+                avoidNuts: true,
+                lunchCarb: 'Arroz/quinoa/grão/cuscuz',
+                dinnerCarb: 'Batata'
             };
         }
 
@@ -1032,6 +1034,13 @@
         function togglePlanItem(field) {
             const plan = getTodayPlan();
             plan[field] = !plan[field];
+            saveTodayPlan(plan);
+            updatePlanUI();
+        }
+
+        function setPlanChoice(field, value) {
+            const plan = getTodayPlan();
+            plan[field] = value;
             saveTodayPlan(plan);
             updatePlanUI();
         }
@@ -1079,7 +1088,7 @@
             document.getElementById('planDinnerComplete').checked = !!plan.dinnerComplete;
             document.getElementById('planDinnerVeg').checked = !!plan.dinnerVeg;
             document.getElementById('planAvoidNuts').checked = !!plan.avoidNuts;
-            renderAdaptivePlan(totalCal, totalProt, totalCarbs, totalFat, meta);
+            renderAdaptivePlan(totalCal, totalProt, totalCarbs, totalFat, meta, plan);
             scoreEl.innerHTML = `<h2 style="font-size:24px;">${pct}%</h2><p>${done}/${checks.length} objetivos cumpridos hoje</p>`;
         }
 
@@ -1145,7 +1154,11 @@
                 .sort((a, b) => a.score - b.score)[0];
         }
 
-        function buildMealPlan(mealKey, consumed, dayTotals, meta) {
+        function getCarbOptionByName(name, fallbackMealKey, neededCarbs) {
+            return PLAN_CARB_OPTIONS.find(o => o.name === name) || getCarbOption(fallbackMealKey, neededCarbs);
+        }
+
+        function buildMealPlan(mealKey, consumed, dayTotals, meta, chosenCarb = null) {
             const split = PLAN_MEAL_SPLIT[mealKey];
             const targets = {
                 calories: Math.round(meta * split.calories),
@@ -1160,7 +1173,9 @@
                 fat: Math.max(0, targets.fat - consumed.fat)
             };
             const proteinOption = getBestOption(PLAN_PROTEIN_OPTIONS, remaining.protein || targets.protein, 'protein');
-            const carbOption = getCarbOption(mealKey, remaining.carbs || targets.carbs);
+            const carbOption = chosenCarb
+                ? getCarbOptionByName(chosenCarb, mealKey, remaining.carbs || targets.carbs)
+                : getCarbOption(mealKey, remaining.carbs || targets.carbs);
             const proteinGrams = scalePortion(proteinOption, remaining.protein || targets.protein, 'protein');
             const carbGrams = scalePortion(carbOption, remaining.carbs || targets.carbs, 'carbs');
             const proteinMacros = scaleMacros(proteinOption, proteinGrams);
@@ -1197,11 +1212,11 @@
             return { type: 'snack', label: split.label, targets, consumed, remaining, snackOption: option, status };
         }
 
-        function renderAdaptivePlan(totalCal, totalProt, totalCarbs, totalFat, meta) {
+        function renderAdaptivePlan(totalCal, totalProt, totalCarbs, totalFat, meta, plan = getTodayPlan()) {
             const container = document.getElementById('adaptivePlan');
             if (!container) return;
 
-            const lunch = buildMealPlan('lunch', getMealTotals('Almoço'), { totalCal, totalProt, totalCarbs, totalFat }, meta);
+            const lunch = buildMealPlan('lunch', getMealTotals('Almoço'), { totalCal, totalProt, totalCarbs, totalFat }, meta, plan.lunchCarb);
             const snack = buildSnackPlan(getMealTotals('Lanche'), meta);
             const dinnerBase = getMealTotals('Jantar');
             const dayRemaining = {
@@ -1215,12 +1230,17 @@
             dinner.remaining.carbs = Math.max(dinner.remaining.carbs, Math.round(dayRemaining.carbs * 0.45));
             dinner.remaining.calories = Math.max(dinner.remaining.calories, Math.round(dayRemaining.calories * 0.45));
             dinner.proteinOption = getBestOption(PLAN_PROTEIN_OPTIONS, dinner.remaining.protein || dinner.targets.protein, 'protein');
-            dinner.carbOption = getCarbOption('dinner', dinner.remaining.carbs || dinner.targets.carbs);
+            dinner.carbOption = getCarbOptionByName(plan.dinnerCarb, 'dinner', dinner.remaining.carbs || dinner.targets.carbs);
             dinner.proteinGrams = scalePortion(dinner.proteinOption, dinner.remaining.protein || dinner.targets.protein, 'protein');
             dinner.carbGrams = scalePortion(dinner.carbOption, dinner.remaining.carbs || dinner.targets.carbs, 'carbs');
             dinner.proteinMacros = scaleMacros(dinner.proteinOption, dinner.proteinGrams);
             dinner.carbMacros = scaleMacros(dinner.carbOption, dinner.carbGrams);
             dinner.suggestedMacros = sumMacros(dinner.proteinMacros, dinner.carbMacros);
+
+            const carbSelect = (mealKey, selected) => `
+                <select onchange="setPlanChoice('${mealKey}Carb', this.value)" style="width:100%;padding:8px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-tertiary);color:var(--text-primary);font-size:11px;margin:8px 0;">
+                    ${PLAN_CARB_OPTIONS.map(o => `<option value="${o.name}" ${o.name === selected ? 'selected' : ''}>${o.name}</option>`).join('')}
+                </select>`;
 
             const cards = [lunch, snack, dinner].map(m => `
                 <div class="section-box">
@@ -1239,6 +1259,8 @@
                     <div style="font-size:10px;color:var(--text-secondary);margin-top:6px;">Lanche próprio para o teu horário de treino; podes dividir em 2 partes.</div>
                     ` : `
                     <div style="font-size:11px;line-height:1.55;margin-top:8px;color:var(--text-primary);">
+                        Hidrato escolhido:
+                        ${carbSelect(m.label.includes('Almoço') ? 'lunch' : 'dinner', m.carbOption.name)}
                         Proteína: <strong>${m.proteinGrams}g ${m.proteinOption.name}</strong><br>
                         Hidrato: <strong>${m.carbGrams}g ${m.carbOption.name}</strong><br>
                         Legumes/sopa: <strong>200g</strong><br>
