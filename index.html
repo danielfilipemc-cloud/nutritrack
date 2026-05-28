@@ -1674,56 +1674,88 @@
         }
 
         const sugestoesRefeicoes = [
-            { nome: 'Frango grelhado com arroz', calorias: 450, descricao: 'Peito frango + arroz branco' },
-            { nome: 'Salmão ao forno com batata', calorias: 500, descricao: 'Salmão + batata doce' },
-            { nome: 'Omelete com vegetais', calorias: 350, descricao: '2 ovos + espinafres + tomate' },
-            { nome: 'Sopa caldo verde com pão', calorias: 250, descricao: 'Caldo verde + pão integral' },
-            { nome: 'Iogurte com granola e mel', calorias: 300, descricao: 'Iogurte + granola + mel' },
-            { nome: 'Peixe branco cozido com legumes', calorias: 320, descricao: 'Peixe branco + cenoura + brócolos' },
-            { nome: 'Espaguete à bolonhesa', calorias: 480, descricao: 'Massa + molho carne magra' },
-            { nome: 'Arroz de marisco', calorias: 520, descricao: 'Arroz + camarão + moluscos' },
-            { nome: 'Francesinha', calorias: 620, descricao: 'Tradicional francesinha' },
-            { nome: 'Sardinha assada com limão', calorias: 380, descricao: 'Sardinha + batata cozida' },
-            { nome: 'Ovos mexidos com bacon', calorias: 420, descricao: '2 ovos + bacon + pão tostado' },
-            { nome: 'Salada César com frango', calorias: 380, descricao: 'Alface + frango + croutons' },
-            { nome: 'Arroz de marisco light', calorias: 400, descricao: 'Arroz + marisco + vegetais' },
-            { nome: 'Bacalhau à Gomes de Sá', calorias: 520, descricao: 'Bacalhau + batata + cebola' },
-            { nome: 'Sandes de queijo com presunto', calorias: 380, descricao: 'Pão + queijo + presunto' },
+            { id: 1, nome: 'Frango grelhado, arroz integral e brócolos', calorias: 520, protein: 48, carbs: 52, fat: 12, descricao: 'Proteína magra + hidrato complexo + vegetais', tags: ['alto em proteína', 'fibra', 'pós-treino'] },
+            { id: 2, nome: 'Salmão, batata doce e salada verde', calorias: 560, protein: 38, carbs: 45, fat: 24, descricao: 'Ómega-3 + hidratos úteis + micronutrientes', tags: ['gorduras boas', 'saciante'] },
+            { id: 3, nome: 'Pescada cozida, grão e legumes', calorias: 430, protein: 38, carbs: 42, fat: 10, descricao: 'Peixe magro + leguminosas + fibra', tags: ['leve', 'fibra'] },
+            { id: 4, nome: 'Peru salteado com quinoa e legumes', calorias: 500, protein: 46, carbs: 44, fat: 14, descricao: 'Proteína magra + quinoa + legumes variados', tags: ['alto em proteína', 'equilibrada'] },
+            { id: 5, nome: 'Omelete de claras e ovos com espinafres', calorias: 330, protein: 34, carbs: 10, fat: 16, descricao: 'Ovos + claras + espinafres + tomate', tags: ['baixo hidrato', 'rápida'] },
+            { id: 6, nome: 'Iogurte grego natural, aveia e frutos vermelhos', calorias: 360, protein: 32, carbs: 42, fat: 8, descricao: 'Proteína + aveia + fruta rica em fibra', tags: ['lanche', 'fibra'] },
+            { id: 7, nome: 'Atum ao natural com feijão frade e salada', calorias: 420, protein: 42, carbs: 38, fat: 9, descricao: 'Atum + leguminosas + vegetais crus', tags: ['alto em proteína', 'prática'] },
+            { id: 8, nome: 'Bacalhau cozido com batata e couves', calorias: 460, protein: 40, carbs: 48, fat: 9, descricao: 'Clássico limpo: bacalhau + batata + couves', tags: ['tradicional', 'leve'] },
+            { id: 9, nome: 'Carne magra estufada com arroz e legumes', calorias: 540, protein: 45, carbs: 50, fat: 16, descricao: 'Vitela magra + arroz + vegetais', tags: ['ferro', 'saciante'] },
+            { id: 10, nome: 'Tofu grelhado com lentilhas e legumes', calorias: 470, protein: 30, carbs: 48, fat: 16, descricao: 'Opção vegetal rica em fibra e minerais', tags: ['vegetariana', 'fibra'] },
+            { id: 11, nome: 'Sopa de legumes com frango desfiado', calorias: 300, protein: 32, carbs: 24, fat: 8, descricao: 'Volume alto, poucas calorias e boa proteína', tags: ['leve', 'saciante'] },
+            { id: 12, nome: 'Cottage/queijo fresco, fruta e nozes', calorias: 340, protein: 28, carbs: 28, fat: 14, descricao: 'Lanche limpo com proteína e gorduras boas', tags: ['lanche', 'gorduras boas'] },
+            { id: 13, nome: 'Camarão com massa integral e legumes', calorias: 510, protein: 42, carbs: 58, fat: 10, descricao: 'Marisco magro + massa integral + vegetais', tags: ['pós-treino', 'baixo em gordura'] },
+            { id: 14, nome: 'Wrap integral de frango e abacate', calorias: 480, protein: 40, carbs: 38, fat: 18, descricao: 'Frango + wrap integral + salada + abacate', tags: ['prática', 'gorduras boas'] },
+            { id: 15, nome: 'Whey, banana e aveia', calorias: 390, protein: 34, carbs: 50, fat: 7, descricao: 'Shake simples para pré/pós-treino', tags: ['rápida', 'pós-treino'] }
         ];
 
         async function getAISuggestions() {
             const today = new Date().toISOString().split('T')[0];
             const todayMeals = appData.meals.filter(m => m.date === today);
             const totalCal = todayMeals.reduce((s, m) => s + m.calories, 0);
+            const totalProt = todayMeals.reduce((s, m) => s + m.protein, 0);
+            const totalCarbs = todayMeals.reduce((s, m) => s + m.carbs, 0);
+            const totalFat = todayMeals.reduce((s, m) => s + m.fat, 0);
             const meta = calculateCalorieGoal();
             const remainingCal = Math.max(0, meta - totalCal);
+            const remainingProt = Math.max(0, 200 - totalProt);
+            const remainingCarbs = Math.max(0, 220 - totalCarbs);
+            const remainingFat = Math.max(0, 65 - totalFat);
             
             const sugDiv = document.getElementById('aiSuggestions');
             sugDiv.style.display = 'block';
 
-            // Filtrar sugestões por calorias disponíveis
-            const suitable = sugestoesRefeicoes.filter(r => r.calorias <= remainingCal + 200);
-            const selected = suitable.sort(() => Math.random() - 0.5).slice(0, 3);
+            const selected = sugestoesRefeicoes
+                .filter(r => remainingCal > 180 ? r.calorias <= remainingCal + 150 : r.calorias <= 380)
+                .map(r => {
+                    let score = 0;
+                    score += Math.max(0, 120 - Math.abs(remainingCal - r.calorias)) / 4;
+                    score += Math.min(r.protein, remainingProt || 35) * 2.2;
+                    score += r.carbs <= remainingCarbs + 20 ? 18 : -10;
+                    score += r.fat <= remainingFat + 10 ? 12 : -8;
+                    if (r.protein >= 30) score += 20;
+                    if (r.tags.includes('fibra')) score += 10;
+                    if (r.tags.includes('gorduras boas') && remainingFat > 15) score += 8;
+                    return { ...r, score };
+                })
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 3);
             
             if (selected.length === 0) {
-                sugDiv.innerHTML = '<div style="color: #ff9800; padding: 10px; text-align: center; font-size: 11px;">⚠️ Quase atingiu a meta de calorias. Bebê água! 💧</div>';
+                sugDiv.innerHTML = '<div style="color: #ff9800; padding: 10px; text-align: center; font-size: 11px;">⚠️ Já estás muito perto da meta. Se tiveres fome, escolhe algo leve: sopa de legumes, iogurte natural ou fruta.</div>';
                 return;
             }
 
-            let html = '<div class="ai-suggestion"><div class="ai-suggestion-header">💡 Sugestões de Refeições:</div>';
+            let html = `<div class="ai-suggestion"><div class="ai-suggestion-header">💡 Sugestões limpas e nutritivas</div>
+                <div style="font-size:10px;color:var(--text-secondary);margin-bottom:8px;">Restante hoje: ${remainingCal} kcal · P:${Math.round(remainingProt)}g C:${Math.round(remainingCarbs)}g G:${Math.round(remainingFat)}g</div>`;
             selected.forEach(r => {
-                html += `<div class="ai-suggestion-item" onclick="addSuggestionToMeal('${r.nome.replace(/'/g,"\\'")}', ${r.calorias})">
-                    ➕ <strong>${r.nome}</strong> - ${r.calorias} kcal<br><small>${r.descricao}</small>
+                html += `<div class="ai-suggestion-item" onclick="addSuggestionToMeal(${r.id})">
+                    ➕ <strong>${r.nome}</strong> - ${r.calorias} kcal<br>
+                    <small>${r.descricao}</small><br>
+                    <small>P:${r.protein}g · C:${r.carbs}g · G:${r.fat}g · ${r.tags.join(' · ')}</small>
                 </div>`;
             });
             html += '</div>';
             sugDiv.innerHTML = html;
         }
 
-        function addSuggestionToMeal(name, cals) {
-            selectedFood = { name, calories: cals, protein: Math.round(cals * 0.3 / 4), carbs: Math.round(cals * 0.45 / 4), fat: Math.round(cals * 0.25 / 9) };
-            document.getElementById('foodSearch').value = name;
-            document.getElementById('selectedFood').innerHTML = `<strong>${name}</strong><br>E: ${cals} kcal | P: ${selectedFood.protein}g`;
+        function addSuggestionToMeal(id) {
+            const meal = sugestoesRefeicoes.find(r => r.id === id);
+            if (!meal) return;
+            selectedFood = {
+                name: meal.nome,
+                calories: meal.calorias,
+                protein: meal.protein,
+                carbs: meal.carbs,
+                fat: meal.fat,
+                serving: 100,
+                unit: 'refeição'
+            };
+            document.getElementById('foodSearch').value = meal.nome;
+            document.getElementById('quantity').value = 100;
+            document.getElementById('selectedFood').innerHTML = `<strong>${meal.nome}</strong><br>${meal.calorias} kcal | P:${meal.protein}g C:${meal.carbs}g G:${meal.fat}g<br><small>${meal.descricao}</small>`;
             document.getElementById('selectedFood').classList.add('show');
             document.getElementById('registerBtn').disabled = false;
             alert('✅ Sugestão adicionada! Clica "Registar" para confirmar.');
