@@ -187,6 +187,7 @@
 
         <div class="nav">
             <button class="nav-btn active" onclick="showTab('dashboard', this)"><span>📊</span>Dashboard</button>
+            <button class="nav-btn" onclick="showTab('plano', this)"><span>🎯</span>Plano</button>
             <button class="nav-btn" onclick="showTab('registar', this)"><span>📝</span>Registar</button>
             <button class="nav-btn" onclick="showTab('historico', this)"><span>📅</span>Histórico</button>
             <button class="nav-btn" onclick="showTab('templates', this)"><span>📋</span>Templates</button>
@@ -304,8 +305,84 @@
             </div>
             
             <div id="todayMeals"></div>
-            <button class="btn" onclick="showTab('registar', document.querySelectorAll('.nav-btn')[1])">➕ Registar Refeição</button>
-            <button class="btn btn-secondary" onclick="showTab('corpo', document.querySelectorAll('.nav-btn')[5])">📸 Fotos Corpo</button>
+            <button class="btn" onclick="showTab('registar', document.querySelectorAll('.nav-btn')[2])">➕ Registar Refeição</button>
+            <button class="btn btn-secondary" onclick="showTab('corpo', document.querySelectorAll('.nav-btn')[7])">📸 Fotos Corpo</button>
+        </div>
+
+        <div id="plano" class="content">
+            <div class="tab-title">🎯 Plano Personalizado</div>
+            <div class="section-box" style="margin-bottom:12px;">
+                <div class="analysis-item"><span>Meta calórica</span><span class="analysis-value" id="planCalories">--</span></div>
+                <div class="analysis-item"><span>Estrutura</span><span class="analysis-value">3 refeições</span></div>
+                <div class="analysis-item"><span>Água</span><span class="analysis-value">2.5L / dia</span></div>
+                <div class="analysis-item"><span>Fruta</span><span class="analysis-value">2 peças / dia</span></div>
+            </div>
+
+            <div class="tab-title">✅ Checklist de Hoje</div>
+            <div id="planScore" class="dashboard-card" style="padding:12px; margin-bottom:12px;">
+                <h2 style="font-size:24px;">0%</h2>
+                <p>Plano cumprido hoje</p>
+            </div>
+
+            <div class="section-box" style="margin-bottom:10px;">
+                <div class="analysis-item"><span>💧 Água</span><span class="analysis-value" id="planWaterStatus">0/10 copos</span></div>
+                <div style="font-size:10px;color:var(--text-secondary);margin-top:4px;">Usa o controlo de água no Dashboard. 10 copos de 250ml = 2.5L.</div>
+            </div>
+
+            <div class="section-box" style="margin-bottom:10px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                    <div>
+                        <strong style="font-size:12px;">🍎 Fruta</strong>
+                        <div style="font-size:10px;color:var(--text-secondary);">Objetivo: 2 peças por dia</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <button class="icon-btn" onclick="changePlanCount('fruit', -1)">−</button>
+                        <strong id="planFruitCount" style="min-width:34px;text-align:center;">0/2</strong>
+                        <button class="icon-btn" onclick="changePlanCount('fruit', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-box" style="margin-bottom:10px;">
+                <strong style="font-size:12px;">🍽️ Almoço 12h-13h</strong>
+                <label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;"><input type="checkbox" id="planLunchComplete" onchange="togglePlanItem('lunchComplete')"> Prato completo: proteína + hidrato</label>
+                <label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;"><input type="checkbox" id="planLunchVeg" onchange="togglePlanItem('lunchVeg')"> Sopa ou legumes (200g)</label>
+            </div>
+
+            <div class="section-box" style="margin-bottom:10px;">
+                <strong style="font-size:12px;">🥤 Lanche 17h-18h</strong>
+                <label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;"><input type="checkbox" id="planSnackDone" onchange="togglePlanItem('snackDone')"> Lanche feito ou dividido em 2 partes por causa do treino</label>
+                <div style="font-size:10px;color:var(--text-secondary);margin-top:6px;">Ex: pão 80g + queijo magro + bebida proteica, ou panquecas de aveia.</div>
+            </div>
+
+            <div class="section-box" style="margin-bottom:10px;">
+                <strong style="font-size:12px;">🌙 Jantar 21h-22h</strong>
+                <label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;"><input type="checkbox" id="planDinnerComplete" onchange="togglePlanItem('dinnerComplete')"> Prato completo: proteína + hidrato</label>
+                <label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;"><input type="checkbox" id="planDinnerVeg" onchange="togglePlanItem('dinnerVeg')"> Sopa ou legumes (200g)</label>
+            </div>
+
+            <div class="section-box" style="margin-bottom:12px;">
+                <label style="display:flex;gap:8px;align-items:center;font-size:11px;"><input type="checkbox" id="planAvoidNuts" onchange="togglePlanItem('avoidNuts')"> Evitei frutos secos nesta fase</label>
+            </div>
+
+            <div class="tab-title">📏 Guia de Porções</div>
+            <div class="section-box" style="margin-bottom:10px;">
+                <strong style="font-size:12px;">Hidratos, depois de cozinhados</strong>
+                <div style="font-size:11px;color:var(--text-secondary);line-height:1.7;margin-top:6px;">
+                    80g arroz/quinoa/grão/cuscuz<br>
+                    150g batata<br>
+                    70g massa<br>
+                    120g feijão
+                </div>
+            </div>
+            <div class="section-box">
+                <strong style="font-size:12px;">Proteína</strong>
+                <div style="font-size:11px;color:var(--text-secondary);line-height:1.7;margin-top:6px;">
+                    Carne: 250g<br>
+                    2 latas de atum + 1 ovo<br>
+                    2 ovos + 350ml clara de ovo
+                </div>
+            </div>
         </div>
 
         <div id="registar" class="content">
@@ -849,9 +926,11 @@
             updateStreakUI();
             updateIMCCard();
             updateMeasHistoryList();
+            updatePlanUI();
         }
 
-        const WATER_GOAL = 8;
+        const PLAN_TARGETS = { waterCups: 10, fruit: 2, protein: 200, carbs: 220, fat: 65 };
+        const WATER_GOAL = PLAN_TARGETS.waterCups;
 
         function getTodayKey() {
             return new Date().toISOString().split('T')[0];
@@ -887,6 +966,80 @@
             glasses.innerHTML = Array.from({ length: WATER_GOAL }, (_, i) =>
                 `<span class="water-glass${i < count ? ' filled' : ''}">💧</span>`
             ).join('');
+            updatePlanUI();
+        }
+
+        function getPlanLog() {
+            return JSON.parse(localStorage.getItem('planDailyData') || '{}');
+        }
+
+        function getTodayPlan() {
+            const log = getPlanLog();
+            const today = getTodayKey();
+            return log[today] || {
+                fruit: 0,
+                lunchComplete: false,
+                lunchVeg: false,
+                snackDone: false,
+                dinnerComplete: false,
+                dinnerVeg: false,
+                avoidNuts: true
+            };
+        }
+
+        function saveTodayPlan(plan) {
+            const log = getPlanLog();
+            log[getTodayKey()] = plan;
+            localStorage.setItem('planDailyData', JSON.stringify(log));
+        }
+
+        function changePlanCount(field, delta) {
+            const plan = getTodayPlan();
+            plan[field] = Math.max(0, Math.min(10, (plan[field] || 0) + delta));
+            saveTodayPlan(plan);
+            updatePlanUI();
+        }
+
+        function togglePlanItem(field) {
+            const plan = getTodayPlan();
+            plan[field] = !plan[field];
+            saveTodayPlan(plan);
+            updatePlanUI();
+        }
+
+        function updatePlanUI() {
+            const scoreEl = document.getElementById('planScore');
+            if (!scoreEl) return;
+
+            const plan = getTodayPlan();
+            const todayMeals = appData.meals.filter(m => m.date === getTodayKey());
+            const totalCal = todayMeals.reduce((s, m) => s + m.calories, 0);
+            const meta = calculateCalorieGoal();
+            const waterCount = getWaterCount();
+
+            const checks = [
+                waterCount >= PLAN_TARGETS.waterCups,
+                plan.fruit >= PLAN_TARGETS.fruit,
+                plan.lunchComplete,
+                plan.lunchVeg,
+                plan.snackDone,
+                plan.dinnerComplete,
+                plan.dinnerVeg,
+                plan.avoidNuts
+            ];
+            const done = checks.filter(Boolean).length;
+            const pct = Math.round(done / checks.length * 100);
+
+            document.getElementById('planCalories').textContent = `${totalCal} / ${meta} kcal`;
+            document.getElementById('planWaterStatus').textContent = `${waterCount}/${PLAN_TARGETS.waterCups} copos`;
+            document.getElementById('planFruitCount').textContent = `${plan.fruit}/${PLAN_TARGETS.fruit}`;
+            document.getElementById('planLunchComplete').checked = !!plan.lunchComplete;
+            document.getElementById('planLunchVeg').checked = !!plan.lunchVeg;
+            document.getElementById('planSnackDone').checked = !!plan.snackDone;
+            document.getElementById('planDinnerComplete').checked = !!plan.dinnerComplete;
+            document.getElementById('planDinnerVeg').checked = !!plan.dinnerVeg;
+            document.getElementById('planAvoidNuts').checked = !!plan.avoidNuts;
+            scoreEl.innerHTML = `<h2 style="font-size:24px;">${pct}%</h2><p>${done}/${checks.length} objetivos cumpridos hoje</p>`;
         }
 
         function getWeightLog() {
@@ -1029,6 +1182,9 @@
                 updateIMCCard();
                 updateMeasHistoryList();
                 updatePhotoHistory();
+            }
+            if (tabId === 'plano') {
+                updatePlanUI();
             }
         }
 
