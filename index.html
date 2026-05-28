@@ -313,10 +313,15 @@
             <div class="tab-title">🎯 Plano Personalizado</div>
             <div class="section-box" style="margin-bottom:12px;">
                 <div class="analysis-item"><span>Meta calórica</span><span class="analysis-value" id="planCalories">--</span></div>
+                <div class="analysis-item"><span>Macros alvo</span><span class="analysis-value" id="planMacroTargets">--</span></div>
+                <div class="analysis-item"><span>Macros restantes</span><span class="analysis-value" id="planMacroRemaining">--</span></div>
                 <div class="analysis-item"><span>Estrutura</span><span class="analysis-value">3 refeições</span></div>
                 <div class="analysis-item"><span>Água</span><span class="analysis-value">2.5L / dia</span></div>
                 <div class="analysis-item"><span>Fruta</span><span class="analysis-value">2 peças / dia</span></div>
             </div>
+
+            <div class="tab-title">⚖️ Quantidades Adaptadas</div>
+            <div id="adaptivePlan" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>
 
             <div class="tab-title">✅ Checklist de Hoje</div>
             <div id="planScore" class="dashboard-card" style="padding:12px; margin-bottom:12px;">
@@ -931,6 +936,24 @@
 
         const PLAN_TARGETS = { waterCups: 10, fruit: 2, protein: 200, carbs: 220, fat: 65 };
         const WATER_GOAL = PLAN_TARGETS.waterCups;
+        const PLAN_MEAL_SPLIT = {
+            lunch: { label: 'Almoço 12h-13h', calories: 0.38, protein: 0.38, carbs: 0.38, fat: 0.32 },
+            snack: { label: 'Lanche 17h-18h', calories: 0.24, protein: 0.24, carbs: 0.24, fat: 0.28 },
+            dinner: { label: 'Jantar 21h-22h', calories: 0.38, protein: 0.38, carbs: 0.38, fat: 0.40 }
+        };
+        const PLAN_PROTEIN_OPTIONS = [
+            { name: 'Frango/peru/carne magra', grams: 250, protein: 55, calories: 320, fat: 8 },
+            { name: 'Peixe magro', grams: 280, protein: 55, calories: 270, fat: 4 },
+            { name: 'Salmão', grams: 200, protein: 42, calories: 410, fat: 26 },
+            { name: 'Atum + ovo', grams: 240, protein: 55, calories: 310, fat: 8 },
+            { name: '2 ovos + claras', grams: 450, protein: 55, calories: 330, fat: 12 }
+        ];
+        const PLAN_CARB_OPTIONS = [
+            { name: 'Arroz/quinoa/grão/cuscuz', grams: 80, carbs: 24, calories: 115 },
+            { name: 'Batata', grams: 150, carbs: 26, calories: 120 },
+            { name: 'Massa', grams: 70, carbs: 22, calories: 110 },
+            { name: 'Feijão', grams: 120, carbs: 28, calories: 150 }
+        ];
 
         function getTodayKey() {
             return new Date().toISOString().split('T')[0];
@@ -1014,8 +1037,17 @@
             const plan = getTodayPlan();
             const todayMeals = appData.meals.filter(m => m.date === getTodayKey());
             const totalCal = todayMeals.reduce((s, m) => s + m.calories, 0);
+            const totalProt = todayMeals.reduce((s, m) => s + m.protein, 0);
+            const totalCarbs = todayMeals.reduce((s, m) => s + m.carbs, 0);
+            const totalFat = todayMeals.reduce((s, m) => s + m.fat, 0);
             const meta = calculateCalorieGoal();
             const waterCount = getWaterCount();
+            const remaining = {
+                calories: Math.max(0, meta - totalCal),
+                protein: Math.max(0, PLAN_TARGETS.protein - totalProt),
+                carbs: Math.max(0, PLAN_TARGETS.carbs - totalCarbs),
+                fat: Math.max(0, PLAN_TARGETS.fat - totalFat)
+            };
 
             const checks = [
                 waterCount >= PLAN_TARGETS.waterCups,
@@ -1031,6 +1063,8 @@
             const pct = Math.round(done / checks.length * 100);
 
             document.getElementById('planCalories').textContent = `${totalCal} / ${meta} kcal`;
+            document.getElementById('planMacroTargets').textContent = `P:${PLAN_TARGETS.protein}g C:${PLAN_TARGETS.carbs}g G:${PLAN_TARGETS.fat}g`;
+            document.getElementById('planMacroRemaining').textContent = `P:${Math.round(remaining.protein)}g C:${Math.round(remaining.carbs)}g G:${Math.round(remaining.fat)}g`;
             document.getElementById('planWaterStatus').textContent = `${waterCount}/${PLAN_TARGETS.waterCups} copos`;
             document.getElementById('planFruitCount').textContent = `${plan.fruit}/${PLAN_TARGETS.fruit}`;
             document.getElementById('planLunchComplete').checked = !!plan.lunchComplete;
@@ -1039,7 +1073,98 @@
             document.getElementById('planDinnerComplete').checked = !!plan.dinnerComplete;
             document.getElementById('planDinnerVeg').checked = !!plan.dinnerVeg;
             document.getElementById('planAvoidNuts').checked = !!plan.avoidNuts;
+            renderAdaptivePlan(totalCal, totalProt, totalCarbs, totalFat, meta);
             scoreEl.innerHTML = `<h2 style="font-size:24px;">${pct}%</h2><p>${done}/${checks.length} objetivos cumpridos hoje</p>`;
+        }
+
+        function getMealTotals(typeMatch) {
+            const today = getTodayKey();
+            return appData.meals
+                .filter(m => m.date === today && m.type.includes(typeMatch))
+                .reduce((acc, m) => {
+                    acc.calories += m.calories;
+                    acc.protein += m.protein;
+                    acc.carbs += m.carbs;
+                    acc.fat += m.fat;
+                    return acc;
+                }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+        }
+
+        function scalePortion(option, needed, key) {
+            if (!needed || needed <= 0) return option.grams;
+            const ratio = Math.max(0.45, Math.min(1.6, needed / option[key]));
+            return Math.round(option.grams * ratio / 5) * 5;
+        }
+
+        function getBestOption(options, needed, key) {
+            return options
+                .map(o => ({ ...o, diff: Math.abs(o[key] - needed) }))
+                .sort((a, b) => a.diff - b.diff)[0];
+        }
+
+        function buildMealPlan(mealKey, consumed, dayTotals, meta) {
+            const split = PLAN_MEAL_SPLIT[mealKey];
+            const targets = {
+                calories: Math.round(meta * split.calories),
+                protein: Math.round(PLAN_TARGETS.protein * split.protein),
+                carbs: Math.round(PLAN_TARGETS.carbs * split.carbs),
+                fat: Math.round(PLAN_TARGETS.fat * split.fat)
+            };
+            const remaining = {
+                calories: Math.max(0, targets.calories - consumed.calories),
+                protein: Math.max(0, targets.protein - consumed.protein),
+                carbs: Math.max(0, targets.carbs - consumed.carbs),
+                fat: Math.max(0, targets.fat - consumed.fat)
+            };
+            const proteinOption = getBestOption(PLAN_PROTEIN_OPTIONS, remaining.protein || targets.protein, 'protein');
+            const carbOption = getBestOption(PLAN_CARB_OPTIONS, remaining.carbs || targets.carbs, 'carbs');
+            const proteinGrams = scalePortion(proteinOption, remaining.protein || targets.protein, 'protein');
+            const carbGrams = scalePortion(carbOption, remaining.carbs || targets.carbs, 'carbs');
+            const status = consumed.calories >= targets.calories * 0.85 ? 'Já está quase cumprido' : 'Ainda por cumprir';
+
+            return { label: split.label, targets, consumed, remaining, proteinOption, carbOption, proteinGrams, carbGrams, status };
+        }
+
+        function renderAdaptivePlan(totalCal, totalProt, totalCarbs, totalFat, meta) {
+            const container = document.getElementById('adaptivePlan');
+            if (!container) return;
+
+            const lunch = buildMealPlan('lunch', getMealTotals('Almoço'), { totalCal, totalProt, totalCarbs, totalFat }, meta);
+            const snack = buildMealPlan('snack', getMealTotals('Lanche'), { totalCal, totalProt, totalCarbs, totalFat }, meta);
+            const dinnerBase = getMealTotals('Jantar');
+            const dayRemaining = {
+                calories: Math.max(0, meta - totalCal),
+                protein: Math.max(0, PLAN_TARGETS.protein - totalProt),
+                carbs: Math.max(0, PLAN_TARGETS.carbs - totalCarbs),
+                fat: Math.max(0, PLAN_TARGETS.fat - totalFat)
+            };
+            const dinner = buildMealPlan('dinner', dinnerBase, { totalCal, totalProt, totalCarbs, totalFat }, meta);
+            dinner.remaining.protein = Math.max(dinner.remaining.protein, Math.round(dayRemaining.protein * 0.55));
+            dinner.remaining.carbs = Math.max(dinner.remaining.carbs, Math.round(dayRemaining.carbs * 0.45));
+            dinner.remaining.calories = Math.max(dinner.remaining.calories, Math.round(dayRemaining.calories * 0.45));
+            dinner.proteinOption = getBestOption(PLAN_PROTEIN_OPTIONS, dinner.remaining.protein || dinner.targets.protein, 'protein');
+            dinner.carbOption = getBestOption(PLAN_CARB_OPTIONS, dinner.remaining.carbs || dinner.targets.carbs, 'carbs');
+            dinner.proteinGrams = scalePortion(dinner.proteinOption, dinner.remaining.protein || dinner.targets.protein, 'protein');
+            dinner.carbGrams = scalePortion(dinner.carbOption, dinner.remaining.carbs || dinner.targets.carbs, 'carbs');
+
+            const cards = [lunch, snack, dinner].map(m => `
+                <div class="section-box">
+                    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px;">
+                        <strong style="font-size:12px;">${m.label}</strong>
+                        <span style="font-size:10px;color:${m.status.includes('cumprido') ? '#22c55e' : '#667eea'};font-weight:700;">${m.status}</span>
+                    </div>
+                    <div class="analysis-item"><span>Alvo</span><span class="analysis-value">${m.targets.calories} kcal · P:${m.targets.protein} C:${m.targets.carbs} G:${m.targets.fat}</span></div>
+                    <div class="analysis-item"><span>Já registado</span><span class="analysis-value">${m.consumed.calories} kcal · P:${Math.round(m.consumed.protein)} C:${Math.round(m.consumed.carbs)} G:${Math.round(m.consumed.fat)}</span></div>
+                    <div style="font-size:11px;line-height:1.55;margin-top:8px;color:var(--text-primary);">
+                        Proteína: <strong>${m.proteinGrams}g ${m.proteinOption.name}</strong><br>
+                        Hidrato: <strong>${m.carbGrams}g ${m.carbOption.name}</strong><br>
+                        Legumes/sopa: <strong>200g</strong>
+                    </div>
+                    <div style="font-size:10px;color:var(--text-secondary);margin-top:6px;">Quantidades ajustadas ao que falta nesta refeição e ao total do dia.</div>
+                </div>
+            `).join('');
+
+            container.innerHTML = cards;
         }
 
         function getWeightLog() {
