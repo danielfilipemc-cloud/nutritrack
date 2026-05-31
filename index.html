@@ -179,6 +179,13 @@
         .summary-label { font-size: 9px; color: var(--text-secondary); margin-bottom: 3px; text-transform: uppercase; }
         .summary-value { font-size: 12px; color: #667eea; font-weight: 800; overflow-wrap: anywhere; }
         .summary-note { font-size: 10px; color: var(--text-secondary); line-height: 1.45; margin-top: 9px; }
+        .status-note { font-size: 10px; color: var(--text-secondary); line-height: 1.5; margin-top: 8px; }
+        .status-note.warn { color: #b45309; }
+        .review-card { background: var(--bg-secondary); border-left: 4px solid #667eea; border-radius: 8px; padding: 12px; margin-top: 12px; }
+        .review-card strong { display: block; font-size: 12px; margin-bottom: 5px; }
+        .review-card p { font-size: 10px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 8px; }
+        details.create-food { margin-top: 9px; background: var(--bg-secondary); border-radius: 8px; padding: 10px; }
+        details.create-food summary { cursor: pointer; font-size: 11px; font-weight: 700; color: #667eea; }
 
         @media (max-width: 420px) {
             .header { padding: 16px 56px 16px 18px; }
@@ -445,6 +452,20 @@
                         <div id="searchResults" class="search-results"></div>
                     </div>
                     <button type="button" class="btn btn-secondary" onclick="openBarcodeScanner()" style="margin-top:8px;">📷 Scanner código de barras</button>
+                    <details class="create-food" id="customFoodDetails">
+                        <summary>Não encontras? Criar alimento pessoal</summary>
+                        <div class="status-note">Usa os valores do rótulo por 100g. O alimento fica guardado neste dispositivo e entra no backup.</div>
+                        <div class="form-group" style="margin-top:8px;"><label>Nome</label><input type="text" id="customFoodName" placeholder="Ex: Iogurte da minha marca"></div>
+                        <div class="form-group"><label>Código de barras (opcional)</label><input type="text" id="customFoodBarcode" inputmode="numeric" placeholder="Preenchido automaticamente pelo scanner"></div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                            <div class="form-group"><label>kcal / 100g</label><input type="number" id="customFoodCalories" min="0" step="0.1"></div>
+                            <div class="form-group"><label>Porção habitual (g)</label><input type="number" id="customFoodServing" min="1" step="0.1" value="100"></div>
+                            <div class="form-group"><label>Proteína / 100g</label><input type="number" id="customFoodProtein" min="0" step="0.1"></div>
+                            <div class="form-group"><label>Hidratos / 100g</label><input type="number" id="customFoodCarbs" min="0" step="0.1"></div>
+                            <div class="form-group"><label>Gordura / 100g</label><input type="number" id="customFoodFat" min="0" step="0.1"></div>
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="saveCustomFood()">Guardar e selecionar</button>
+                    </details>
                 </div>
                 <div class="selected-food" id="selectedFood"></div>
                 <div class="form-group">
@@ -528,6 +549,7 @@
                 <div class="analysis-item"><span>Défice Semanal</span><span class="analysis-value" id="weeklyDeficit">0</span></div>
                 <div class="analysis-item"><span>Perda Prevista</span><span class="analysis-value" id="projectedLoss">0 kg</span></div>
             </div>
+            <div id="weeklyTargetReview"></div>
         </div>
 
         <div id="graficos" class="content">
@@ -700,6 +722,7 @@
                 ⬆️ Importar Backup
                 <input type="file" accept="application/json,.json" onchange="importBackup(event)" style="display:none;">
             </label>
+            <div id="backupStatus" class="status-note"></div>
         </div>
     </div>
 
@@ -1079,7 +1102,7 @@
         function exportBackup() {
             const backup = {
                 app: 'NutriTrack Pro',
-                version: 1,
+                version: 2,
                 exportedAt: new Date().toISOString(),
                 data: {
                     nutritrackData: appData,
@@ -1087,6 +1110,7 @@
                     planDailyData: JSON.parse(localStorage.getItem('planDailyData') || '{}'),
                     weightLog: JSON.parse(localStorage.getItem('weightLog') || '[]'),
                     recentFoods: JSON.parse(localStorage.getItem('recentFoods') || '[]'),
+                    customFoods: JSON.parse(localStorage.getItem('customFoods') || '[]'),
                     bodyMeasurements: JSON.parse(localStorage.getItem('bodyMeasurements') || '[]'),
                     darkMode: localStorage.getItem('darkMode') === 'true'
                 }
@@ -1100,6 +1124,8 @@
             a.click();
             a.remove();
             URL.revokeObjectURL(url);
+            localStorage.setItem('lastBackupAt', new Date().toISOString());
+            updateBackupStatus();
             showToast('✅ Backup exportado!');
         }
 
@@ -1123,8 +1149,10 @@
                     localStorage.setItem('planDailyData', JSON.stringify(data.planDailyData || {}));
                     localStorage.setItem('weightLog', JSON.stringify(data.weightLog || []));
                     localStorage.setItem('recentFoods', JSON.stringify(data.recentFoods || []));
+                    localStorage.setItem('customFoods', JSON.stringify(data.customFoods || []));
                     localStorage.setItem('bodyMeasurements', JSON.stringify(data.bodyMeasurements || []));
                     if (typeof data.darkMode === 'boolean') localStorage.setItem('darkMode', data.darkMode);
+                    localStorage.setItem('lastBackupAt', new Date().toISOString());
                     initDarkMode();
                     populatePreferenceSelects();
                     loadProfileData();
@@ -1135,6 +1163,23 @@
                 }
             };
             reader.readAsText(file);
+        }
+
+        function updateBackupStatus() {
+            const el = document.getElementById('backupStatus');
+            if (!el) return;
+            const last = localStorage.getItem('lastBackupAt');
+            if (!last) {
+                el.className = 'status-note warn';
+                el.textContent = 'Ainda não tens um backup recente. Exporta um ficheiro e guarda-o num local seguro.';
+                return;
+            }
+            const date = new Date(last);
+            const days = Math.floor((Date.now() - date.getTime()) / 86400000);
+            el.className = `status-note${days >= 14 ? ' warn' : ''}`;
+            el.textContent = days >= 14
+                ? `Último backup há ${days} dias. Convém exportar uma cópia atualizada.`
+                : `Último backup: ${date.toLocaleDateString('pt-PT')} às ${date.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}.`;
         }
 
         function updateAllUI() {
@@ -1149,6 +1194,7 @@
             updateIMCCard();
             updateMeasHistoryList();
             updatePlanUI();
+            updateBackupStatus();
         }
 
         const PLAN_TARGETS = { fruit: 2, protein: 200, carbs: 220, fat: 65 };
@@ -1718,6 +1764,82 @@
             localStorage.setItem('weightLog', JSON.stringify(log));
         }
 
+        function getWeeklyTargetReview() {
+            if (!appData.profile || calculateCalorieDeficit() <= 0) return { status: 'maintain', message: 'A revisão automática fica disponível durante objetivos de perda de peso.' };
+            const log = getWeightLog();
+            if (log.length < 4) return { status: 'waiting', message: 'Regista o peso pelo menos uma vez por semana. Precisamos de dados em duas semanas diferentes para rever a meta.' };
+
+            const today = new Date(`${getTodayKey()}T12:00:00`);
+            const daysAgo = days => new Date(today.getTime() - days * 86400000);
+            const recent = log.filter(e => {
+                const date = new Date(`${e.date}T12:00:00`);
+                return date >= daysAgo(6) && date <= today;
+            });
+            const previous = log.filter(e => {
+                const date = new Date(`${e.date}T12:00:00`);
+                return date >= daysAgo(13) && date < daysAgo(6);
+            });
+            if (recent.length < 2 || previous.length < 2) return { status: 'waiting', message: 'Continua a registar o peso. A sugestão usa a média de duas semanas para evitar reagir a oscilações normais.' };
+
+            const average = entries => entries.reduce((sum, entry) => sum + entry.weight, 0) / entries.length;
+            const recentAvg = average(recent);
+            const previousAvg = average(previous);
+            const change = recentAvg - previousAvg;
+            const currentTarget = calculateCalorieGoal();
+            let suggestedTarget = currentTarget;
+            let reason = 'A tendência está dentro de uma faixa gradual. Mantém a meta atual.';
+
+            if (change > -0.25) {
+                const calorieFloor = appData.profile.sex === 'M' ? 1500 : 1200;
+                suggestedTarget = Math.max(calorieFloor, currentTarget - 100);
+                reason = 'A média do peso está praticamente estável. Podes testar uma redução pequena de 100 kcal e voltar a avaliar daqui a uma semana.';
+            } else if (change < -1) {
+                suggestedTarget = currentTarget + 100;
+                reason = 'A média do peso desceu mais de 1 kg numa semana. Podes testar mais 100 kcal e acompanhar energia, fome e evolução.';
+            }
+
+            return {
+                status: suggestedTarget === currentTarget ? 'maintain' : 'suggest',
+                change,
+                currentTarget,
+                suggestedTarget,
+                reason
+            };
+        }
+
+        function applyWeeklyTargetSuggestion() {
+            const review = getWeeklyTargetReview();
+            if (review.status !== 'suggest') return;
+            if (!confirm(`Alterar a meta diária de ${review.currentTarget} para ${review.suggestedTarget} kcal?`)) return;
+            appData.profile.targetCalories = review.suggestedTarget;
+            appData.profile.lastTargetReviewAt = new Date().toISOString();
+            saveData();
+            loadProfileData();
+            updateAllUI();
+            showToast('✅ Meta diária atualizada!');
+        }
+
+        function updateWeeklyTargetReview() {
+            const card = document.getElementById('weeklyTargetReview');
+            if (!card) return;
+            const review = getWeeklyTargetReview();
+            const trend = typeof review.change === 'number'
+                ? `<p>Tendência entre médias semanais: <strong style="display:inline;">${review.change > 0 ? '+' : ''}${review.change.toFixed(2)} kg</strong>.</p>`
+                : '';
+            const action = review.status === 'suggest'
+                ? `<button class="btn" onclick="applyWeeklyTargetSuggestion()" style="margin:0;">Aplicar sugestão: ${review.suggestedTarget} kcal</button>`
+                : '';
+            card.innerHTML = `
+                <div class="review-card">
+                    <strong>Revisão semanal da meta</strong>
+                    ${trend}
+                    <p>${review.message || review.reason}</p>
+                    ${action}
+                    <div class="status-note">É uma sugestão conservadora, não uma prescrição clínica. A app nunca altera a meta sem confirmação.</div>
+                </div>
+            `;
+        }
+
         function logWeight() {
             const val = parseFloat(document.getElementById('weightInput').value);
             if (!val || val < 30 || val > 300) return;
@@ -1731,6 +1853,7 @@
             document.getElementById('weightInput').value = '';
             updateWeightUI();
             updateRelatorio();
+            updateWeeklyTargetReview();
         }
 
         function updateWeightUI() {
@@ -2127,6 +2250,45 @@
             return JSON.parse(localStorage.getItem('recentFoods') || '[]');
         }
 
+        function getCustomFoods() {
+            return JSON.parse(localStorage.getItem('customFoods') || '[]');
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            }[char]));
+        }
+
+        function saveCustomFood() {
+            const food = {
+                cat: '⭐ Os meus alimentos',
+                source: 'Pessoal',
+                name: document.getElementById('customFoodName').value.trim(),
+                barcode: document.getElementById('customFoodBarcode').value.replace(/\D/g, ''),
+                calories: parseFloat(document.getElementById('customFoodCalories').value),
+                serving: parseFloat(document.getElementById('customFoodServing').value) || 100,
+                protein: parseFloat(document.getElementById('customFoodProtein').value) || 0,
+                carbs: parseFloat(document.getElementById('customFoodCarbs').value) || 0,
+                fat: parseFloat(document.getElementById('customFoodFat').value) || 0,
+                unit: 'g'
+            };
+            if (!food.name || !Number.isFinite(food.calories) || food.calories < 0) {
+                showToast('⚠️ Preenche pelo menos o nome e as calorias por 100g.', 'error');
+                return;
+            }
+            const foods = getCustomFoods().filter(item => item.name.toLowerCase() !== food.name.toLowerCase());
+            foods.unshift(food);
+            localStorage.setItem('customFoods', JSON.stringify(foods.slice(0, 100)));
+            ['customFoodName','customFoodBarcode','customFoodCalories','customFoodProtein','customFoodCarbs','customFoodFat'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('customFoodServing').value = '100';
+            selectFood(food);
+            addToRecent(food);
+            showToast('✅ Alimento pessoal guardado!');
+        }
+
         function addToRecent(food) {
             let recent = getRecentFoods();
             recent = recent.filter(f => f.name !== food.name);
@@ -2160,56 +2322,54 @@
             div.innerHTML = `<div style="padding:10px;font-size:11px;color:var(--text-secondary);">🔍 A procurar...</div>`;
 
             const q = query.toLowerCase().trim();
-
-            // 1️⃣ Filtra base local
+            const customResults = getCustomFoods().filter(a =>
+                a.name.toLowerCase().includes(q)
+            );
             const localResults = alimentosPT.filter(a =>
                 a.name.toLowerCase().includes(q) || a.cat.toLowerCase().includes(q)
-            );
-
-            if (localResults.length > 0) {
-                // Agrupa por categoria
-                const grouped = {};
-                localResults.forEach(f => {
-                    if (!grouped[f.cat]) grouped[f.cat] = [];
-                    grouped[f.cat].push(f);
-                });
-
-                let html = '';
-                Object.entries(grouped).forEach(([cat, foods]) => {
-                    html += `<div style="padding:5px 10px; font-size:10px; color:var(--text-secondary); font-weight:600; border-bottom:1px solid var(--border-color); background:var(--bg-secondary);">${cat}</div>`;
-                    html += foods.map(f => renderFoodItem(f)).join('');
-                });
-
+            ).map(food => ({ ...food, source: 'Base PT' }));
+            const grouped = {};
+            [...customResults, ...localResults].forEach(food => {
+                const cat = food.cat || 'Base local';
+                if (!grouped[cat]) grouped[cat] = [];
+                grouped[cat].push(food);
+            });
+            let html = Object.entries(grouped).map(([cat, foods]) => `
+                <div style="padding:5px 10px; font-size:10px; color:var(--text-secondary); font-weight:600; border-bottom:1px solid var(--border-color); background:var(--bg-secondary);">${escapeHtml(cat)}</div>
+                ${foods.map(f => renderFoodItem(f)).join('')}
+            `).join('');
+            if (html) {
+                html += `<div style="padding:7px 10px;font-size:10px;color:var(--text-secondary);">A procurar também produtos de marca online...</div>`;
                 div.innerHTML = html;
-                return;
             }
 
-            // 2️⃣ Tenta Open Food Facts se não encontrar localmente
+            // Junta produtos embalados da base aberta mesmo quando já existem resultados locais.
             try {
                 const resp = await fetch(`https://world.openfoodfacts.org/api/v3/search?q=${encodeURIComponent(query)}&page_size=10&fields=product_name,nutriments`);
                 const data = await resp.json();
                 const products = (data.products || []).filter(p => p.nutriments?.['energy-kcal_100g'] && p.product_name);
+                const activeQuery = document.getElementById('foodSearch').value.trim().toLowerCase();
+                if (activeQuery && activeQuery !== q) return;
 
                 if (products.length > 0) {
-                    div.innerHTML = `
+                    const online = products.map(p => ({
+                        source: 'Open Food Facts',
+                        name: p.product_name,
+                        calories: Math.round(p.nutriments['energy-kcal_100g'] || 0),
+                        protein: parseFloat((p.nutriments.proteins_100g || 0).toFixed(1)),
+                        carbs:   parseFloat((p.nutriments.carbohydrates_100g || 0).toFixed(1)),
+                        fat:     parseFloat((p.nutriments.fat_100g || 0).toFixed(1)),
+                        serving: 100, unit: 'g'
+                    }));
+                    div.innerHTML = `${html}
                         <div style="padding:5px 10px; font-size:10px; color:var(--text-secondary); font-weight:600; border-bottom:1px solid var(--border-color); background:var(--bg-secondary);">🌐 BASE ONLINE</div>
-                        ${products.map(p => {
-                            const f = {
-                                name: p.product_name,
-                                calories: Math.round(p.nutriments['energy-kcal_100g'] || 0),
-                                protein: parseFloat((p.nutriments.proteins_100g || 0).toFixed(1)),
-                                carbs:   parseFloat((p.nutriments.carbohydrates_100g || 0).toFixed(1)),
-                                fat:     parseFloat((p.nutriments.fat_100g || 0).toFixed(1)),
-                                serving: 100, unit: 'g'
-                            };
-                            return renderFoodItem(f);
-                        }).join('')}
+                        ${online.map(f => renderFoodItem(f)).join('')}
                     `;
-                } else {
-                    div.innerHTML = `<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-secondary);">😕 Nenhum resultado para "<strong>${query}</strong>"</div>`;
+                } else if (!html) {
+                    div.innerHTML = `<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-secondary);">😕 Nenhum resultado para "<strong>${escapeHtml(query)}</strong>". Podes criar um alimento pessoal abaixo.</div>`;
                 }
             } catch {
-                div.innerHTML = `<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-secondary);">📵 Sem internet. Tenta outro nome.</div>`;
+                if (!html) div.innerHTML = `<div style="padding:12px; text-align:center; font-size:11px; color:var(--text-secondary);">📵 Sem internet. Tenta outro nome ou cria um alimento pessoal.</div>`;
             }
         }
 
@@ -2218,6 +2378,15 @@
             const status = document.getElementById('barcodeStatus');
             if (!cleanCode || cleanCode.length < 8) {
                 status.textContent = 'Código inválido. Escreve pelo menos 8 dígitos.';
+                return;
+            }
+
+            const personalFood = getCustomFoods().find(food => food.barcode === cleanCode);
+            if (personalFood) {
+                closeBarcodeScanner(false);
+                selectFood(personalFood);
+                addToRecent(personalFood);
+                showToast('✅ Produto pessoal encontrado!');
                 return;
             }
 
@@ -2230,10 +2399,11 @@
                 const calories = nutr['energy-kcal_100g'] || nutr['energy-kcal'];
 
                 if (!product || data.status !== 1 || !calories) {
-                    status.textContent = 'Produto não encontrado ou sem macros. Podes pesquisar pelo nome.';
-                    document.getElementById('foodSearch').value = cleanCode;
+                    status.textContent = 'Produto não encontrado ou sem macros. Podes criá-lo com os valores do rótulo.';
                     closeBarcodeScanner(false);
-                    await searchFoods(cleanCode);
+                    document.getElementById('customFoodBarcode').value = cleanCode;
+                    document.getElementById('customFoodDetails').open = true;
+                    document.getElementById('customFoodName').focus();
                     return;
                 }
 
@@ -2329,14 +2499,14 @@
         }
 
         function renderFoodItem(f, isRecent = false) {
-            const safeFood = JSON.stringify(f).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const encodedFood = encodeURIComponent(JSON.stringify(f));
             return `
-                <div class="search-result-item" onclick='selectFood(${JSON.stringify(f)})' style="padding:9px 12px;">
+                <div class="search-result-item" onclick="selectFood(JSON.parse(decodeURIComponent('${encodedFood}')))" style="padding:9px 12px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div>
-                            <div style="font-size:12px; font-weight:600; color:var(--text-primary);">${f.name}</div>
+                            <div style="font-size:12px; font-weight:600; color:var(--text-primary);">${escapeHtml(f.name)}</div>
                             <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">
-                                ${f.serving}${f.unit ? ' ' + f.unit : 'g'} · P:${f.protein}g C:${f.carbs}g G:${f.fat}g
+                                ${f.serving}${f.unit ? ' ' + escapeHtml(f.unit) : 'g'} · P:${f.protein}g C:${f.carbs}g G:${f.fat}g${f.source ? ` · ${escapeHtml(f.source)}` : ''}
                             </div>
                         </div>
                         <div style="text-align:right; min-width:55px;">
@@ -2917,11 +3087,14 @@
             const last7 = getLast7Days();
             const mealsLast7 = appData.meals.filter(m => { const d = new Date(m.date); return d >= last7.start && d <= last7.end; });
             const meta   = calculateCalorieGoal();
+            updateWeeklyTargetReview();
 
             if (!mealsLast7.length) {
                 ['caloriesAvg','daysLogged','totalWeekCal','avgProtein'].forEach(id => {
                     const el = document.getElementById(id); if (el) el.textContent = '0';
                 });
+                const metaEl = document.getElementById('metaDiaria');
+                if (metaEl) metaEl.textContent = meta + ' kcal';
                 return;
             }
             const totalCal  = mealsLast7.reduce((s, m) => s + m.calories, 0);
