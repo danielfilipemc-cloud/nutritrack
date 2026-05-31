@@ -172,6 +172,13 @@
         .action-card-main { font-size: 15px; color: var(--text-primary); font-weight: 800; margin-bottom: 5px; }
         .action-card-sub { font-size: 11px; color: var(--text-secondary); line-height: 1.45; margin-bottom: 10px; overflow-wrap: anywhere; }
         .action-card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .summary-card { background: var(--bg-secondary); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+        .summary-title { font-size: 12px; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .summary-item { background: var(--bg-primary); border-radius: 7px; padding: 9px; min-width: 0; }
+        .summary-label { font-size: 9px; color: var(--text-secondary); margin-bottom: 3px; text-transform: uppercase; }
+        .summary-value { font-size: 12px; color: #667eea; font-weight: 800; overflow-wrap: anywhere; }
+        .summary-note { font-size: 10px; color: var(--text-secondary); line-height: 1.45; margin-top: 9px; }
 
         @media (max-width: 420px) {
             .header { padding: 16px 56px 16px 18px; }
@@ -312,7 +319,7 @@
             <div class="water-tracker">
                 <div class="water-tracker-header">
                     <span class="water-tracker-title">💧 Água</span>
-                    <span class="water-tracker-count" id="waterCount">0 / 8 copos</span>
+                    <span class="water-tracker-count" id="waterCount">--</span>
                 </div>
                 <div class="water-glasses" id="waterGlasses"></div>
                 <div class="water-btns">
@@ -320,6 +327,8 @@
                     <button class="water-remove" onclick="removeWater()">−</button>
                 </div>
             </div>
+
+            <div id="personalSummaryCard" class="summary-card"></div>
 
             <!-- HISTÓRICO DE DIAS -->
             <div style="background:var(--bg-secondary); border-radius:8px; padding:12px; margin-bottom:14px;">
@@ -341,7 +350,7 @@
                 <div class="analysis-item"><span>Macros alvo</span><span class="analysis-value" id="planMacroTargets">--</span></div>
                 <div class="analysis-item"><span>Macros restantes</span><span class="analysis-value" id="planMacroRemaining">--</span></div>
                 <div class="analysis-item"><span>Estrutura</span><span class="analysis-value">3 refeições</span></div>
-                <div class="analysis-item"><span>Água</span><span class="analysis-value">2.5L / dia</span></div>
+                <div class="analysis-item"><span>Água</span><span class="analysis-value" id="planWaterGoal">--</span></div>
                 <div class="analysis-item"><span>Fruta</span><span class="analysis-value">2 peças / dia</span></div>
             </div>
 
@@ -355,8 +364,8 @@
             </div>
 
             <div class="section-box" style="margin-bottom:10px;">
-                <div class="analysis-item"><span>💧 Água</span><span class="analysis-value" id="planWaterStatus">0/10 copos</span></div>
-                <div style="font-size:10px;color:var(--text-secondary);margin-top:4px;">Usa o controlo de água no Dashboard. 10 copos de 250ml = 2.5L.</div>
+                <div class="analysis-item"><span>💧 Água</span><span class="analysis-value" id="planWaterStatus">--</span></div>
+                <div style="font-size:10px;color:var(--text-secondary);margin-top:4px;" id="planWaterHelp">Usa o controlo de água no Dashboard.</div>
             </div>
 
             <div class="section-box" style="margin-bottom:10px;">
@@ -981,8 +990,10 @@
             appData.profile = profile;
             saveData();
             hideSetupModal();
-            updateDashboard();
             loadProfileData();
+            updateAllUI();
+            showTab('dashboard', document.querySelectorAll('.nav-btn')[0]);
+            showToast('✅ Plano inicial criado!');
         }
 
         let setupCurrentStep = 1;
@@ -1140,8 +1151,69 @@
             updatePlanUI();
         }
 
-        const PLAN_TARGETS = { waterCups: 10, fruit: 2, protein: 200, carbs: 220, fat: 65 };
-        const WATER_GOAL = PLAN_TARGETS.waterCups;
+        const PLAN_TARGETS = { fruit: 2, protein: 200, carbs: 220, fat: 65 };
+
+        function getMacroTargets(meta = calculateCalorieGoal()) {
+            if (!appData.profile) return { protein: PLAN_TARGETS.protein, carbs: PLAN_TARGETS.carbs, fat: PLAN_TARGETS.fat };
+            const weightLog = getWeightLog();
+            const weight = weightLog.length ? weightLog[weightLog.length - 1].weight : appData.profile.weight;
+            const activity = parseFloat(appData.profile.activity || 1.375);
+            const hasDeficit = calculateCalorieDeficit() > 0;
+            let proteinFactor = activity >= 1.55 ? 1.7 : activity >= 1.375 ? 1.6 : 1.2;
+            if (hasDeficit) proteinFactor += 0.2;
+            const protein = Math.min(220, Math.round(weight * proteinFactor / 5) * 5);
+            const fat = Math.max(45, Math.round((meta * 0.25 / 9) / 5) * 5);
+            const carbs = Math.max(80, Math.round(((meta - protein * 4 - fat * 9) / 4) / 5) * 5);
+            return { protein, carbs, fat };
+        }
+
+        function calculateHydrationGoal() {
+            const profile = appData.profile;
+            const base = profile?.sex === 'F' ? 2 : 2.5;
+            const activity = parseFloat(profile?.activity || 1.375);
+            const activityExtra = activity >= 1.725 ? 0.5 : activity >= 1.55 ? 0.25 : 0;
+            const liters = Math.round((base + activityExtra) * 4) / 4;
+            return { liters, cups: Math.round(liters / 0.25) };
+        }
+
+        function getBMIReference() {
+            const profile = appData.profile;
+            if (!profile?.height) return null;
+            const weightLog = getWeightLog();
+            const weight = weightLog.length ? weightLog[weightLog.length - 1].weight : profile.weight;
+            const height = profile.height / 100;
+            return {
+                bmi: weight / (height * height),
+                minWeight: 18.5 * height * height,
+                maxWeight: 24.9 * height * height
+            };
+        }
+
+        function updatePersonalSummary() {
+            const card = document.getElementById('personalSummaryCard');
+            if (!card) return;
+            if (!appData.profile) {
+                card.style.display = 'none';
+                return;
+            }
+            const meta = calculateCalorieGoal();
+            const macros = getMacroTargets(meta);
+            const hydration = calculateHydrationGoal();
+            const bmi = getBMIReference();
+            card.style.display = 'block';
+            card.innerHTML = `
+                <div class="summary-title">O teu resumo personalizado</div>
+                <div class="summary-grid">
+                    <div class="summary-item"><div class="summary-label">Meta diária</div><div class="summary-value">${meta} kcal</div></div>
+                    <div class="summary-item"><div class="summary-label">Macros estimados</div><div class="summary-value">P:${macros.protein} C:${macros.carbs} G:${macros.fat}</div></div>
+                    <div class="summary-item"><div class="summary-label">Hidratação</div><div class="summary-value">${hydration.liters} L · ${hydration.cups} copos</div></div>
+                    <div class="summary-item"><div class="summary-label">IMC atual</div><div class="summary-value">${bmi ? bmi.bmi.toFixed(1) : '--'}</div></div>
+                    <div class="summary-item"><div class="summary-label">Referência IMC saudável</div><div class="summary-value">${bmi ? `${bmi.minWeight.toFixed(1)}-${bmi.maxWeight.toFixed(1)} kg` : '--'}</div></div>
+                    <div class="summary-item"><div class="summary-label">Hábitos preferidos</div><div class="summary-value">${appData.profile.proteinPreference || defaultPlanPreferences().proteinPreference}</div></div>
+                </div>
+                <div class="summary-note">Estimativas para orientação diária. A hidratação inclui líquidos ao longo do dia e pode precisar de ajuste com calor, suor ou indicação clínica. O IMC é apenas um indicador de rastreio.</div>
+            `;
+        }
         const PLAN_MEAL_SPLIT = {
             lunch: { label: 'Almoço 12h-13h', calories: 0.38, protein: 0.38, carbs: 0.38, fat: 0.32 },
             snack: { label: 'Lanche 17h-18h', calories: 0.24, protein: 0.24, carbs: 0.24, fat: 0.28 },
@@ -1213,13 +1285,13 @@
 
         function setWaterCount(n) {
             const data = JSON.parse(localStorage.getItem('waterData') || '{}');
-            data[getTodayKey()] = Math.max(0, Math.min(n, WATER_GOAL));
+            data[getTodayKey()] = Math.max(0, Math.min(n, calculateHydrationGoal().cups));
             localStorage.setItem('waterData', JSON.stringify(data));
         }
 
         function addWater() {
             const current = getWaterCount();
-            if (current >= WATER_GOAL) return;
+            if (current >= calculateHydrationGoal().cups) return;
             setWaterCount(current + 1);
             updateWaterUI();
         }
@@ -1231,9 +1303,10 @@
 
         function updateWaterUI() {
             const count = getWaterCount();
-            document.getElementById('waterCount').textContent = `${count} / ${WATER_GOAL} copos`;
+            const hydration = calculateHydrationGoal();
+            document.getElementById('waterCount').textContent = `${count} / ${hydration.cups} copos · ${hydration.liters}L`;
             const glasses = document.getElementById('waterGlasses');
-            glasses.innerHTML = Array.from({ length: WATER_GOAL }, (_, i) =>
+            glasses.innerHTML = Array.from({ length: hydration.cups }, (_, i) =>
                 `<span class="water-glass${i < count ? ' filled' : ''}">💧</span>`
             ).join('');
             updatePlanUI();
@@ -1304,15 +1377,17 @@
             const totalFat = todayMeals.reduce((s, m) => s + m.fat, 0);
             const meta = calculateCalorieGoal();
             const waterCount = getWaterCount();
+            const macros = getMacroTargets(meta);
+            const hydration = calculateHydrationGoal();
             const remaining = {
                 calories: Math.max(0, meta - totalCal),
-                protein: Math.max(0, PLAN_TARGETS.protein - totalProt),
-                carbs: Math.max(0, PLAN_TARGETS.carbs - totalCarbs),
-                fat: Math.max(0, PLAN_TARGETS.fat - totalFat)
+                protein: Math.max(0, macros.protein - totalProt),
+                carbs: Math.max(0, macros.carbs - totalCarbs),
+                fat: Math.max(0, macros.fat - totalFat)
             };
 
             const checks = [
-                waterCount >= PLAN_TARGETS.waterCups,
+                waterCount >= hydration.cups,
                 plan.fruit >= PLAN_TARGETS.fruit,
                 plan.lunchComplete,
                 plan.lunchVeg,
@@ -1325,9 +1400,11 @@
             const pct = Math.round(done / checks.length * 100);
 
             document.getElementById('planCalories').textContent = `${totalCal} / ${meta} kcal`;
-            document.getElementById('planMacroTargets').textContent = `P:${PLAN_TARGETS.protein}g C:${PLAN_TARGETS.carbs}g G:${PLAN_TARGETS.fat}g`;
+            document.getElementById('planMacroTargets').textContent = `P:${macros.protein}g C:${macros.carbs}g G:${macros.fat}g`;
             document.getElementById('planMacroRemaining').textContent = `P:${Math.round(remaining.protein)}g C:${Math.round(remaining.carbs)}g G:${Math.round(remaining.fat)}g`;
-            document.getElementById('planWaterStatus').textContent = `${waterCount}/${PLAN_TARGETS.waterCups} copos`;
+            document.getElementById('planWaterGoal').textContent = `${hydration.liters}L / dia`;
+            document.getElementById('planWaterStatus').textContent = `${waterCount}/${hydration.cups} copos`;
+            document.getElementById('planWaterHelp').textContent = `Estimativa prática: ${hydration.cups} copos de 250ml = ${hydration.liters}L. Ajusta com calor, suor ou recomendação clínica.`;
             document.getElementById('planFruitCount').textContent = `${plan.fruit}/${PLAN_TARGETS.fruit}`;
             document.getElementById('planLunchComplete').checked = !!plan.lunchComplete;
             document.getElementById('planLunchVeg').checked = !!plan.lunchVeg;
@@ -1411,11 +1488,12 @@
 
         function buildMealPlan(mealKey, consumed, dayTotals, meta, chosenProtein = null, chosenCarb = null) {
             const split = PLAN_MEAL_SPLIT[mealKey];
+            const macros = getMacroTargets(meta);
             const targets = {
                 calories: Math.round(meta * split.calories),
-                protein: Math.round(PLAN_TARGETS.protein * split.protein),
-                carbs: Math.round(PLAN_TARGETS.carbs * split.carbs),
-                fat: Math.round(PLAN_TARGETS.fat * split.fat)
+                protein: Math.round(macros.protein * split.protein),
+                carbs: Math.round(macros.carbs * split.carbs),
+                fat: Math.round(macros.fat * split.fat)
             };
             const remaining = {
                 calories: Math.max(0, targets.calories - consumed.calories),
@@ -1445,11 +1523,12 @@
 
         function buildSnackPlan(consumed, meta, chosenSnack = null) {
             const split = PLAN_MEAL_SPLIT.snack;
+            const macros = getMacroTargets(meta);
             const targets = {
                 calories: Math.round(meta * split.calories),
-                protein: Math.round(PLAN_TARGETS.protein * split.protein),
-                carbs: Math.round(PLAN_TARGETS.carbs * split.carbs),
-                fat: Math.round(PLAN_TARGETS.fat * split.fat)
+                protein: Math.round(macros.protein * split.protein),
+                carbs: Math.round(macros.carbs * split.carbs),
+                fat: Math.round(macros.fat * split.fat)
             };
             const remaining = {
                 calories: Math.max(0, targets.calories - consumed.calories),
@@ -1476,14 +1555,15 @@
             const totalCarbs = todayMeals.reduce((s, m) => s + m.carbs, 0);
             const totalFat = todayMeals.reduce((s, m) => s + m.fat, 0);
             const meta = calculateCalorieGoal();
+            const macros = getMacroTargets(meta);
             const plan = getTodayPlan();
             const lunch = buildMealPlan('lunch', getMealTotals('Almoço'), { totalCal, totalProt, totalCarbs, totalFat }, meta, plan.lunchProtein, plan.lunchCarb);
             const snack = buildSnackPlan(getMealTotals('Lanche'), meta, plan.snackPreference);
             const dinnerBase = getMealTotals('Jantar');
             const dayRemaining = {
                 calories: Math.max(0, meta - totalCal),
-                protein: Math.max(0, PLAN_TARGETS.protein - totalProt),
-                carbs: Math.max(0, PLAN_TARGETS.carbs - totalCarbs)
+                protein: Math.max(0, macros.protein - totalProt),
+                carbs: Math.max(0, macros.carbs - totalCarbs)
             };
             const dinner = buildMealPlan('dinner', dinnerBase, { totalCal, totalProt, totalCarbs, totalFat }, meta, plan.dinnerProtein, plan.dinnerCarb);
             dinner.remaining.protein = Math.max(dinner.remaining.protein, Math.round(dayRemaining.protein * 0.55));
@@ -1607,11 +1687,12 @@
             const card = document.getElementById('nextActionCard');
             if (!card) return;
             const meal = getNextMealInfo();
+            const macros = getMacroTargets(meta);
             const remaining = {
                 calories: Math.max(0, meta - totalCal),
-                protein: Math.max(0, PLAN_TARGETS.protein - totalProt),
-                carbs: Math.max(0, PLAN_TARGETS.carbs - totalCarbs),
-                fat: Math.max(0, PLAN_TARGETS.fat - totalFat)
+                protein: Math.max(0, macros.protein - totalProt),
+                carbs: Math.max(0, macros.carbs - totalCarbs),
+                fat: Math.max(0, macros.fat - totalFat)
             };
             let message = 'Segue o plano e regista a refeição quando terminares.';
             if (remaining.protein > 70) message = 'Prioridade: proteína. Escolhe uma fonte magra e mantém legumes/sopa.';
@@ -2733,6 +2814,7 @@
             const remaining = Math.max(0, meta - totalCal);
             const pct = Math.min((totalCal / meta) * 100, 100);
             updateNextAction(totalCal, totalProt, totalCarbs, totalFat, meta);
+            updatePersonalSummary();
 
             // Calorias
             document.getElementById('todayCalories').textContent = Math.round(totalCal);
@@ -2747,7 +2829,8 @@
             bar.className = 'cal-bar-fill' + (pct >= 100 ? ' over' : pct >= 85 ? ' warn' : '');
 
             // Macros com mini barras
-            const macroGoals = { prot: 200, carbs: 220, fat: 65 };
+            const targetMacros = getMacroTargets(meta);
+            const macroGoals = { prot: targetMacros.protein, carbs: targetMacros.carbs, fat: targetMacros.fat };
             document.getElementById('todayProtein').textContent = Math.round(totalProt) + 'g';
             document.getElementById('todayCarbs').textContent = Math.round(totalCarbs) + 'g';
             document.getElementById('todayFat').textContent = Math.round(totalFat) + 'g';
