@@ -24,7 +24,7 @@ window.NUTRITRACK_CLOUD = {
 
 A chave pública pode ser usada no browser. Nunca colocar uma chave `service_role` neste projeto.
 
-## 3. Autenticacao
+## 3. Autenticacao por email
 
 Em `Authentication` > `Providers`, manter Email ativo.
 
@@ -39,7 +39,19 @@ Em `Authentication` > `URL Configuration`:
 
 Isto permite regressar à app depois de confirmar o email ou pedir recuperação de palavra-passe.
 
-## 5. SMTP para partilha publica
+## 5. Login Google sem SMTP proprio
+
+Enquanto nao existir SMTP proprio, usar Google como opcao principal. Email e palavra-passe permanecem disponiveis como alternativa durante os testes.
+
+1. Em https://console.cloud.google.com criar ou selecionar um projeto.
+2. Em `Google Auth Platform`, configurar `Branding`, `Audience` e `Data Access`.
+3. Em `Clients`, criar um cliente OAuth do tipo `Web application`.
+4. Em `Authorized JavaScript origins`, adicionar `https://danielfilipemc-cloud.github.io`.
+5. Em `Authorized redirect URIs`, adicionar `https://maipjryehnllaifxhunf.supabase.co/auth/v1/callback`.
+6. Copiar o `Client ID` e o `Client Secret`.
+7. No Supabase, abrir `Authentication` > `Providers` > `Google`, ativar o provider e guardar os dois valores.
+
+## 6. SMTP para partilha publica futura
 
 Antes de convidar utilizadores:
 

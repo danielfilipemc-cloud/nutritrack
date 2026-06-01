@@ -723,6 +723,8 @@
             </div>
             <div id="cloudUnavailable" class="section-box status-note" style="display:none;"></div>
             <div id="cloudAuthPanel" class="meal-form" style="display:none;">
+                <button class="btn" onclick="cloudSignInWithGoogle()">Continuar com Google</button>
+                <div style="font-size:10px;color:var(--text-secondary);text-align:center;margin:10px 0;">ou usar email e palavra-passe</div>
                 <div class="form-group">
                     <label>Email</label>
                     <input type="email" id="cloudEmail" autocomplete="email" placeholder="nome@email.com">
@@ -768,6 +770,7 @@
             <div class="setup-step active" id="welcomeChoiceStep">
                 <div class="setup-step-title">Como queres começar?</div>
                 <div class="setup-step-sub">A conta é gratuita. As fotografias corporais continuam guardadas apenas neste dispositivo.</div>
+                <button class="btn" onclick="cloudSignInWithGoogle()">Continuar com Google</button>
                 <button class="btn" onclick="showWelcomeAuth('signup')">Criar conta</button>
                 <button class="btn btn-secondary" onclick="showWelcomeAuth('signin')">Já tenho conta</button>
                 <button class="btn btn-secondary" onclick="continueWithoutAccount()" style="background:transparent;color:var(--text-secondary);border:1px solid var(--border-color);">Continuar sem conta</button>
@@ -1422,10 +1425,23 @@
             showToast('✅ Sessão iniciada!');
         }
 
-        function getPasswordResetRedirect() {
+        async function cloudSignInWithGoogle() {
+            if (!cloudClient) return;
+            const { error } = await cloudClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: getAppRedirect() }
+            });
+            if (error) showToast('Nao foi possivel iniciar sessao com Google.', 'error');
+        }
+
+        function getAppRedirect() {
             return window.location.origin === 'null'
                 ? window.location.href.split('#')[0]
                 : `${window.location.origin}${window.location.pathname}`;
+        }
+
+        function getPasswordResetRedirect() {
+            return getAppRedirect();
         }
 
         async function requestPasswordReset(source = 'profile') {
