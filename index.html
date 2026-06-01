@@ -199,6 +199,7 @@
         }
         
         /* Setup Modal - ESCONDIDO POR PADRÃO */
+        #accountWelcomeModal,
         #setupModal { 
             display: none !important;
             position: fixed; 
@@ -211,6 +212,7 @@
             align-items: center; 
             justify-content: center;
         }
+        #accountWelcomeModal.show,
         #setupModal.show { 
             display: flex !important;
         }
@@ -753,6 +755,40 @@
         </div>
     </div>
 
+    <div id="accountWelcomeModal">
+        <div class="edit-modal" style="max-width:380px;">
+            <h3>☁️ Protege o teu progresso</h3>
+            <p>Cria uma conta para recuperar os teus dados noutro telemóvel. Também podes experimentar a app sem conta.</p>
+            <div class="setup-progress">
+                <div class="setup-dot active"></div>
+                <div class="setup-dot"></div>
+            </div>
+            <div class="setup-step active" id="welcomeChoiceStep">
+                <div class="setup-step-title">Como queres começar?</div>
+                <div class="setup-step-sub">A conta é gratuita. As fotografias corporais continuam guardadas apenas neste dispositivo.</div>
+                <button class="btn" onclick="showWelcomeAuth('signup')">Criar conta</button>
+                <button class="btn btn-secondary" onclick="showWelcomeAuth('signin')">Já tenho conta</button>
+                <button class="btn btn-secondary" onclick="continueWithoutAccount()" style="background:transparent;color:var(--text-secondary);border:1px solid var(--border-color);">Continuar sem conta</button>
+            </div>
+            <div class="setup-step" id="welcomeAuthStep">
+                <div class="setup-step-title" id="welcomeAuthTitle">Criar conta</div>
+                <div class="setup-step-sub" id="welcomeAuthSubtitle">Protege o teu histórico e continua noutro telemóvel.</div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="welcomeCloudEmail" autocomplete="email" placeholder="nome@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Palavra-passe</label>
+                    <input type="password" id="welcomeCloudPassword" autocomplete="current-password" minlength="6" placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="edit-modal-actions">
+                    <button class="btn-save" onclick="showWelcomeChoices()" style="background:#666;">Voltar</button>
+                    <button class="btn-save" id="welcomeAuthSubmit" onclick="submitWelcomeAuth()">Criar conta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="setupModal">
         <div class="edit-modal" style="max-width: 380px;">
             <h3>👋 Bem-vindo ao NutriTrack!</h3>
@@ -887,6 +923,7 @@
         let selectedFood = null, searchTimeout, charts = {};
         let barcodeStream = null, barcodeScanTimer = null, barcodeDetector = null;
         let cloudClient = null, cloudUser = null, cloudSyncTimer = null, applyingCloudPayload = false;
+        let welcomeAuthMode = 'signup';
 
         function calculateTMB(profileOverride = null) {
             const profile = profileOverride || appData.profile;
@@ -1089,6 +1126,78 @@
             document.body.style.overflow = 'auto';
         }
 
+        function showWelcomeAccountModal() {
+            if (!isCloudConfigured() || cloudUser || appData.profile) return;
+            showWelcomeChoices();
+            document.getElementById('accountWelcomeModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideWelcomeAccountModal() {
+            document.getElementById('accountWelcomeModal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        function showWelcomeChoices() {
+            document.getElementById('welcomeChoiceStep').classList.add('active');
+            document.getElementById('welcomeAuthStep').classList.remove('active');
+        }
+
+        function showWelcomeAuth(mode) {
+            welcomeAuthMode = mode;
+            const isSignup = mode === 'signup';
+            document.getElementById('welcomeChoiceStep').classList.remove('active');
+            document.getElementById('welcomeAuthStep').classList.add('active');
+            document.getElementById('welcomeAuthTitle').textContent = isSignup ? 'Criar conta' : 'Entrar na tua conta';
+            document.getElementById('welcomeAuthSubtitle').textContent = isSignup
+                ? 'Protege o teu histórico e continua noutro telemóvel.'
+                : 'Vamos recuperar os teus dados antes de preparar o plano.';
+            document.getElementById('welcomeAuthSubmit').textContent = isSignup ? 'Criar conta' : 'Entrar';
+        }
+
+        function continueWithoutAccount() {
+            localStorage.setItem('cloudWelcomeSkipped', 'true');
+            hideWelcomeAccountModal();
+            showSetupModal();
+        }
+
+        async function submitWelcomeAuth() {
+            if (!cloudClient) return;
+            const email = document.getElementById('welcomeCloudEmail').value.trim();
+            const password = document.getElementById('welcomeCloudPassword').value;
+            if (!email || password.length < 6) {
+                showToast('⚠️ Introduz um email e uma palavra-passe com pelo menos 6 caracteres.', 'error');
+                return;
+            }
+            const result = welcomeAuthMode === 'signup'
+                ? await cloudClient.auth.signUp({ email, password })
+                : await cloudClient.auth.signInWithPassword({ email, password });
+            if (result.error) {
+                showToast(welcomeAuthMode === 'signup' ? `⚠️ ${result.error.message}` : '⚠️ Não foi possível iniciar sessão.', 'error');
+                return;
+            }
+            if (!result.data.session) {
+                showToast('✅ Conta criada. Confirma o email para entrar.');
+                return;
+            }
+            cloudUser = result.data.session.user;
+            localStorage.removeItem('cloudWelcomeSkipped');
+            hideWelcomeAccountModal();
+            renderCloudUI();
+            await reconcileCloudData();
+            if (!appData.profile) showSetupModal();
+            showToast(welcomeAuthMode === 'signup' ? '✅ Conta criada!' : '✅ Dados recuperados!');
+        }
+
+        function showInitialExperience() {
+            if (appData.profile) return;
+            if (cloudUser || localStorage.getItem('cloudWelcomeSkipped') === 'true' || !isCloudConfigured()) {
+                showSetupModal();
+                return;
+            }
+            showWelcomeAccountModal();
+        }
+
         function toggleDarkMode() {
             document.documentElement.classList.toggle('dark-mode');
             const isDark = document.documentElement.classList.contains('dark-mode');
@@ -1107,8 +1216,6 @@
             if (saved) appData = JSON.parse(saved);
             populatePreferenceSelects();
             updateAllUI();
-            // Só mostrar modal se não tiver perfil
-            setTimeout(() => showSetupModal(), 100);
             loadProfileData();
         }
 
@@ -3421,10 +3528,11 @@
                 navigator.serviceWorker.register('./sw.js').catch(() => {});
             });
         }
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             initDarkMode();
             loadData();
-            initCloudSync();
+            await initCloudSync();
+            showInitialExperience();
             const foodInput = document.getElementById('foodSearch');
             foodInput.addEventListener('focus', () => { showFoodSearch(); });
             foodInput.addEventListener('input', e => {
