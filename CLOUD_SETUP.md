@@ -71,6 +71,17 @@ O servidor de email incluído no Supabase serve apenas para testes limitados. Um
 
 As fotografias corporais permanecem apenas no dispositivo nesta primeira fase.
 
+## Apagar conta
+
+Depois desta atualizacao, voltar a executar `supabase-setup.sql` no `SQL Editor`. O script pode ser repetido com seguranca.
+
+O botao `Apagar conta e dados` chama `delete_own_nutritrack_account()`. A funcao SQL:
+
+- exige uma sessao autenticada;
+- apaga apenas o utilizador correspondente a `auth.uid()`;
+- remove o payload cloud por cascata;
+- nao expoe a chave administrativa no browser.
+
 ## Checklist físico móvel
 
 Testar num Android e, quando possível, num iPhone:

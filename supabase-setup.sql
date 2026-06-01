@@ -37,3 +37,22 @@ on public.nutritrack_user_data
 for delete
 to authenticated
 using ((select auth.uid()) = user_id);
+
+create or replace function public.delete_own_nutritrack_account()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Authentication required';
+  end if;
+
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
+revoke all on function public.delete_own_nutritrack_account() from public;
+revoke all on function public.delete_own_nutritrack_account() from anon;
+grant execute on function public.delete_own_nutritrack_account() to authenticated;
