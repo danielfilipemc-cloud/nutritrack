@@ -13,6 +13,8 @@
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <title>NutriTrack Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./cloud-config.js"></script>
     <style>
         :root {
             --bg-primary: #ffffff;
@@ -713,6 +715,31 @@
             <div class="tab-title" style="margin-top: 20px;">📈 Informações do Perfil</div>
             <div id="profileInfo" class="section-box"></div>
 
+            <div class="tab-title" style="margin-top: 20px;">☁️ Conta e Sincronização</div>
+            <div class="section-box" style="font-size:10px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;">
+                A conta permite recuperar os teus dados noutro telemóvel. As fotografias corporais permanecem apenas neste dispositivo nesta fase.
+            </div>
+            <div id="cloudUnavailable" class="section-box status-note" style="display:none;"></div>
+            <div id="cloudAuthPanel" class="meal-form" style="display:none;">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="cloudEmail" autocomplete="email" placeholder="nome@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Palavra-passe</label>
+                    <input type="password" id="cloudPassword" autocomplete="current-password" minlength="6" placeholder="Mínimo 6 caracteres">
+                </div>
+                <button class="btn" onclick="cloudSignIn()">Entrar</button>
+                <button class="btn btn-secondary" onclick="cloudSignUp()">Criar conta</button>
+            </div>
+            <div id="cloudAccountPanel" class="section-box" style="display:none;">
+                <div class="analysis-item"><span>Conta</span><span class="analysis-value" id="cloudAccountEmail">--</span></div>
+                <div class="analysis-item"><span>Estado</span><span class="analysis-value" id="cloudSyncStatus">--</span></div>
+                <button class="btn" onclick="syncCloudNow()">Sincronizar agora</button>
+                <button class="btn btn-secondary" onclick="cloudSignOut()">Terminar sessão</button>
+                <button class="btn btn-secondary" onclick="deleteCloudData()" style="color:#dc2626;">Apagar dados cloud</button>
+            </div>
+
             <div class="tab-title" style="margin-top: 20px;">💾 Backup dos Dados</div>
             <div class="section-box" style="font-size:10px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;">
                 Exporta um ficheiro de segurança antes de mudares de telemóvel, browser ou limpares dados. A importação substitui os dados atuais pelos dados do backup.
@@ -859,6 +886,7 @@
         let appData = { meals: [], templates: [], bodyPhotos: [], profile: null };
         let selectedFood = null, searchTimeout, charts = {};
         let barcodeStream = null, barcodeScanTimer = null, barcodeDetector = null;
+        let cloudClient = null, cloudUser = null, cloudSyncTimer = null, applyingCloudPayload = false;
 
         function calculateTMB(profileOverride = null) {
             const profile = profileOverride || appData.profile;
@@ -1065,14 +1093,13 @@
             document.documentElement.classList.toggle('dark-mode');
             const isDark = document.documentElement.classList.contains('dark-mode');
             localStorage.setItem('darkMode', isDark);
+            markCloudDirty();
             updateCharts();
         }
 
         function initDarkMode() {
             const isDark = localStorage.getItem('darkMode') === 'true';
-            if (isDark) {
-                document.documentElement.classList.add('dark-mode');
-            }
+            document.documentElement.classList.toggle('dark-mode', isDark);
         }
 
         function loadData() {
@@ -1087,6 +1114,205 @@
 
         function saveData() {
             localStorage.setItem('nutritrackData', JSON.stringify(appData));
+            markCloudDirty();
+        }
+
+        function getCloudConfig() {
+            const config = window.NUTRITRACK_CLOUD || {};
+            return { url: String(config.url || '').trim(), anonKey: String(config.anonKey || '').trim() };
+        }
+
+        function isCloudConfigured() {
+            const config = getCloudConfig();
+            return Boolean(config.url && config.anonKey && window.supabase?.createClient);
+        }
+
+        function setCloudStatus(text) {
+            const el = document.getElementById('cloudSyncStatus');
+            if (el) el.textContent = text;
+        }
+
+        function renderCloudUI() {
+            const unavailable = document.getElementById('cloudUnavailable');
+            const authPanel = document.getElementById('cloudAuthPanel');
+            const accountPanel = document.getElementById('cloudAccountPanel');
+            if (!unavailable || !authPanel || !accountPanel) return;
+
+            if (!isCloudConfigured()) {
+                unavailable.style.display = 'block';
+                unavailable.textContent = 'Cloud ainda não ativada. A app continua funcional neste dispositivo e podes usar o backup manual.';
+                authPanel.style.display = 'none';
+                accountPanel.style.display = 'none';
+                return;
+            }
+
+            unavailable.style.display = 'none';
+            authPanel.style.display = cloudUser ? 'none' : 'block';
+            accountPanel.style.display = cloudUser ? 'block' : 'none';
+            if (cloudUser) {
+                document.getElementById('cloudAccountEmail').textContent = cloudUser.email || 'Conta ativa';
+                setCloudStatus(localStorage.getItem('cloudLastSyncedAt') ? 'Sincronizada' : 'A preparar...');
+            }
+        }
+
+        function getCloudPayload() {
+            return {
+                version: 1,
+                syncedAt: new Date().toISOString(),
+                nutritrackData: { ...appData, bodyPhotos: [] },
+                waterData: JSON.parse(localStorage.getItem('waterData') || '{}'),
+                planDailyData: JSON.parse(localStorage.getItem('planDailyData') || '{}'),
+                weightLog: JSON.parse(localStorage.getItem('weightLog') || '[]'),
+                recentFoods: JSON.parse(localStorage.getItem('recentFoods') || '[]'),
+                customFoods: JSON.parse(localStorage.getItem('customFoods') || '[]'),
+                bodyMeasurements: JSON.parse(localStorage.getItem('bodyMeasurements') || '[]'),
+                darkMode: localStorage.getItem('darkMode') === 'true'
+            };
+        }
+
+        function applyCloudPayload(data) {
+            if (!data?.nutritrackData) return;
+            const localPhotos = appData.bodyPhotos || [];
+            applyingCloudPayload = true;
+            try {
+                appData = { ...data.nutritrackData, bodyPhotos: localPhotos };
+                localStorage.setItem('nutritrackData', JSON.stringify(appData));
+                localStorage.setItem('waterData', JSON.stringify(data.waterData || {}));
+                localStorage.setItem('planDailyData', JSON.stringify(data.planDailyData || {}));
+                localStorage.setItem('weightLog', JSON.stringify(data.weightLog || []));
+                localStorage.setItem('recentFoods', JSON.stringify(data.recentFoods || []));
+                localStorage.setItem('customFoods', JSON.stringify(data.customFoods || []));
+                localStorage.setItem('bodyMeasurements', JSON.stringify(data.bodyMeasurements || []));
+                if (typeof data.darkMode === 'boolean') localStorage.setItem('darkMode', data.darkMode);
+                localStorage.setItem('cloudLastSyncedAt', new Date().toISOString());
+                initDarkMode();
+                populatePreferenceSelects();
+                loadProfileData();
+                updateAllUI();
+            } finally {
+                applyingCloudPayload = false;
+            }
+        }
+
+        function markCloudDirty() {
+            if (applyingCloudPayload) return;
+            localStorage.setItem('cloudLocalUpdatedAt', new Date().toISOString());
+            clearTimeout(cloudSyncTimer);
+            if (cloudClient && cloudUser) cloudSyncTimer = setTimeout(() => syncCloudNow(true), 1200);
+        }
+
+        async function syncCloudNow(quiet = false) {
+            if (!cloudClient || !cloudUser || applyingCloudPayload) return;
+            if (!quiet) setCloudStatus('A sincronizar...');
+            const payload = getCloudPayload();
+            const { error } = await cloudClient
+                .from('nutritrack_user_data')
+                .upsert({ user_id: cloudUser.id, payload, updated_at: payload.syncedAt }, { onConflict: 'user_id' });
+            if (error) {
+                setCloudStatus('Erro de sincronização');
+                if (!quiet) showToast('⚠️ Não foi possível sincronizar agora.', 'error');
+                return;
+            }
+            localStorage.setItem('cloudLastSyncedAt', payload.syncedAt);
+            setCloudStatus(`Sincronizada às ${new Date(payload.syncedAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}`);
+            if (!quiet) showToast('✅ Dados sincronizados!');
+        }
+
+        async function reconcileCloudData() {
+            if (!cloudClient || !cloudUser) return;
+            setCloudStatus('A recuperar dados...');
+            const { data, error } = await cloudClient
+                .from('nutritrack_user_data')
+                .select('payload, updated_at')
+                .eq('user_id', cloudUser.id)
+                .maybeSingle();
+            if (error) {
+                setCloudStatus('Erro ao recuperar dados');
+                return;
+            }
+            if (!data?.payload) {
+                await syncCloudNow(true);
+                return;
+            }
+
+            const hasLocalData = Boolean(appData.profile || appData.meals.length || getWeightLog().length);
+            const localUpdatedAt = localStorage.getItem('cloudLocalUpdatedAt');
+            const lastSyncedAt = localStorage.getItem('cloudLastSyncedAt');
+            const hasUnsyncedLocal = Boolean(localUpdatedAt && (!lastSyncedAt || localUpdatedAt > lastSyncedAt));
+            if (hasLocalData && hasUnsyncedLocal) {
+                const useLocal = confirm('Existem dados neste dispositivo e na cloud. OK: enviar os dados deste dispositivo. Cancelar: recuperar os dados da cloud.');
+                if (useLocal) {
+                    await syncCloudNow(true);
+                    return;
+                }
+            }
+            applyCloudPayload(data.payload);
+            setCloudStatus('Dados recuperados');
+        }
+
+        async function initCloudSync() {
+            renderCloudUI();
+            if (!isCloudConfigured()) return;
+            const config = getCloudConfig();
+            cloudClient = window.supabase.createClient(config.url, config.anonKey);
+            const { data } = await cloudClient.auth.getSession();
+            cloudUser = data.session?.user || null;
+            renderCloudUI();
+            if (cloudUser) await reconcileCloudData();
+            cloudClient.auth.onAuthStateChange((event, session) => {
+                cloudUser = session?.user || null;
+                renderCloudUI();
+                if (event === 'SIGNED_IN' && cloudUser) setTimeout(() => reconcileCloudData(), 0);
+            });
+        }
+
+        async function cloudSignUp() {
+            if (!cloudClient) return;
+            const email = document.getElementById('cloudEmail').value.trim();
+            const password = document.getElementById('cloudPassword').value;
+            if (!email || password.length < 6) {
+                showToast('⚠️ Introduz um email e uma palavra-passe com pelo menos 6 caracteres.', 'error');
+                return;
+            }
+            const { data, error } = await cloudClient.auth.signUp({ email, password });
+            if (error) {
+                showToast(`⚠️ ${error.message}`, 'error');
+                return;
+            }
+            showToast(data.session ? '✅ Conta criada!' : '✅ Conta criada. Confirma o email para entrar.');
+        }
+
+        async function cloudSignIn() {
+            if (!cloudClient) return;
+            const email = document.getElementById('cloudEmail').value.trim();
+            const password = document.getElementById('cloudPassword').value;
+            const { error } = await cloudClient.auth.signInWithPassword({ email, password });
+            if (error) {
+                showToast('⚠️ Não foi possível iniciar sessão.', 'error');
+                return;
+            }
+            showToast('✅ Sessão iniciada!');
+        }
+
+        async function cloudSignOut() {
+            if (!cloudClient) return;
+            await cloudClient.auth.signOut();
+            cloudUser = null;
+            renderCloudUI();
+            showToast('Sessão terminada.');
+        }
+
+        async function deleteCloudData() {
+            if (!cloudClient || !cloudUser) return;
+            if (!confirm('Apagar a cópia sincronizada na cloud? Os dados deste dispositivo permanecem guardados localmente.')) return;
+            const { error } = await cloudClient.from('nutritrack_user_data').delete().eq('user_id', cloudUser.id);
+            if (error) {
+                showToast('⚠️ Não foi possível apagar os dados cloud.', 'error');
+                return;
+            }
+            localStorage.removeItem('cloudLastSyncedAt');
+            setCloudStatus('Sem cópia cloud');
+            showToast('✅ Dados cloud apagados.');
         }
 
         function showToast(text, type = 'success') {
@@ -1153,6 +1379,7 @@
                     localStorage.setItem('bodyMeasurements', JSON.stringify(data.bodyMeasurements || []));
                     if (typeof data.darkMode === 'boolean') localStorage.setItem('darkMode', data.darkMode);
                     localStorage.setItem('lastBackupAt', new Date().toISOString());
+                    markCloudDirty();
                     initDarkMode();
                     populatePreferenceSelects();
                     loadProfileData();
@@ -1333,6 +1560,7 @@
             const data = JSON.parse(localStorage.getItem('waterData') || '{}');
             data[getTodayKey()] = Math.max(0, Math.min(n, calculateHydrationGoal().cups));
             localStorage.setItem('waterData', JSON.stringify(data));
+            markCloudDirty();
         }
 
         function addWater() {
@@ -1388,6 +1616,7 @@
             const log = getPlanLog();
             log[getTodayKey()] = plan;
             localStorage.setItem('planDailyData', JSON.stringify(log));
+            markCloudDirty();
         }
 
         function changePlanCount(field, delta) {
@@ -1762,6 +1991,7 @@
 
         function saveWeightLog(log) {
             localStorage.setItem('weightLog', JSON.stringify(log));
+            markCloudDirty();
         }
 
         function getWeeklyTargetReview() {
@@ -2280,6 +2510,7 @@
             const foods = getCustomFoods().filter(item => item.name.toLowerCase() !== food.name.toLowerCase());
             foods.unshift(food);
             localStorage.setItem('customFoods', JSON.stringify(foods.slice(0, 100)));
+            markCloudDirty();
             ['customFoodName','customFoodBarcode','customFoodCalories','customFoodProtein','customFoodCarbs','customFoodFat'].forEach(id => {
                 document.getElementById(id).value = '';
             });
@@ -2295,6 +2526,7 @@
             recent.unshift(food);
             if (recent.length > 8) recent = recent.slice(0, 8);
             localStorage.setItem('recentFoods', JSON.stringify(recent));
+            markCloudDirty();
         }
 
         function showFoodSearch() {
@@ -2842,6 +3074,7 @@
             meas.push(entry);
             meas.sort((a, b) => a.date.localeCompare(b.date));
             localStorage.setItem('bodyMeasurements', JSON.stringify(meas));
+            markCloudDirty();
             // Regista também no weight log
             if (entry.weight) {
                 const log = getWeightLog();
@@ -3191,6 +3424,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             initDarkMode();
             loadData();
+            initCloudSync();
             const foodInput = document.getElementById('foodSearch');
             foodInput.addEventListener('focus', () => { showFoodSearch(); });
             foodInput.addEventListener('input', e => {
