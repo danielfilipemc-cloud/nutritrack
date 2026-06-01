@@ -2866,6 +2866,8 @@
             }
 
             // Junta produtos embalados da base aberta mesmo quando já existem resultados locais.
+            if (query.trim().length < 3) return;
+
             try {
                 const resp = await fetch(`https://world.openfoodfacts.org/api/v3/search?q=${encodeURIComponent(query)}&page_size=10&fields=product_name,nutriments`);
                 const data = await resp.json();
@@ -3728,7 +3730,7 @@
             foodInput.addEventListener('focus', () => { showFoodSearch(); });
             foodInput.addEventListener('input', e => {
                 clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => searchFoods(e.target.value), 400);
+                searchTimeout = setTimeout(() => searchFoods(e.target.value), 900);
             });
             document.addEventListener('click', e => {
                 if (!e.target.closest('.search-container')) {
