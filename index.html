@@ -733,7 +733,9 @@
                 </div>
                 <button class="btn" onclick="cloudSignIn()">Entrar</button>
                 <button class="btn btn-secondary" onclick="cloudSignUp()">Criar conta</button>
+                <button class="btn btn-secondary" onclick="requestPasswordReset()">Recuperar palavra-passe</button>
             </div>
+            <button class="btn btn-secondary" id="installAppBtn" onclick="installApp()" style="display:none;">Instalar app neste dispositivo</button>
             <div id="cloudAccountPanel" class="section-box" style="display:none;">
                 <div class="analysis-item"><span>Conta</span><span class="analysis-value" id="cloudAccountEmail">--</span></div>
                 <div class="analysis-item"><span>Estado</span><span class="analysis-value" id="cloudSyncStatus">--</span></div>
@@ -785,6 +787,22 @@
                     <button class="btn-save" onclick="showWelcomeChoices()" style="background:#666;">Voltar</button>
                     <button class="btn-save" id="welcomeAuthSubmit" onclick="submitWelcomeAuth()">Criar conta</button>
                 </div>
+                <button class="btn btn-secondary" id="welcomeResetBtn" onclick="requestPasswordReset('welcome')" style="display:none;margin-top:8px;">Recuperar palavra-passe</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="passwordUpdateModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:100000;align-items:center;justify-content:center;padding:15px;">
+        <div class="edit-modal" style="max-width:380px;">
+            <h3>🔐 Nova palavra-passe</h3>
+            <p>Escolhe uma nova palavra-passe para a tua conta NutriTrack.</p>
+            <div class="form-group">
+                <label>Nova palavra-passe</label>
+                <input type="password" id="newCloudPassword" autocomplete="new-password" minlength="6" placeholder="Mínimo 6 caracteres">
+            </div>
+            <div class="edit-modal-actions">
+                <button class="btn-save" onclick="updateCloudPassword()">Guardar nova palavra-passe</button>
+                <button class="btn-save" onclick="closePasswordUpdateModal()" style="background:#666;">Cancelar</button>
             </div>
         </div>
     </div>
@@ -924,6 +942,7 @@
         let barcodeStream = null, barcodeScanTimer = null, barcodeDetector = null;
         let cloudClient = null, cloudUser = null, cloudSyncTimer = null, applyingCloudPayload = false;
         let welcomeAuthMode = 'signup';
+        let deferredInstallPrompt = null;
 
         function calculateTMB(profileOverride = null) {
             const profile = profileOverride || appData.profile;
@@ -1153,6 +1172,7 @@
                 ? 'Protege o teu histórico e continua noutro telemóvel.'
                 : 'Vamos recuperar os teus dados antes de preparar o plano.';
             document.getElementById('welcomeAuthSubmit').textContent = isSignup ? 'Criar conta' : 'Entrar';
+            document.getElementById('welcomeResetBtn').style.display = isSignup ? 'none' : 'block';
         }
 
         function continueWithoutAccount() {
@@ -1370,6 +1390,7 @@
                 cloudUser = session?.user || null;
                 renderCloudUI();
                 if (event === 'SIGNED_IN' && cloudUser) setTimeout(() => reconcileCloudData(), 0);
+                if (event === 'PASSWORD_RECOVERY') setTimeout(() => openPasswordUpdateModal(), 0);
             });
         }
 
@@ -1399,6 +1420,71 @@
                 return;
             }
             showToast('✅ Sessão iniciada!');
+        }
+
+        function getPasswordResetRedirect() {
+            return window.location.origin === 'null'
+                ? window.location.href.split('#')[0]
+                : `${window.location.origin}${window.location.pathname}`;
+        }
+
+        async function requestPasswordReset(source = 'profile') {
+            if (!cloudClient) return;
+            const inputId = source === 'welcome' ? 'welcomeCloudEmail' : 'cloudEmail';
+            const email = document.getElementById(inputId).value.trim();
+            if (!email) {
+                showToast('⚠️ Introduz primeiro o email da tua conta.', 'error');
+                return;
+            }
+            const { error } = await cloudClient.auth.resetPasswordForEmail(email, {
+                redirectTo: getPasswordResetRedirect()
+            });
+            if (error) {
+                showToast('⚠️ Não foi possível enviar o email de recuperação agora.', 'error');
+                return;
+            }
+            showToast('✅ Email de recuperação enviado.');
+        }
+
+        function openPasswordUpdateModal() {
+            document.getElementById('passwordUpdateModal').style.display = 'flex';
+            document.getElementById('newCloudPassword').value = '';
+        }
+
+        function closePasswordUpdateModal() {
+            document.getElementById('passwordUpdateModal').style.display = 'none';
+        }
+
+        async function updateCloudPassword() {
+            if (!cloudClient) return;
+            const password = document.getElementById('newCloudPassword').value;
+            if (password.length < 6) {
+                showToast('⚠️ Usa pelo menos 6 caracteres.', 'error');
+                return;
+            }
+            const { error } = await cloudClient.auth.updateUser({ password });
+            if (error) {
+                showToast('⚠️ Não foi possível atualizar a palavra-passe.', 'error');
+                return;
+            }
+            closePasswordUpdateModal();
+            showToast('✅ Palavra-passe atualizada!');
+        }
+
+        function updateInstallButton() {
+            const button = document.getElementById('installAppBtn');
+            if (button) button.style.display = deferredInstallPrompt ? 'block' : 'none';
+        }
+
+        async function installApp() {
+            if (!deferredInstallPrompt) {
+                showToast('Usa a opção “Adicionar ao ecrã principal” do browser.');
+                return;
+            }
+            deferredInstallPrompt.prompt();
+            await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            updateInstallButton();
         }
 
         async function cloudSignOut() {
@@ -3521,8 +3607,16 @@
             return { start, end };
         }
 
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); });
-        window.addEventListener('appinstalled', () => { console.log('App instalada!'); });
+        window.addEventListener('beforeinstallprompt', (event) => {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            updateInstallButton();
+        });
+        window.addEventListener('appinstalled', () => {
+            deferredInstallPrompt = null;
+            updateInstallButton();
+            showToast('✅ App instalada!');
+        });
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(() => {});

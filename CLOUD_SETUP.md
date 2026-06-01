@@ -30,6 +30,26 @@ Em `Authentication` > `Providers`, manter Email ativo.
 
 Durante testes, podes desligar a confirmação obrigatória de email. Para utilização pública, é recomendável voltar a ativá-la.
 
+## 4. URLs de autenticacao
+
+Em `Authentication` > `URL Configuration`:
+
+- `Site URL`: `https://danielfilipemc-cloud.github.io/nutritrack/`
+- Adicionar o mesmo endereço a `Redirect URLs`.
+
+Isto permite regressar à app depois de confirmar o email ou pedir recuperação de palavra-passe.
+
+## 5. SMTP para partilha publica
+
+Antes de convidar utilizadores:
+
+1. Em `Authentication` > `Providers` > `Email`, voltar a ativar `Confirm email`.
+2. Em `Project Settings` > `Auth` > `SMTP Settings`, configurar um fornecedor SMTP próprio.
+3. Definir remetente e nome visível, por exemplo `NutriTrack`.
+4. Criar uma conta de teste real e confirmar receção dos emails de registo e recuperação.
+
+O servidor de email incluído no Supabase serve apenas para testes limitados. Um SMTP próprio evita bloqueios rápidos de envio.
+
 ## O que sincroniza
 
 - Perfil, refeições e templates.
@@ -38,3 +58,13 @@ Durante testes, podes desligar a confirmação obrigatória de email. Para utili
 - Preferência de modo escuro.
 
 As fotografias corporais permanecem apenas no dispositivo nesta primeira fase.
+
+## Checklist físico móvel
+
+Testar num Android e, quando possível, num iPhone:
+
+1. Abrir a app e escolher `Continuar sem conta`.
+2. Instalar pelo botão apresentado no Perfil ou por `Adicionar ao ecrã principal`.
+3. Abrir `Registar` > `Scanner código de barras`.
+4. Permitir a câmara e ler pelo menos dois produtos.
+5. Confirmar o fallback de código manual quando o scanner automático não estiver disponível.
