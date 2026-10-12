@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
     "check": "npm run test && npm run typecheck && npm run build",
-    "db:bundle": "tsx scripts/migration-bundle.ts --write"
+    "db:bundle": "tsx scripts/migration-bundle.ts --write",
+    "cloud:check": "tsx scripts/cloud-check.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",

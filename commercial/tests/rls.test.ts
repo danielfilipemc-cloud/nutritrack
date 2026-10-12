@@ -2,6 +2,18 @@ import {test} from "node:test";
 import assert from "node:assert/strict";
 import {migrationBundle} from "../scripts/migration-bundle";
 import {PGlite} from "@electric-sql/pglite";
+import {readFile} from "node:fs/promises";
+test("cloud SQL harness runs and rolls back every fixture",async()=>{
+ const db=new PGlite();
+ try {
+  await db.exec(`create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$; grant usage on schema public,auth to anon,authenticated; grant execute on function auth.uid() to anon,authenticated;`);
+  await db.exec((await migrationBundle()).replace("create extension if not exists pgcrypto;",""));
+  await db.exec(await readFile(new URL("./cloud-rls.sql",import.meta.url),"utf8"));
+  for(const table of ["auth.users","public.organizations","public.clients","public.assessments","public.organization_branding"]){
+   assert.equal((await db.query<{n:number}>(`select count(*)::int n from ${table}`)).rows[0].n,0);
+  }
+ } finally {await db.close();}
+});
 test("real PostgreSQL RLS: tenants, roles, foreign keys and forbidden writes",async()=>{
  const db=new PGlite();
  try {
