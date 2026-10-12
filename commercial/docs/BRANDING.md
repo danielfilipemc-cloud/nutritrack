@@ -14,3 +14,11 @@ Before launch:
 - Build approved logo upload to private storage with safe MIME handling and access policies.
 - Custom domains require ownership proof, CNAME verification, TLS provisioning, anti-takeover controls.
 - PWA manifests must be tenant-aware and cache-segregated; prevent cross-tenant leakage.
+
+## Official default visual identity
+- Primary: `#137F79` (deep teal)
+- Text: `#0F343D`
+- Soft accent: `#DFF4F0`
+- Background: `#F7FAFA`
+- Surface: `#FFFFFF`
+These defaults belong to the AURA Business platform; each tenant may override its own primary color. Name remains provisional pending trademark clearance.
