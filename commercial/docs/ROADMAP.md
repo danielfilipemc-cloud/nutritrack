@@ -1,33 +1,30 @@
-# NutriTrack Business — product roadmap (draft)
+# AURA Business — estado e próximos passos
 
-## Product positioning
-SaaS for personal trainers and independent fitness studios. Differentiation: fast physical evaluations + longitudinal progress and nutrition follow-up.
-Avoid copying the competitor's protected assets or proprietary implementation.
+## Implementado e validado localmente
+- Dependências fixadas, lockfile e instalação npm ci.
+- Cliente Supabase partilhado; limpeza de estado ao mudar identidade/estabelecimento.
+- Proteção contra respostas antigas nas avaliações; seletor bloqueado durante gravações.
+- Branding bloqueado até terminar o carregamento; preservar URL existente ao guardar nome/cor.
+- Validação de nomes, datas, limites e precisão; gráfico com escala temporal e tabela acessível.
+- Demonstração sem credenciais em /demo; dados fictícios apenas em memória.
+- Cabeçalhos de segurança, melhoria de foco/responsividade.
+- Cinco testes automatizados, incluindo RLS PostgreSQL, replay e checksum de migrações.
+- Build, typecheck e quatro rotas HTTP validados.
 
-## Implemented in saas-foundation
-- New commercial Next.js scaffold, independent from the original static app.
-- Multi-tenant organizations, membership, clients, RLS read access.
-- Opt-in additive SQL for demo assessment records and authorized member client creation.
-- Authenticated assessment entry and recent-history UI.
+## Bloqueios de integração
+- Organização/projeto Supabase independente ainda por escolher/disponibilizar.
+- Duas ligações acessíveis mostram só Dashboard Zas / GPS Centro Sul; Sentinel/Maryatchi não visíveis.
+- Workflow preparado em commercial/ci; ativação requer ficheiro na raiz .github/workflows.
+- Browser indisponível: faltam QA visual e testes end-to-end de formulários/sessões.
 
-## Security release gates (NOT YET PASSED)
-- CI build and real authenticated browser smoke test.
-- Run new SQL in isolated staging project and exercise tenant A/B access denial.
-- Confirm auth provisioning, role privileges, no data-exfiltration paths.
-- Enforce controlled invitations, user lifecycle, revocation, staff assignments.
-- Private health-data storage and deletion/export retention procedures.
-- Data processing contracts, privacy notices, lawful basis and DPIA where required.
-- Audit trail and correction flow, backups and recovery exercises.
-- Rate limits and abuse defenses; supply-chain and dependency review.
-- No production data until all above are satisfied.
+## Antes de um piloto com dados reais
+1. Configurar projeto Supabase independente e desativar signup/anonymous auth.
+2. Executar migrações e repetir testes allow/deny pela API com utilizadores sintéticos.
+3. Provisionamento/convites seguros; gestão de profissionais e auditoria.
+4. Consentimento, retenção, direitos do titular, backups e política de sessões/MFA.
+5. Paginação, fluxo auditável de correção de avaliações e timestamps do servidor.
+6. Validação visual e end-to-end desktop/mobile; ativar CI.
 
-## Next increments
-1. Build & RLS integration tests in staging with synthetic identities.
-2. Role-aware invitation and user provisioning.
-3. Structured measurements/templates and historical charts.
-4. Client self-service portal with explicitly limited permissions.
-5. Nutrition and meal logging extraction from the original NutriTrack.
-6. Subscription billing, branding and onboarding.
-
-## Branding
-NutriTrack Business is an internal placeholder, not an approved commercial name. Validate EU/Portugal trademarks and domains before launch.
+## Evolução comercial
+Portal de alunos, logótipos em storage privado, domínios verificados, subscrições e pagamentos.
+Sem publicação de produção nem merge para main nesta entrega.
