@@ -1,0 +1,44 @@
+"use client";
+import { useEffect, useState, type FormEvent } from "react";
+import { createClient } from "@supabase/supabase-js";
+type Org = {id:string;name:string};
+type Student = {id:string;full_name:string};
+type Assessment = {id:string;client_id:string;assessed_on:string;weight_kg:number|null;height_cm:number|null;waist_cm:number|null};
+const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
+const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const db=url&&key?createClient(url,key):null;
+export default function Avaliacoes(){
+ const [userId,setUserId]=useState("");const [orgs,setOrgs]=useState<Org[]>([]);const [org,setOrg]=useState("");
+ const [students,setStudents]=useState<Student[]>([]);const [assessments,setAssessments]=useState<Assessment[]>([]);
+ const [name,setName]=useState("");const [studentId,setStudentId]=useState("");const [date,setDate]=useState(new Date().toISOString().slice(0,10));
+ const [weight,setWeight]=useState("");const [height,setHeight]=useState("");const [waist,setWaist]=useState("");
+ const [status,setStatus]=useState("A iniciar...");const [loading,setLoading]=useState(false);
+ useEffect(()=>{if(!db){setStatus("Falta configurar Supabase.");return;}let active=true;
+ db.auth.getUser().then(async ({data,error})=>{if(!active)return;if(error||!data.user){setStatus("Inicia sessão no painel principal.");return;}setUserId(data.user.id);
+ const res=await db!.from("organization_members").select("organization_id,organizations(id,name)");
+ if(!active)return;if(res.error){setStatus("Sem acesso às organizações.");return;}
+ const list:Org[]=(res.data||[]).flatMap((row:any)=>{const o=Array.isArray(row.organizations)?row.organizations[0]:row.organizations;return o?[{id:o.id,name:o.name}]:[]});
+ setOrgs(list);setOrg(list[0]?.id||"");setStatus(list.length?"":"Sem organizações atribuídas.");});
+ return()=>{active=false};},[]);
+ async function refresh(organization:string){if(!db||!organization)return;setStatus("A carregar dados...");
+ const [s,a]=await Promise.all([db.from("clients").select("id,full_name").eq("organization_id",organization).order("full_name"),db.from("assessments").select("id,client_id,assessed_on,weight_kg,height_cm,waist_cm").eq("organization_id",organization).order("assessed_on",{ascending:false}).limit(100)]);
+ if(s.error||a.error){setStatus("Não foi possível carregar alunos/avaliações. Confirma que a migração 002 foi aplicada.");return;}
+ setStudents(s.data||[]);setAssessments(a.data||[]);setStudentId(prev=>(s.data||[]).some(x=>x.id===prev)?prev:(s.data?.[0]?.id||""));setStatus("");
+ }
+ useEffect(()=>{if(org&&userId)void refresh(org);},[org,userId]);
+ async function addStudent(e:FormEvent){e.preventDefault();if(!db||!org||!name.trim()||loading)return;setLoading(true);
+ const {error}=await db.from("clients").insert({organization_id:org,full_name:name.trim()});setLoading(false);
+ if(error){setStatus("Não foi possível criar o aluno. Verifica permissões e dados.");return;}setName("");await refresh(org);}
+ async function addAssessment(e:FormEvent){e.preventDefault();if(!db||!org||!studentId||!userId||loading)return;
+ const n=(value:string)=>value.trim()?Number(value):null;
+ const w=n(weight),h=n(height),wa=n(waist);
+ if([w,h,wa].every(x=>x===null)||[w,h,wa].some(x=>x!==null&&(!Number.isFinite(x)||x<=0))){setStatus("Indica pelo menos uma medição válida.");return;}
+ setLoading(true);const {error}=await db.from("assessments").insert({organization_id:org,client_id:studentId,recorded_by:userId,assessed_on:date,weight_kg:w,height_cm:h,waist_cm:wa});
+ setLoading(false);if(error){setStatus("Não foi possível guardar a avaliação. Confirma limites e permissões.");return;}setWeight("");setHeight("");setWaist("");await refresh(org);}
+ return <main className="shell"><header><div><strong>◉ NutriTrack <span>Business</span></strong><p>Módulo de avaliações · Ambiente de desenvolvimento</p></div><a href="/" className="outline link">Painel principal</a></header>
+ <div className="heading"><div><span className="eyebrow">ACOMPANHAMENTO</span><h1>Alunos e avaliações</h1><p>Protótipo destinado apenas a dados fictícios.</p></div><label>Organização<select value={org} onChange={e=>setOrg(e.target.value)}>{orgs.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label></div>
+ {userId&&org&&<><div className="columns"><section className="panel"><h2>Novo aluno</h2><form onSubmit={addStudent}><label>Nome fictício<input value={name} onChange={e=>setName(e.target.value)} maxLength={160} minLength={2} required /></label><button disabled={loading}>Registar aluno</button></form></section>
+ <section className="panel"><h2>Nova avaliação</h2><form onSubmit={addAssessment}><label>Aluno<select value={studentId} onChange={e=>setStudentId(e.target.value)} required>{students.map(s=><option key={s.id} value={s.id}>{s.full_name}</option>)}</select></label><label>Data<input type="date" value={date} onChange={e=>setDate(e.target.value)} required /></label><div className="columns"><label>Peso (kg)<input type="number" min="0.01" max="500" step=".01" value={weight} onChange={e=>setWeight(e.target.value)} /></label><label>Altura (cm)<input type="number" min="0.1" max="300" step=".1" value={height} onChange={e=>setHeight(e.target.value)} /></label><label>Cintura (cm)<input type="number" min="0.1" max="300" step=".1" value={waist} onChange={e=>setWaist(e.target.value)} /></label></div><button disabled={loading||!studentId}>Guardar avaliação</button></form></section></div>
+ <section className="panel"><h2>Histórico recente</h2><div className="tablewrap"><table><thead><tr><th>Aluno</th><th>Data</th><th>Peso</th><th>Altura</th><th>Cintura</th></tr></thead><tbody>{assessments.map(a=><tr key={a.id}><td>{students.find(s=>s.id===a.client_id)?.full_name||"—"}</td><td>{a.assessed_on}</td><td>{a.weight_kg??"—"}</td><td>{a.height_cm??"—"}</td><td>{a.waist_cm??"—"}</td></tr>)}</tbody></table></div>{!assessments.length&&<p>Sem avaliações registadas.</p>}</section></>}
+ <p role="status" className="status">{status}</p><footer>Não introduzir dados reais de saúde até à revisão legal, de segurança e proteção de dados.</footer></main>;
+}
