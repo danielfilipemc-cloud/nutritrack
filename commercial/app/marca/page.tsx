@@ -5,7 +5,7 @@ import BrandHeader,{type Branding} from "../../components/BrandHeader";
 const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 const db=url&&key?createClient(url,key):null;
 type Organization={id:string;name:string;role:string};
-const defaults:Branding={display_name:"AURA",primary_color:"#1d856e",logo_url:null};
+const defaults:Branding={display_name:"AURA",primary_color:"#137F79",logo_url:null};
 export default function Marca(){
  const [user,setUser]=useState(""),[orgs,setOrgs]=useState<Organization[]>([]),[org,setOrg]=useState("");
  const [brand,setBrand]=useState<Branding>(defaults),[status,setStatus]=useState("A verificar sessão..."),[busy,setBusy]=useState(false);
@@ -27,7 +27,7 @@ export default function Marca(){
  setBusy(true);setStatus("A guardar...");
  const {error}=await db.from("organization_branding").upsert({organization_id:org,display_name:brand.display_name.trim(),primary_color:brand.primary_color,logo_url:null,updated_by:user,updated_at:new Date().toISOString()},{onConflict:"organization_id"});
  setBusy(false);setStatus(error?"Não foi possível guardar. Confirma as tuas permissões.":"Identidade guardada para este estabelecimento.");}
- return <main className="shell"><header><div><strong>AURA <span style={{color:"#1d856e"}}>Business</span></strong><p>Identidade do estabelecimento</p></div><a href="/" className="outline link">Voltar ao painel</a></header>
+ return <main className="shell"><header><div><strong>AURA <span style={{color:"#137F79"}}>Business</span></strong><p>Identidade do estabelecimento</p></div><a href="/" className="outline link">Voltar ao painel</a></header>
  <div className="heading"><div><span className="eyebrow">WHITE LABEL</span><h1>A tua marca, a nossa tecnologia.</h1><p>Personaliza a identidade visual. Os dados continuam isolados por organização.</p></div><label>Estabelecimento<select value={org} onChange={e=>setOrg(e.target.value)}>{orgs.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label></div>
  {org&&<div className="columns"><section className="panel"><h2>Configurações</h2><form onSubmit={save}><label>Nome da marca<input value={brand.display_name} minLength={2} maxLength={100} disabled={!canEdit} onChange={e=>setBrand({...brand,display_name:e.target.value})} required/></label><label>Cor principal<input type="color" value={brand.primary_color} disabled={!canEdit} onChange={e=>setBrand({...brand,primary_color:e.target.value})}/></label><p>Logótipo, domínio próprio e PWA com a marca serão adicionados numa fase posterior.</p><button disabled={!canEdit||busy}>Guardar identidade</button>{!canEdit&&<p>Apenas administradores e responsáveis podem editar a marca.</p>}</form></section><section className="panel"><h2>Pré-visualização</h2><BrandHeader branding={brand} subtitle="Área de acompanhamento"/><p>Identidade apresentada ao profissional e, futuramente, aos alunos.</p></section></div>}
  <p role="status" className="status">{status}</p><footer>Protótipo em desenvolvimento. Não inserir dados de saúde reais.</footer></main>;
