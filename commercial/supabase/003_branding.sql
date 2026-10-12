@@ -2,7 +2,7 @@
 create table public.organization_branding (
  organization_id uuid primary key references public.organizations(id) on delete cascade,
  display_name text not null check(length(trim(display_name)) between 2 and 100),
- primary_color text not null default '#1d856e' check(primary_color ~ '^#[0-9a-fA-F]{6}$'),
+ primary_color text not null default '#137F79' check(primary_color ~ '^#[0-9a-fA-F]{6}$'),
  logo_url text,
  updated_at timestamptz not null default now(),
  updated_by uuid references auth.users(id),
