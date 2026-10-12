@@ -3,3 +3,5 @@
 .columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}.columns .panel{margin-top:0}.columns .columns{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.tablewrap{overflow-x:auto}.link{display:inline-block;text-decoration:none}.panel form button{margin-top:5px}@media(max-width:800px){.columns,.columns .columns{grid-template-columns:1fr}}
 
 .chartbox{width:100%;overflow:hidden}.chartbox svg{display:block;width:100%;height:auto;max-height:300px}.chartnote{font-size:12px;color:#74838a;margin:8px 0 0}
+
+.brandhead{display:flex;align-items:center;gap:14px;padding:18px;border:1px solid #dbe5e5;border-radius:16px;background:#fafdfc;flex-wrap:wrap}.brandmark{display:grid;place-items:center;width:48px;height:48px;border-radius:12px;background:var(--brand-accent,#1d856e);color:white;font-size:23px;font-weight:800}.brandhead strong{font-size:19px}.brandhead p{margin:4px 0;font-size:12px}.brand-powered{margin-left:auto;font-size:11px;color:#8b999f}
