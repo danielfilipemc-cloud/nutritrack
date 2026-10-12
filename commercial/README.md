@@ -50,6 +50,9 @@ precisam de novas migrações; nunca editar uma migração registada.
   e confirmação de que todas as fixtures foram revertidas.
 - `npm run typecheck` e build: passaram. No Windows, foi necessário definir
   `NEXT_TELEMETRY_DISABLED=1` para evitar erro EXDEV no ficheiro de telemetria global.
+- Build final carregou `.env.local`; `next start` em 127.0.0.1:3187 confirmou
+  HTTP 200, identidade AURA e cabeçalhos DENY/nosniff/no-store nas quatro rotas
+  `/`, `/avaliacoes`, `/marca` e `/demo`. Isto não valida interações no browser.
 - `tests/cloud-rls.sql`: executado no PostgreSQL do projeto indicado; resultado PASS
   para isolamento A/B, owner/admin/coach, utilizador sem organização e anon.
   A transação terminou com ROLLBACK; zero utilizadores, organizações e alunos persistidos.
