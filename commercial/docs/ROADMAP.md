@@ -22,16 +22,14 @@
 
 ## Bloqueios de integração
 - Signup email ativo por decisão do responsável; sem atribuição automática de membership.
-- Autenticação anónima desativada, mas faltam contas sintéticas provisionadas por Auth Admin
-  e testes autenticados A/B via PostgREST; SQL com claims simulados não substitui esses testes.
-- Runner e procedimento em `docs/AUTH_INTEGRATION.md` preparados. Responsável confirmou
-  em 13-10-2026 que ainda não há contas; execução autenticada permanece pendente.
+- Autenticação anónima desativada. Quatro contas criadas via Auth Admin e testes
+  autenticados A/B via PostgREST passaram; fixtures mantidas para a demonstração.
 - Workflow preparado em commercial/ci; ativação requer ficheiro na raiz .github/workflows.
 - Browser indisponível: faltam QA visual e testes end-to-end de formulários/sessões.
 
 ## Antes de um piloto com dados reais
 1. Rever proteção antiabuso do signup email; manter anonymous sign-in desativado.
-2. Provisionar contas sintéticas por administração confiável e executar testes allow/deny pela API.
+2. Testes Auth/PostgREST concluídos; publicar demonstração e validar os fluxos no browser.
 3. Provisionamento/convites seguros; gestão de profissionais e auditoria.
 4. Consentimento, retenção, direitos do titular, backups e política de sessões/MFA.
 5. Paginação, fluxo auditável de correção de avaliações e timestamps do servidor.

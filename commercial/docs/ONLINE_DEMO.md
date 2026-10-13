@@ -18,10 +18,11 @@ Configuração YAML preparada segundo a documentação; ainda não validada pelo
 5. Aplicar cleanup.sql, executar test:accounts:cleanup e retirar os ficheiros locais
    de credenciais/fixtures depois de confirmar a limpeza. Revogar a chave temporária
    no Dashboard quando terminar a operação administrativa.
-Criação e login autenticado ainda pendentes da disponibilidade local da chave.
+Criação e login autenticado executados com PASS em 13-10-2026. Quatro contas e
+fixtures mantidas intencionalmente para a demonstração; credenciais apenas locais.
 
 ## Para colocar a base online
-- Fechar os testes com login real e JWT/PostgREST entre as duas empresas.
+- Concluído: testes com login real e JWT/PostgREST entre as duas empresas.
 - Criar serviço de demonstração Render com o Blueprint; fornecer apenas publishable key.
 - Configurar URL e redirects Auth para o domínio HTTPS aprovado.
 - Validar /api/health, /, /avaliacoes, /marca e /demo após o deploy, incluindo login/logout.

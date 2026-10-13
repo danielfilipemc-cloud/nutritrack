@@ -70,10 +70,19 @@ Confirmar ausência desses UUIDs, eliminar as quatro contas pelo Auth Admin e re
 as oito variáveis de teste de `.env.local`. Eliminar então `.aura-integration/`.
 Se o teste indicar falha de sign-out, revogar primeiro as sessões no Auth Admin.
 
-## Evidência em 13-10-2026
+## Evidência executada em 13-10-2026
 
-- Runner passou no typecheck; caminho sem credenciais aborta com mensagem explícita.
-- Nenhuma conta de teste disponível, confirmado pelo responsável.
-- Auth/PostgREST autenticado: **pendente**, sem PASS atribuído.
-- Signup permanece ativo por escolha do responsável; runner atualizado para essa política.
-- SQL cloud e seis testes locais continuam com PASS; QA visual continua pendente.
+- Quatro contas confirmadas criadas via Auth Admin, sem emails de convite.
+- Chave administrativa exclusivamente em .env.admin.local; credenciais geradas em
+  .aura-integration/accounts.env. Ambos ignorados pelo Git e fora da aplicação pública.
+- npm run test:auth:prepare passou: quatro logins reais e ausência inicial de memberships.
+- provision.sql aplicado somente ao projeto AURA: duas empresas e associações sintéticas.
+- npm run test:auth passou com JWTs emitidos por Supabase Auth e chamadas PostgREST.
+- OWNER_A/ADMIN_B: leituras e escritas próprias permitidas; outras empresas bloqueadas.
+- FK de aluno, autor falsificado, alteração/remoção de avaliações e escalada de membership bloqueadas.
+- Coach: leitura da marca permitida e escrita recusada. Unassigned: sem acesso comercial.
+- Sessões terminadas no finally; sem falhas de sign-out reportadas.
+- Contas e fixtures foram mantidas intencionalmente para a demonstração, conforme o
+  pedido de contas fictícias. Não executar novamente --prepare enquanto existirem.
+- Para remover: procedimento cleanup acima; nunca apagar contas ou organizações alheias.
+- Signup email continua ativo por escolha do responsável; QA visual ainda pendente.

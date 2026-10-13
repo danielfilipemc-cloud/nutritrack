@@ -171,3 +171,12 @@ Health check GET /api/health implementado. Sete testes, typecheck e build passar
 Nenhuma conta criada por este comando até disponibilizar a chave local; nenhum
 serviço de alojamento criado. O CLI Render não está instalado: YAML ainda sem
 validação pelo CLI. Publicação pendente de testes autenticados e validação final.
+
+## Contas e API autenticada — validação concluída
+
+Em 13-10-2026 foram criadas quatro contas fictícias via Auth Admin sem envio de emails.
+Preparação e testes de Auth/PostgREST passaram: duas empresas isoladas, owner/admin,
+coach e utilizador sem associação. Sessões encerradas no fim. As contas e fixtures
+continuam disponíveis para demonstração; passwords apenas no ficheiro local ignorado
+.aura-integration/accounts.env. Ver docs/AUTH_INTEGRATION.md para evidência/limpeza.
+Publicação e verificação visual continuam pendentes; nenhum dado real foi usado.

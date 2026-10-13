@@ -42,3 +42,16 @@ Validação após rebase: npm run check passou (7 testes, TypeScript e build com
 `npm run cloud:check` passou nas cinco tabelas (HTTP 401 e código 42501) e verificou
 anonymous sign-in desativado. Signup email continua ativo por escolha do responsável.
 O runner API duplicado foi consolidado em scripts/cloud-check.ts; db:verify:api é alias.
+
+## Validação autenticada real — 13-10-2026
+
+Quatro contas criadas pelo Auth Admin com passwords aleatórias e email confirmado,
+sem envio de convites. Dois estabelecimentos fictícios provisionados, três memberships,
+utilizador sem associação e alunos de teste. npm run test:auth:prepare e npm run test:auth
+passaram usando JWTs reais e PostgREST; não se limitaram a simular claims SQL.
+Owner/admin: CRUD autorizado do MVP e negações cross-tenant. Coach: branding recusado.
+Unassigned: leitura/escrita comercial recusadas. FK, autor, memberships e imutabilidade
+verificados. Sessões terminadas no fim. Contas e dados fictícios mantidos para demo;
+manifest e credenciais ignorados pelo Git. Nenhuma chave administrativa publicada.
+Assim, as referências anteriores a testes autenticados pendentes ficam superadas.
+Falta alojamento da demonstração, validação browser e ativação efetiva do CI.
