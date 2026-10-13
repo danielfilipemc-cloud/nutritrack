@@ -84,7 +84,7 @@ footer { border-color:var(--aura-line); }
  .aura-workspace {display:block; padding-bottom:72px;}
  .aura-app-nav {height:auto; position:fixed; z-index:30; top:auto; bottom:0; left:0; right:0; border-right:0; border-top:1px solid var(--aura-line); padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left)); box-shadow:0 -4px 14px rgb(24 59 55 / 6%);}
  .aura-app-nav__brand,.aura-app-nav__foot {display:none;}
- .aura-app-nav__links {display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px;}
+ .aura-app-nav__links {display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px;}
  .aura-app-nav__links a {display:flex; flex-direction:column; justify-content:center; gap:2px; padding:4px 2px; min-height:50px; font-size:11px; text-align:center;}
  .aura-app-nav__links a span {font-size:20px; line-height:1.1;}
 }
