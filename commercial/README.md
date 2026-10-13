@@ -156,3 +156,8 @@ tabelas comerciais e em auth.users. O teste local desse gerador foi integrado se
 remover o harness cloud já existente. `db:verify:api` usa o mesmo runner que cloud:check.
 Inscrições por email mantidas ativas por decisão explícita do responsável; sem formulário
 público nem atribuição de membership na aplicação. Ver docs/SUPABASE_VALIDATION.md.
+
+Integração final com a branch remota em 13-10-2026: sete testes passaram, typecheck e
+build passaram com .env.local; cloud:check passou. Os commits remotos de proteção
+contra pedidos tardios e preparação Auth/PostgREST foram preservados. Signup por email
+permanece ativo por decisão do responsável; não concede memberships automaticamente.

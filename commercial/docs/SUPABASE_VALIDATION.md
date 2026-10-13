@@ -16,7 +16,7 @@ Migração existente: 20261012225833_aura_business_foundation; não reaplicada.
 - API PostgREST com publishable key, sem JWT: HTTP 401 nas cinco tabelas.
 - API Auth settings: confirmação de email ativa e anonymous sign-in desativado.
 - Signup por email ativo, mantido por decisão explícita do responsável.
-- Seis testes locais passaram; TypeScript passou; build com .env.local passou.
+- Sete testes locais passaram após integrar a branch remota; TypeScript passou; build com .env.local passou.
 - Build inicialmente bloqueado pela escrita de telemetria fora do sandbox; executado
   com NEXT_TELEMETRY_DISABLED=1, sem necessitar de alterar permissões ou código.
 
@@ -33,3 +33,12 @@ Continuam pendentes testes de login com contas fictícias provisionadas por API 
 QA visual/browser e ativação de GitHub Actions fora do âmbito commercial/.
 Signup ativo não atribui memberships e não concede acesso a dados de empresas.
 Nenhum deploy de produção, acesso a dados reais ou alteração a NutriTrack/GPS/Sentinel.
+
+## Integração com a branch remota
+
+Preservados os commits remotos até c95c26a, incluindo invalidação imediata de leituras/
+gravações e runner Auth/PostgREST. Testes adicionais integrados no commit 4f4ae4e.
+Validação após rebase: npm run check passou (7 testes, TypeScript e build com .env.local).
+`npm run cloud:check` passou nas cinco tabelas (HTTP 401 e código 42501) e verificou
+anonymous sign-in desativado. Signup email continua ativo por escolha do responsável.
+O runner API duplicado foi consolidado em scripts/cloud-check.ts; db:verify:api é alias.

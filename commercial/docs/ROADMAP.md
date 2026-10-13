@@ -9,7 +9,7 @@
 - Validação de nomes, datas, limites e precisão; gráfico com escala temporal e tabela acessível.
 - Demonstração sem credenciais em /demo; dados fictícios apenas em memória.
 - Cabeçalhos de segurança, melhoria de foco/responsividade.
-- Seis testes automatizados, incluindo RLS PostgreSQL, replay, checksum e rollback do harness cloud.
+- Sete testes automatizados, incluindo RLS PostgreSQL, replay, checksum e rollback do harness cloud.
 - Build, typecheck e quatro rotas HTTP validados.
 
 ## Integração Supabase (12–13-10-2026)
