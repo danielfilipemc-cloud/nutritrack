@@ -3,7 +3,8 @@ const A = "00000000-0000-0000-0000-000000000010",
   B = "00000000-0000-0000-0000-000000000020";
 const C = "00000000-0000-0000-0000-000000000100",
   U = "00000000-0000-0000-0000-000000000001";
-const today = new Date().toISOString().slice(0, 10);
+const dateParts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {timeZone:'Europe/Lisbon', year:'numeric', month:'2-digit', day:'2-digit'}).formatToParts(new Date()).map(p=>[p.type,p.value]));
+const today = `${dateParts.year}-${dateParts.month}-${dateParts.day}`;
 
 // Browser contract tests only. All Supabase requests are intercepted; RLS is tested in PostgreSQL.
 async function fixture(

@@ -6,6 +6,7 @@ import {db} from "../lib/supabase";
 import TenantBrand from "./TenantBrand";
 import {useProfessional} from "../lib/use-professional";
 import {RequestScope} from "../lib/request-scope";
+import {businessToday} from "../lib/care";
 import {measurement,validDate} from "../lib/validation";
 import ClientPicker,{type SelectedClient} from "./ClientPicker";
 import ProgressChart from "./ProgressChart";
@@ -17,7 +18,7 @@ export default function AssessmentWorkspace({profileId}:{profileId?:string}){
  const {user,orgs,org,setOrg,status:authStatus}=useProfessional();const reads=useRef(new RequestScope()),writes=useRef(new RequestScope()),initial=useRef(false),lookup=useRef(new RequestScope());
  const [selected,setSelected]=useState<SelectedClient|null>(null),[history,setHistory]=useState<Assessment[]>([]),[chart,setChart]=useState<Assessment[]>([]),[page,setPage]=useState(0),[total,setTotal]=useState(0),[metric,setMetric]=useState<"weight_kg"|"height_cm"|"waist_cm">("weight_kg"),[status,setStatus]=useState(""),[loading,setLoading]=useState(false),[ready,setReady]=useState(false),[busy,setBusy]=useState(false);
  const careDirty=useRef(false);const [view,setView]=useState<"overview"|"assessments"|"agenda">("overview");
- const [date,setDate]=useState(new Date().toISOString().slice(0,10)),[weight,setWeight]=useState(""),[height,setHeight]=useState(""),[waist,setWaist]=useState("");
+ const [date,setDate]=useState(businessToday()),[weight,setWeight]=useState(""),[height,setHeight]=useState(""),[waist,setWaist]=useState("");
  const active=selected?.organization_id===org?selected:null;
  function clear(){reads.current.invalidate();writes.current.invalidate();setHistory([]);setChart([]);setReady(false);setTotal(0);setWeight("");setHeight("");setWaist("");}
  useEffect(()=>{if(!user||!orgs.length||initial.current)return;initial.current=true;const requested=new URLSearchParams(window.location.search);const desired=requested.get("org");if(desired&&orgs.some(o=>o.id===desired))setOrg(desired);},[user?.id,orgs]);
