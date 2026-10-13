@@ -10,9 +10,9 @@ export default function ProgressChart({records,unit}:{records:ChartPoint[];unit:
  const coordinates=data.map((p,i)=>`${X(i)},${Y(p.value)}`).join(" ");
  return <div className="chartbox">
  <svg viewBox="0 0 680 250" role="img" aria-label={`Evolução: ${data.length} medições, de ${data[0].value} a ${data[data.length-1].value} ${unit}`}>
- {[0,1,2,3,4].map(i=><g key={i}><line x1="50" y1={40+i*41.25} x2="630" y2={40+i*41.25} stroke="#e5ebee"/><text x="44" y={44+i*41.25} textAnchor="end" fontSize="12" fill="#66777f">{(hi-i*(hi-lo)/4).toFixed(1)}</text></g>)}
- <polyline points={coordinates} fill="none" stroke="#137F79" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
- {data.map((p,i)=><circle key={i} cx={X(i)} cy={Y(p.value)} r="4" fill="#137F79"><title>{p.date}: {p.value} {unit}</title></circle>)}
- <text x="50" y="238" fontSize="12" fill="#66777f">{data[0].date}</text><text x="630" y="238" textAnchor="end" fontSize="12" fill="#66777f">{data[data.length-1].date}</text>
+ {[0,1,2,3,4].map(i=><g key={i}><line x1="50" y1={40+i*41.25} x2="630" y2={40+i*41.25} stroke="var(--aura-chart-grid, #354541)"/><text x="44" y={44+i*41.25} textAnchor="end" fontSize="12" fill="var(--aura-chart-label, #B8CAC5)">{(hi-i*(hi-lo)/4).toFixed(1)}</text></g>)}
+ <polyline points={coordinates} fill="none" stroke="var(--aura-chart-stroke, #70D6CA)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+ {data.map((p,i)=><circle key={i} cx={X(i)} cy={Y(p.value)} r="4.5" fill="var(--aura-chart-stroke, #70D6CA)"><title>{p.date}: {p.value} {unit}</title></circle>)}
+ <text x="50" y="238" fontSize="12" fill="var(--aura-chart-label, #B8CAC5)">{data[0].date}</text><text x="630" y="238" textAnchor="end" fontSize="12" fill="var(--aura-chart-label, #B8CAC5)">{data[data.length-1].date}</text>
  </svg><p className="chartnote">{data.length} medições apresentadas · Última: {data[data.length-1].value} {unit}</p><details><summary>Consultar medições em tabela</summary><table><thead><tr><th>Data</th><th>Valor ({unit})</th></tr></thead><tbody>{data.map((p,i)=><tr key={i}><td>{p.date}</td><td>{p.value}</td></tr>)}</tbody></table></details></div>;
 }
