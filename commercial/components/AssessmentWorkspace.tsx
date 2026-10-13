@@ -1,0 +1,42 @@
+"use client";
+import ProfessionalShell from "./ProfessionalShell";
+import OrganizationSelect from "./OrganizationSelect";
+import {useEffect,useRef,useState,type FormEvent} from "react";
+import {db} from "../lib/supabase";
+import TenantBrand from "./TenantBrand";
+import {useProfessional} from "../lib/use-professional";
+import {RequestScope} from "../lib/request-scope";
+import {measurement,validDate} from "../lib/validation";
+import ClientPicker,{type SelectedClient} from "./ClientPicker";
+import ProgressChart from "./ProgressChart";
+type Assessment={id:string;assessed_on:string;weight_kg:number|null;height_cm:number|null;waist_cm:number|null};
+export default function AssessmentWorkspace({profileId}:{profileId?:string}){
+ const {user,orgs,org,setOrg,status:authStatus}=useProfessional();const reads=useRef(new RequestScope()),writes=useRef(new RequestScope()),initial=useRef(false),lookup=useRef(new RequestScope());
+ const [selected,setSelected]=useState<SelectedClient|null>(null),[history,setHistory]=useState<Assessment[]>([]),[chart,setChart]=useState<Assessment[]>([]),[page,setPage]=useState(0),[total,setTotal]=useState(0),[metric,setMetric]=useState<"weight_kg"|"height_cm"|"waist_cm">("weight_kg"),[status,setStatus]=useState(""),[loading,setLoading]=useState(false),[ready,setReady]=useState(false),[busy,setBusy]=useState(false);
+ const [date,setDate]=useState(new Date().toISOString().slice(0,10)),[weight,setWeight]=useState(""),[height,setHeight]=useState(""),[waist,setWaist]=useState("");
+ const active=selected?.organization_id===org?selected:null;
+ function clear(){reads.current.invalidate();writes.current.invalidate();setHistory([]);setChart([]);setReady(false);setTotal(0);setWeight("");setHeight("");setWaist("");}
+ useEffect(()=>{if(!user||!orgs.length||initial.current)return;initial.current=true;const requested=new URLSearchParams(window.location.search);const desired=requested.get("org");if(desired&&orgs.some(o=>o.id===desired))setOrg(desired);},[user?.id,orgs]);
+ useEffect(()=>{clear();setSelected(null);setPage(0);setBusy(false);setStatus("");if(!db||!org||!user)return;
+ const requested=new URLSearchParams(window.location.search);const id=profileId||requested.get("aluno");if(!id)return;if(requested.get("org")&&requested.get("org")!==org){if(profileId)setStatus("Aluno indisponível neste estabelecimento.");return;}
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)){setStatus("Aluno indisponível neste estabelecimento.");return;}
+ const valid=lookup.current.begin();void db.from("clients").select("id,full_name,archived_at,organization_id,created_at,revision").eq("organization_id",org).eq("id",id).maybeSingle().then(({data})=>{if(!valid())return;if(data)setSelected(data);else setStatus("Aluno indisponível neste estabelecimento.");});return()=>{lookup.current.invalidate();reads.current.invalidate();writes.current.invalidate();};},[org,user?.id,profileId]);
+ async function refresh(){if(!db||!active||!user)return;const valid=reads.current.begin();setLoading(true);setReady(false);
+ try{const fields="id,assessed_on,weight_kg,height_cm,waist_cm";
+ const [h,c]=await Promise.all([db.from("assessments").select(fields,{count:"exact"}).eq("organization_id",org).eq("client_id",active.id).order("assessed_on",{ascending:false}).order("id",{ascending:false}).range(page*25,page*25+24),db.from("assessments").select(fields).eq("organization_id",org).eq("client_id",active.id).order("assessed_on",{ascending:false}).order("id",{ascending:false}).limit(30)]);
+ if(!valid())return;if(h.error||c.error){setHistory([]);setChart([]);setStatus("Não foi possível carregar as avaliações.");return;}setHistory(h.data||[]);setChart(c.data||[]);setTotal(h.count||0);setReady(true);
+ }catch{if(valid())setStatus("Falha de ligação ao carregar avaliações.");}finally{if(valid())setLoading(false);}}
+ useEffect(()=>{clear();setBusy(false);if(active)void refresh();return()=>{reads.current.invalidate();writes.current.invalidate();};},[active?.id,org,user?.id,page]);
+ async function add(e:FormEvent){e.preventDefault();if(!db||!active||active.archived_at||!ready||busy||!user)return;let w:number|null,h:number|null,wa:number|null;
+ try{w=measurement(weight,500,2);h=measurement(height,300,1);wa=measurement(waist,300,1);if(!validDate(date)||[w,h,wa].every(x=>x===null))throw new Error();}catch{setStatus("Indica uma data e pelo menos uma medição válida.");return;}
+ const valid=writes.current.begin();setBusy(true);setStatus("");try{const r=await db.from("assessments").insert({organization_id:org,client_id:active.id,recorded_by:user.id,assessed_on:date,weight_kg:w,height_cm:h,waist_cm:wa});if(!valid())return;
+ if(r.error){setStatus("Não foi possível guardar. O aluno pode ter sido arquivado ou as permissões alteradas.");return;}setWeight("");setHeight("");setWaist("");setStatus("Avaliação guardada.");if(page!==0)setPage(0);else await refresh();
+ }catch{if(valid())setStatus("Não foi possível guardar a avaliação.");}finally{if(valid())setBusy(false);}}
+ return <ProfessionalShell title={profileId?"Ficha do aluno":"Avaliações físicas"}><div className="heading"><div><span className="eyebrow">ACOMPANHAMENTO</span><h1>{profileId?"Ficha do aluno":"Avaliações e evolução."}</h1><p>Histórico individual, incluindo alunos arquivados.</p><a href="/alunos" className="outline link">Diretório de alunos</a></div><OrganizationSelect organizations={orgs} value={org} disabled={busy} onChange={id=>{clear();setSelected(null);setOrg(id);}}/></div>
+ {!user&&<a className="outline link" href="/">Iniciar sessão</a>}
+ {user&&org&&<><TenantBrand key={`${user.id}:${org}`} org={org} name={orgs.find(o=>o.id===org)?.name||"AURA"} subtitle="Acompanhamento de alunos"/>{!profileId&&<ClientPicker org={org} selected={active} disabled={busy} onSelect={c=>{clear();setSelected(c);setPage(0);setBusy(false);setStatus("");}}/>}
+ {active&&<><section className="panel"><h2>{active.full_name}</h2>{!profileId&&<a className="outline link" href={`/alunos/${active.id}?org=${org}`}>Abrir ficha individual</a>}<p>{active.archived_at?"Arquivado":"Ativo"}{active.created_at?` · Registado em ${active.created_at.slice(0,10)}`:""}</p>{active.archived_at?<p>Aluno arquivado: o histórico foi preservado. Reativa o aluno na gestão para voltar a registar avaliações.</p>:<form onSubmit={add}><h3>Nova avaliação</h3><label>Data<input required type="date" value={date} onChange={e=>setDate(e.target.value)}/></label><div className="columns"><label>Peso (kg)<input type="number" min=".01" max="500" step=".01" value={weight} onChange={e=>setWeight(e.target.value)}/></label><label>Altura (cm)<input type="number" min=".1" max="300" step=".1" value={height} onChange={e=>setHeight(e.target.value)}/></label><label>Cintura (cm)<input type="number" min=".1" max="300" step=".1" value={waist} onChange={e=>setWaist(e.target.value)}/></label></div><button disabled={busy||!ready}>Guardar avaliação</button></form>}</section>
+ <section className="panel"><h2>Evolução física</h2><label>Medição<select value={metric} onChange={e=>setMetric(e.target.value as typeof metric)}><option value="weight_kg">Peso (kg)</option><option value="height_cm">Altura (cm)</option><option value="waist_cm">Cintura (cm)</option></select></label><ProgressChart records={chart.map(a=>({date:a.assessed_on,value:a[metric]}))} unit={metric==="weight_kg"?"kg":"cm"}/><p>Gráfico com as últimas 30 avaliações deste aluno.</p></section>
+ <section className="panel" aria-busy={loading}><h2>Histórico ({total})</h2>{loading?<p role="status">A carregar avaliações...</p>:!ready?<button onClick={()=>void refresh()}>Tentar novamente</button>:<div className="tablewrap"><table><thead><tr><th>Data</th><th>Peso (kg)</th><th>Altura (cm)</th><th>Cintura (cm)</th></tr></thead><tbody>{history.map(a=><tr key={a.id}><td>{a.assessed_on}</td><td>{a.weight_kg??"—"}</td><td>{a.height_cm??"—"}</td><td>{a.waist_cm??"—"}</td></tr>)}</tbody></table>{!history.length&&<p>Sem avaliações.</p>}</div>}<button className="outline" disabled={busy||loading||page===0} onClick={()=>{clear();setPage(page-1);}}>Anterior</button><span> Página {page+1} de {Math.max(1,Math.ceil(total/25))} </span><button className="outline" disabled={busy||loading||!ready||(page+1)*25>=total} onClick={()=>{clear();setPage(page+1);}}>Seguinte</button></section></>}
+ </>}<p role="status" className="status">{status||authStatus}</p></ProfessionalShell>;
+}

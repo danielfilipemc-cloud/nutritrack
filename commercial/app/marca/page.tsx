@@ -1,39 +1,33 @@
 "use client";
-import AppNavigation from "../../components/AppNavigation";
 import {useEffect,useState,useRef,type FormEvent} from "react";
 import {db} from "../../lib/supabase";
 import {RequestScope} from "../../lib/request-scope";
 import {validName} from "../../lib/validation";
+import {useProfessional} from "../../lib/use-professional";
 import BrandHeader,{type Branding} from "../../components/BrandHeader";
-type Organization={id:string;name:string;role:string};
+import ProfessionalShell from "../../components/ProfessionalShell";
+import OrganizationSelect from "../../components/OrganizationSelect";
 const defaults:Branding={display_name:"AURA",primary_color:"#137F79",logo_url:null};
 export default function Marca(){
- const identity=useRef("");
+ const {user,orgs,org,setOrg,status:authStatus}=useProfessional();
  const scope=useRef(new RequestScope());
- useEffect(()=>{const sub=db?.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_OUT"||(event==="SIGNED_IN"&&identity.current&&session?.user.id!==identity.current)){scope.current.invalidate();setReady(false);setBrand(defaults);window.location.assign("/");}});return()=>{scope.current.invalidate();sub?.data.subscription.unsubscribe();};},[]);
- const [user,setUser]=useState(""),[orgs,setOrgs]=useState<Organization[]>([]),[org,setOrg]=useState("");
- const [ready,setReady]=useState(false);
- const [brand,setBrand]=useState<Branding>(defaults),[status,setStatus]=useState("A verificar sessão..."),[busy,setBusy]=useState(false);
+ const [ready,setReady]=useState(false),[brand,setBrand]=useState<Branding>(defaults),[status,setStatus]=useState(""),[busy,setBusy]=useState(false),[revision,setRevision]=useState(0);
  const current=orgs.find(o=>o.id===org),canEdit=current?.role==="owner"||current?.role==="admin";
- useEffect(()=>{if(!db){setStatus("Supabase não configurado.");return;}let alive=true;
- db.auth.getUser().then(async ({data,error})=>{if(!alive)return;if(error||!data.user){setStatus("É necessário iniciar sessão.");return;}
- identity.current=data.user.id;setUser(data.user.id);const result=await db!.from("organization_members").select("organization_id,role,organizations(id,name)");
- if(!alive)return;if(result.error){setStatus("Não foi possível carregar organizações.");return;}
- const list=(result.data||[]).flatMap((x:any)=>{const o=Array.isArray(x.organizations)?x.organizations[0]:x.organizations;return o?[{id:o.id,name:o.name,role:x.role}]:[]});
- setOrgs(list);setOrg(list[0]?.id||"");setStatus(list.length?"":"Nenhum estabelecimento associado.");});
- return()=>{alive=false};},[]);
- useEffect(()=>{if(!db||!org)return;let alive=true;const isCurrent=scope.current.begin();setReady(false);setBrand({...defaults,display_name:current?.name||"AURA"});setStatus("A carregar identidade...");
- db.from("organization_branding").select("display_name,primary_color,logo_url").eq("organization_id",org).maybeSingle().then(({data,error})=>{
- if(!alive||!isCurrent())return;if(error){setStatus("Não foi possível carregar a identidade. Aplica a migração 003.");return;}
+ useEffect(()=>{setReady(false);setBusy(false);setBrand({...defaults,display_name:current?.name||"AURA"});setStatus("");
+ if(!db||!org||!user)return;const valid=scope.current.begin();setStatus("A carregar identidade...");
+ void db.from("organization_branding").select("display_name,primary_color,logo_url").eq("organization_id",org).maybeSingle().then(({data,error})=>{
+ if(!valid())return;if(error){setStatus("Não foi possível carregar a identidade.");return;}
  setReady(true);setBrand(data||{...defaults,display_name:current?.name||"AURA"});setStatus("");});
- return()=>{alive=false};},[org,current?.name]);
+ return()=>{scope.current.invalidate();};},[org,user?.id,current?.name,revision]);
  async function save(e:FormEvent){e.preventDefault();if(!db||!org||!user||!canEdit||!ready||busy)return;
  if(!/^#[0-9a-fA-F]{6}$/.test(brand.primary_color)||!validName(brand.display_name,100)){setStatus("Nome ou cor inválidos.");return;}
- const isCurrent=scope.current.begin();setBusy(true);setStatus("A guardar...");
- const {error}=await db.from("organization_branding").upsert({organization_id:org,display_name:brand.display_name.trim(),primary_color:brand.primary_color,logo_url:brand.logo_url,updated_by:user,updated_at:new Date().toISOString()},{onConflict:"organization_id"});
- if(!isCurrent())return;setBusy(false);setStatus(error?"Não foi possível guardar. Confirma as tuas permissões.":"Identidade guardada para este estabelecimento.");}
- return <div className="aura-workspace"><AppNavigation/><main className="shell"><header><div><strong>AURA <span style={{color:"#137F79"}}>Business</span></strong><p>Identidade do estabelecimento</p></div><a href="/" className="outline link">Voltar ao painel</a></header>
- <div className="heading"><div><span className="eyebrow">WHITE LABEL</span><h1>A tua marca, a nossa tecnologia.</h1><p>Personaliza a identidade visual. Os dados continuam isolados por organização.</p></div><label>Estabelecimento<select value={org} disabled={busy} onChange={e=>{scope.current.invalidate();setReady(false);setBrand({...defaults,display_name:orgs.find(o=>o.id===e.target.value)?.name||"AURA"});setOrg(e.target.value)}}>{orgs.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label></div>
- {org&&<div className="columns"><section className="panel"><h2>Configurações</h2><form onSubmit={save}><label>Nome da marca<input value={brand.display_name} minLength={2} maxLength={100} disabled={!canEdit||!ready||busy} onChange={e=>setBrand({...brand,display_name:e.target.value})} required/></label><label>Cor principal<input type="color" value={brand.primary_color} disabled={!canEdit||!ready||busy} onChange={e=>setBrand({...brand,primary_color:e.target.value})}/></label><p>Logótipo, domínio próprio e PWA com a marca serão adicionados numa fase posterior.</p><button disabled={!canEdit||!ready||busy}>Guardar identidade</button>{!canEdit&&<p>Apenas administradores e responsáveis podem editar a marca.</p>}</form></section><section className="panel"><h2>Pré-visualização</h2><BrandHeader branding={brand} subtitle="Área de acompanhamento"/><p>Identidade apresentada ao profissional e, futuramente, aos alunos.</p></section></div>}
- <p role="status" className="status">{status}</p><footer>Protótipo em desenvolvimento. Não inserir dados de saúde reais.</footer></main></div>;
+ const valid=scope.current.begin();setBusy(true);setStatus("A guardar...");
+ try{const {error}=await db.from("organization_branding").upsert({organization_id:org,display_name:brand.display_name.trim(),primary_color:brand.primary_color,logo_url:brand.logo_url,updated_by:user.id},{onConflict:"organization_id"});
+ if(valid())setStatus(error?"Não foi possível guardar. Confirma as tuas permissões.":"Identidade guardada para este estabelecimento.");
+ }catch{if(valid())setStatus("Falha de ligação ao guardar identidade.");}finally{if(valid())setBusy(false);}}
+ return <ProfessionalShell title="Identidade do estabelecimento">
+ <div className="heading"><div><span className="eyebrow">WHITE LABEL</span><h1>A tua marca, a nossa tecnologia.</h1><p>Personaliza a identidade visual do teu estabelecimento.</p></div><OrganizationSelect organizations={orgs} value={org} disabled={busy} onChange={id=>{scope.current.invalidate();setReady(false);setOrg(id);}}/></div>
+ {!user&&<a href="/" className="outline link">Iniciar sessão</a>}
+ {org&&<div className="columns"><section className="panel"><h2>Configurações</h2><form onSubmit={save}><label>Nome da marca<input value={brand.display_name} minLength={2} maxLength={100} disabled={!canEdit||!ready||busy} onChange={e=>setBrand({...brand,display_name:e.target.value})} required/></label><label>Cor principal<input type="color" value={brand.primary_color} disabled={!canEdit||!ready||busy} onChange={e=>setBrand({...brand,primary_color:e.target.value})}/></label><p>O texto sobre a cor da marca adapta-se automaticamente para garantir contraste. O logótipo aguarda infraestrutura segura de uploads.</p><button disabled={!canEdit||!ready||busy}>Guardar identidade</button>{!canEdit&&<p>Apenas administradores e responsáveis podem editar a marca.</p>}</form>{!ready&&<button className="outline" onClick={()=>setRevision(v=>v+1)}>Tentar novamente</button>}</section><section className="panel"><h2>Pré-visualização</h2><BrandHeader branding={ready?brand:{...defaults,display_name:current?.name||"AURA"}} subtitle="Área de acompanhamento"/><p>Identidade apresentada ao profissional e, futuramente, aos alunos.</p></section></div>}
+ <p role="status" className="status">{status||authStatus}</p></ProfessionalShell>;
 }

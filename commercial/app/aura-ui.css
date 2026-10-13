@@ -179,3 +179,7 @@ input,select,textarea {max-width:100%; min-width:0;}
  .aura-app-nav__links a {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
  .aura-app-nav__links a span[aria-hidden]{flex-shrink:0;}
 }
+
+/* Workspace additions use the established Dark Premium tokens. */
+.aura-quick-actions {display:flex;flex-wrap:wrap;gap:12px;}
+@media(min-width:1000px){.stat:has(>div:nth-child(3)){grid-template-columns:repeat(3,minmax(0,1fr));}}
