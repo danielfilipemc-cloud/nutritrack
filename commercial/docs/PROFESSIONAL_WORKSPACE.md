@@ -41,6 +41,12 @@ convites e hierarquia já existiam. Foram preservados e reutilizados.
 10. README misturava estados antigos (CI inativo/browser indisponível) com os atuais.
     README/roadmap atuais; registo antigo preservado em VALIDATION_HISTORY.md.
 
+11. Checksum dependente do sistema operativo: as três migrações iniciais foram
+    registadas com bytes CRLF; checkout Linux entregava LF. O instalador normaliza
+    essas três para o formato histórico e as posteriores para LF, sem editar SQL
+    aplicado nem atualizar o registry. Um teste compara seis checksums reais do
+    cloud com simulações de checkout Windows/Linux.
+
 ## Decisões arquiteturais
 
 ### Dashboard
@@ -99,7 +105,7 @@ permanece a entrega anterior; estas funcionalidades novas são demonstráveis lo
 ## Validação
 
 - npm ci: reproduzível, dependências fixadas; npm audit: zero vulnerabilidades.
-- npm run check: 13 testes aprovados, TypeScript e build aprovados.
+- npm run check: 14 testes aprovados, TypeScript e build aprovados.
 - PostgreSQL/PGlite: isolamento, hierarquia, arquivo, audit trail, checksums,
   dashboard vazio/1100 alunos adicionais/limites de data, autor e timestamp de branding.
 - npm run test:e2e: 12 cenários Chromium locais com API interceptada, sem segredos.

@@ -61,7 +61,7 @@ o código local do PR; não depende de uma versão antiga já publicada.
 
 ## Estado da entrega
 
-13 testes locais/PostgreSQL, TypeScript, build e auditoria npm aprovados; 12 cenários
+14 testes locais/PostgreSQL, TypeScript, build e auditoria npm aprovados; 12 cenários
 Chromium com API interceptada e três cenários Chromium reais com contas fictícias
 aprovados. Auth/PostgREST real também aprovado. Evidências e limites em
 [PROFESSIONAL_WORKSPACE.md](docs/PROFESSIONAL_WORKSPACE.md).

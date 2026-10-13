@@ -10,7 +10,7 @@ Demonstração publicada no Render, apenas dados fictícios.
 
 Dashboard com agregados completos e acompanhamento pendente, ficha individual,
 componentes comuns, contraste White Label corrigido, stamp de branding no servidor,
-confirmação de revogação, 13 testes PostgreSQL/domínio e Chromium ampliado.
+confirmação de revogação, 14 testes PostgreSQL/domínio e Chromium ampliado.
 CI testa o build local do PR; três cenários Auth reais opcionais e independentes.
 Consultar PROFESSIONAL_WORKSPACE.md para decisões, evidência e ordem de publicação.
 

@@ -1,5 +1,12 @@
 import {readFile,writeFile,readdir} from "node:fs/promises";
 import {createHash} from "node:crypto";
+// The foundation was registered with CRLF bytes. Preserve those historical hashes
+// on Linux too; later migrations are canonical LF. Never rewrite applied records.
+export function migrationSource(name:string,source:string){
+ const lf=source.replace(/\r\n/g,"\n");
+ return ["schema.sql","002_assessments.sql","003_branding.sql"].includes(name)
+  ?lf.replace(/\n/g,"\r\n"):lf;
+}
 export async function migrationBundle(){
  let sql=`begin;
 create schema if not exists app_private;
@@ -9,7 +16,7 @@ revoke all on app_private.aura_migrations from public,anon,authenticated;
 `;
  const extra=(await readdir(new URL("../supabase/migrations/",import.meta.url))).filter(n=>n.endsWith(".sql")).sort().map(n=>"migrations/"+n);
  for(const name of ["schema.sql","002_assessments.sql","003_branding.sql",...extra]){
- const body=await readFile(new URL("../supabase/"+name,import.meta.url),"utf8");const hash=createHash("sha256").update(body).digest("hex");
+ const body=migrationSource(name,await readFile(new URL("../supabase/"+name,import.meta.url),"utf8"));const hash=createHash("sha256").update(body).digest("hex");
  sql+=`do $migration$ begin
 if exists(select 1 from app_private.aura_migrations where name='${name}' and checksum<>'${hash}') then raise exception 'Migration checksum mismatch: ${name}'; end if;
 if not exists(select 1 from app_private.aura_migrations where name='${name}') then
