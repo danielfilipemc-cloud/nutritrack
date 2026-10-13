@@ -1,14 +1,14 @@
 /* AURA Business — presentation-only foundation. No changes to data or auth. */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
   --aura-primary: #137F79;
   --aura-primary-hover: #0C625D;
-  --aura-ink: #183B37;
-  --aura-muted: #647D78;
-  --aura-canvas: #F4F8F7;
-  --aura-surface: #FFFFFF;
-  --aura-line: #DAE7E3;
-  --aura-focus: #0C625D;
+  --aura-ink: #F2F7F6;
+  --aura-muted: #A8B8B5;
+  --aura-canvas: #0F1414;
+  --aura-surface: #161D1D;
+  --aura-line: #2A3535;
+  --aura-focus: #6DD4C7;
   --aura-radius: 14px;
   --aura-shadow: 0 5px 24px rgb(24 59 55 / 5%);
 }
@@ -103,8 +103,7 @@ footer { border-color:var(--aura-line); }
 .brandmark {color:var(--brand-foreground,#FFFFFF);}
 
 
-/* AURA Dark Premium — default theme. Preserve semantic accent and white-label brand colours. */
-:root {color-scheme:dark; --aura-ink:#F2F7F6;--aura-muted:#A8B8B5;--aura-canvas:#0F1414;--aura-surface:#161D1D;--aura-line:#2A3535;--aura-focus:#6DD4C7;--aura-primary-hover:#15928A;--aura-shadow:0 8px 28px rgb(0 0 0 / 16%);}
+/* Dark Premium component styles. Core tokens are declared once at the top. */
 html,body {background:var(--aura-canvas);color:var(--aura-ink);}
 header,footer {border-color:var(--aura-line);}
 header p,p,.stat span,.stat small,.brandhead p {color:var(--aura-muted);}
@@ -161,3 +160,22 @@ a:focus-visible,button:focus-visible {outline:3px solid var(--aura-focus);outlin
 ::selection {background:#31675F;color:#FFFFFF;}
 @media(max-width:900px){.aura-workspace {padding-bottom:calc(82px + env(safe-area-inset-bottom));}.aura-app-nav__links a {font-size:clamp(10px,2.5vw,12px);}.aura-app-nav__links a span {font-size:19px;}}
 @media(max-width:450px){.stat strong {font-size:clamp(24px,7vw,30px);}.aura-app-nav__links a {letter-spacing:-.2px;}.shell {padding:14px;}.panel {padding:18px;}}
+
+/* Consolidation: semantic foreground colours, short mobile labels, and forms */
+:root {--aura-accent-text:#8BE6DA;--aura-chart-grid:#354541;--aura-chart-label:#B8CAC5;--aura-chart-stroke:#70D6CA;}
+.eyebrow,header strong span,.aura-app-nav__brand strong {color:var(--aura-accent-text);}
+.aura-nav-label-mobile{display:none;}
+.aura-nav-label-desktop{display:inline;}
+.aura-app-nav__links a {min-width:0;}
+.aura-app-nav__links a span[aria-hidden]{flex-shrink:0;}
+.aura-app-nav__links a:focus-visible {outline:2px solid var(--aura-focus);outline-offset:-2px;}
+a:not([class]):hover {color:var(--aura-accent-text);}
+footer {color:#A8B8B5;}
+.status:empty {display:none;}
+input,select,textarea {max-width:100%; min-width:0;}
+@media(max-width:900px) {
+ .aura-nav-label-desktop{display:none;}
+ .aura-nav-label-mobile{display:inline;}
+ .aura-app-nav__links a {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+ .aura-app-nav__links a span[aria-hidden]{flex-shrink:0;}
+}
