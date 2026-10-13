@@ -137,3 +137,27 @@ label {color:#E1ECE9;}
 .chartbox svg text {fill:#C5D5D1;}
 :focus-visible {outline-color:var(--aura-focus);}
 @media (prefers-color-scheme:light) { :root {color-scheme:dark;} }
+
+
+/* Contrast and usability polish for Dark Premium */
+:root {--aura-chart-grid:#354541;--aura-chart-label:#B8CAC5;--aura-chart-stroke:#70D6CA;}
+button:disabled {opacity:.55;cursor:not-allowed;}
+a,button,input,select,textarea {touch-action:manipulation;}
+a:focus-visible,button:focus-visible {outline:3px solid var(--aura-focus);outline-offset:3px;}
+.panel form {min-width:0;}
+.panel label {line-height:1.45;}
+.panel input[type="color"] {height:48px;padding:5px;width:100%;cursor:pointer;}
+.chartnote {color:#BACBC6;}
+.chartbox {overflow-x:auto;}
+.chartbox svg {min-width:280px;}
+.chartbox details {border-top:1px solid var(--aura-line);padding-top:12px;margin-top:12px;}
+.chartbox summary {cursor:pointer;color:#9BE4D9;font-weight:650;min-height:40px;}
+.chartbox summary:hover {color:#D9FAF5;}
+.tablewrap {max-width:100%;overflow-x:auto;scrollbar-color:#536B65 #1D2626;}
+.tablewrap th {position:relative;white-space:nowrap;}
+.tablewrap td {vertical-align:middle;}
+.tablewrap button {min-height:40px;padding:8px 12px;}
+.aura-section-title h2 {color:#F2F7F6;}
+::selection {background:#31675F;color:#FFFFFF;}
+@media(max-width:900px){.aura-workspace {padding-bottom:calc(82px + env(safe-area-inset-bottom));}.aura-app-nav__links a {font-size:clamp(10px,2.5vw,12px);}.aura-app-nav__links a span {font-size:19px;}}
+@media(max-width:450px){.stat strong {font-size:clamp(24px,7vw,30px);}.aura-app-nav__links a {letter-spacing:-.2px;}.shell {padding:14px;}.panel {padding:18px;}}
