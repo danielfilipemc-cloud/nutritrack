@@ -65,3 +65,26 @@ footer { border-color:var(--aura-line); }
 @media (max-width:650px) { .shell { padding:16px; } header { padding-bottom:18px; } .heading { margin:24px 0 18px; } .stat { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .stat>div { padding:16px; } .stat strong { font-size:30px; } .panel { overflow-x:auto; } .brandhead { padding:16px; } .demo-nav { margin:14px 0 5px; } .login { padding:24px; } }
 @media (max-width:360px) { .stat { grid-template-columns:1fr; } }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*::before,*::after { transition-duration:0.01ms!important; animation-duration:0.01ms!important; } }
+
+
+/* Authenticated application shell */
+.aura-workspace {display:grid; grid-template-columns:240px minmax(0,1fr); min-height:100vh; max-width:1680px; margin:0 auto;}
+.aura-workspace .shell {min-width:0; width:100%; max-width:1380px;}
+.aura-app-nav {align-self:stretch; display:flex; flex-direction:column; gap:22px; position:sticky; top:0; height:100vh; background:#FFFFFF; border-right:1px solid var(--aura-line); padding:28px 14px; }
+.aura-app-nav__brand {display:flex; align-items:center; gap:10px; padding:0 10px 18px; font-size:17px; font-weight:800; color:var(--aura-ink); letter-spacing:-.5px;}
+.aura-app-nav__brand strong {color:var(--aura-primary);}
+.aura-app-nav__mark {display:grid; place-items:center; width:36px; height:36px; border-radius:10px; background:var(--aura-primary); color:#FFFFFF; font-size:22px;}
+.aura-app-nav__links {display:grid; gap:5px;}
+.aura-app-nav__links a {display:flex; align-items:center; gap:11px; min-height:46px; padding:11px 13px; color:#546F69; font-size:14px; font-weight:650; text-decoration:none; border-radius:10px;}
+.aura-app-nav__links a:hover {background:#EEF7F4; color:#0C625D;}
+.aura-app-nav__links a.is-active {background:#DDF2EE; color:#0C625D;}
+.aura-app-nav__links a span {font-size:20px; width:24px; text-align:center;}
+.aura-app-nav__foot {margin-top:auto; padding:12px 10px; font-size:11px; color:#82938F; line-height:1.5;}
+@media(max-width:900px) {
+ .aura-workspace {display:block; padding-bottom:72px;}
+ .aura-app-nav {height:auto; position:fixed; z-index:30; top:auto; bottom:0; left:0; right:0; border-right:0; border-top:1px solid var(--aura-line); padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left)); box-shadow:0 -4px 14px rgb(24 59 55 / 6%);}
+ .aura-app-nav__brand,.aura-app-nav__foot {display:none;}
+ .aura-app-nav__links {display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px;}
+ .aura-app-nav__links a {display:flex; flex-direction:column; justify-content:center; gap:2px; padding:4px 2px; min-height:50px; font-size:11px; text-align:center;}
+ .aura-app-nav__links a span {font-size:20px; line-height:1.1;}
+}
