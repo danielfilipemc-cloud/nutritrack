@@ -3,7 +3,7 @@ import {useEffect,useRef,useState,type FormEvent} from "react";
 import {db} from "../lib/supabase";
 import {literalSearch,CLIENT_PAGE_SIZE} from "../lib/clients";
 import {RequestScope} from "../lib/request-scope";
-export type SelectedClient={id:string;full_name:string;archived_at:string|null;organization_id:string};
+export type SelectedClient={id:string;full_name:string;archived_at:string|null;created_at?:string;revision?:number;organization_id:string};
 export default function ClientPicker({org,selected,onSelect,disabled=false}:{org:string;selected:SelectedClient|null;onSelect:(c:SelectedClient|null)=>void;disabled?:boolean}){
  const [rows,setRows]=useState<SelectedClient[]>([]),[query,setQuery]=useState(""),[search,setSearch]=useState(""),[page,setPage]=useState(0),[total,setTotal]=useState(0),[loading,setLoading]=useState(false),[error,setError]=useState("");const scope=useRef(new RequestScope());
  useEffect(()=>{scope.current.invalidate();setRows([]);setTotal(0);setPage(0);setSearch("");setQuery("");},[org]);
