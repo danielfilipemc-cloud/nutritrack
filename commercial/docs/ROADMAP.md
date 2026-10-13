@@ -29,7 +29,7 @@
 
 ## Antes de um piloto com dados reais
 1. Rever proteção antiabuso do signup email; manter anonymous sign-in desativado.
-2. Testes Auth/PostgREST concluídos; publicar demonstração e validar os fluxos no browser.
+2. Testes Auth/PostgREST concluídos e demonstração publicada; validar fluxos no browser.
 3. Provisionamento/convites seguros; gestão de profissionais e auditoria.
 4. Consentimento, retenção, direitos do titular, backups e política de sessões/MFA.
 5. Paginação, fluxo auditável de correção de avaliações e timestamps do servidor.
@@ -38,3 +38,8 @@
 ## Evolução comercial
 Portal de alunos, logótipos em storage privado, domínios verificados, subscrições e pagamentos.
 Sem publicação de produção nem merge para main nesta entrega.
+
+## Demonstração publicada
+https://aura-business-demo.onrender.com — live, cinco rotas verificadas.
+Site URL/redirects configurados segundo confirmação do responsável. QA visual e
+confirmação por email continuam pendentes. Detalhes em DEPLOYMENT.md.

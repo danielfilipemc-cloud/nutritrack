@@ -180,3 +180,11 @@ coach e utilizador sem associação. Sessões encerradas no fim. As contas e fix
 continuam disponíveis para demonstração; passwords apenas no ficheiro local ignorado
 .aura-integration/accounts.env. Ver docs/AUTH_INTEGRATION.md para evidência/limpeza.
 Publicação e verificação visual continuam pendentes; nenhum dado real foi usado.
+
+## Demonstração online
+
+https://aura-business-demo.onrender.com/demo — dados fictícios, sem credenciais.
+Painel profissional: https://aura-business-demo.onrender.com
+Render free / Frankfurt, deploy manual; estado live confirmado em 13-10-2026.
+Cinco rotas e 11 bundles JS verificados; npm run test:deploy permite repetir.
+Ver docs/DEPLOYMENT.md para configuração, evidência e limites. QA visual pendente.

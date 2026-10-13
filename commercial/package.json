@@ -16,7 +16,8 @@
     "db:verify:sql": "tsx scripts/supabase-rls-sql.ts --write",
     "db:verify:api": "tsx scripts/cloud-check.ts",
     "test:accounts:create": "tsx scripts/admin-test-accounts.ts",
-    "test:accounts:cleanup": "tsx scripts/admin-test-accounts.ts --cleanup"
+    "test:accounts:cleanup": "tsx scripts/admin-test-accounts.ts --cleanup",
+    "test:deploy": "tsx scripts/deploy-smoke.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",

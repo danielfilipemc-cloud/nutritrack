@@ -33,3 +33,10 @@ fixtures mantidas intencionalmente para a demonstração; credenciais apenas loc
 Convites/gestão de profissionais, portal do aluno, paginação e uploads White Label.
 Para dados reais: consentimento/retencão/direitos, auditoria, backups e política de sessões.
 Subscrições e pagamentos são uma fase posterior. Demonstração não equivale a produção aprovada.
+
+## Publicação concluída em 13-10-2026
+
+https://aura-business-demo.onrender.com — serviço free Maryatchi hub, Frankfurt.
+Estado live, cinco rotas e 11 bundles JS verificados. Detalhes em DEPLOYMENT.md.
+Responsável confirmou Site URL e redirects no Supabase. Mantêm-se pendentes QA visual,
+links reais de confirmação de email e ativação GitHub Actions. Não usar dados reais.
