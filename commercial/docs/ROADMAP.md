@@ -24,7 +24,7 @@
 - Signup email ativo por decisão do responsável; sem atribuição automática de membership.
 - Autenticação anónima desativada. Quatro contas criadas via Auth Admin e testes
   autenticados A/B via PostgREST passaram; fixtures mantidas para a demonstração.
-- Workflow preparado em commercial/ci; ativação requer ficheiro na raiz .github/workflows.
+- CI ativo em .github/workflows/aura-commercial.yml: testes, TypeScript, build, auditoria de dependências e smoke tests de browser.
 - Browser indisponível: faltam QA visual e testes end-to-end de formulários/sessões.
 
 ## Antes de um piloto com dados reais
@@ -33,7 +33,7 @@
 3. Equipa e convites implementados; validar visual e emails reais, preparar entrega automática.
 4. Consentimento, retenção, direitos do titular, backups e política de sessões/MFA.
 5. Paginação de alunos/avaliações concluída; falta fluxo auditável de correção de avaliações.
-6. Validação visual e end-to-end desktop/mobile; ativar CI.
+6. Ampliar validação visual e end-to-end autenticada em desktop/mobile.
 
 ## Evolução comercial
 Portal de alunos, logótipos em storage privado, domínios verificados, subscrições e pagamentos.

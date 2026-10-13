@@ -25,7 +25,7 @@ medições para o log. Dados anteriores à migração não têm eventos retroati
 Painel: total exato de alunos ativos, pré-visualização de 10 e link para /alunos.
 Avaliações: seletor com pesquisa/paginação, acesso por link do aluno, histórico individual
 paginado (25), gráfico das últimas 30 avaliações. Permite consultar arquivados.
-Identidade White Label mantida em alunos/avaliações. Sem alteração do design global.
+Identidade White Label mantida em alunos/avaliações. Integração com o tema Dark Premium e navegação recebidos da branch remota.
 Trocas de estabelecimento/aluno invalidam respostas antigas e limpam dados do contexto.
 
 ## Migrações aplicadas ao Supabase dedicado
@@ -51,7 +51,9 @@ Não foi atribuída uma causa definitiva ao timeout original.
   associados removidos por limpeza limitada aos UUIDs da execução. Dados demo originais intactos.
 
 ## Limites
-QA visual e interações no browser continuam adiados conforme preferência do responsável.
+QA manual autenticado no browser continua adiado conforme preferência do responsável.
+O CI existente inclui três smoke tests Playwright da demonstração e navegação mobile;
+esta execução local não os correu nem os apresenta como aprovados.
 Pesquisa não remove acentos; é substring literal sem distinção maiúsculas/minúsculas.
 Gráfico é uma janela de 30 avaliações, não substitui o histórico paginado completo.
 Identificação no histórico é pelo UUID do profissional (ou «Tu» para o próprio).
