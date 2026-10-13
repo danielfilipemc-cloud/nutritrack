@@ -4,6 +4,7 @@
 - Dependências fixadas, lockfile e instalação npm ci.
 - Cliente Supabase partilhado; limpeza de estado ao mudar identidade/estabelecimento.
 - Proteção contra respostas antigas nas avaliações; seletor bloqueado durante gravações.
+- Invalidação imediata também no painel e branding; gravações tardias ignoradas após mudança de identidade/desmontagem.
 - Branding bloqueado até terminar o carregamento; preservar URL existente ao guardar nome/cor.
 - Validação de nomes, datas, limites e precisão; gráfico com escala temporal e tabela acessível.
 - Demonstração sem credenciais em /demo; dados fictícios apenas em memória.
@@ -24,6 +25,8 @@
   `npm run cloud:check` verifica esta condição e atualmente falha por esse motivo.
 - Autenticação anónima desativada, mas faltam contas sintéticas provisionadas por Auth Admin
   e testes autenticados A/B via PostgREST; SQL com claims simulados não substitui esses testes.
+- Runner e procedimento em `docs/AUTH_INTEGRATION.md` preparados. Responsável confirmou
+  em 13-10-2026 que ainda não há contas; execução autenticada permanece pendente.
 - Workflow preparado em commercial/ci; ativação requer ficheiro na raiz .github/workflows.
 - Browser indisponível: faltam QA visual e testes end-to-end de formulários/sessões.
 

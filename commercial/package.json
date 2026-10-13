@@ -10,7 +10,9 @@
     "test": "tsx --test tests/*.test.ts",
     "check": "npm run test && npm run typecheck && npm run build",
     "db:bundle": "tsx scripts/migration-bundle.ts --write",
-    "cloud:check": "tsx scripts/cloud-check.ts"
+    "cloud:check": "tsx scripts/cloud-check.ts",
+    "test:auth:prepare": "tsx scripts/auth-integration.ts --prepare",
+    "test:auth": "tsx scripts/auth-integration.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",

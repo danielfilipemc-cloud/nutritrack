@@ -85,6 +85,20 @@ de `auth.users`, `auth.uid()` e dos papéis. Retira `CREATE EXTENSION pgcrypto` 
 o motor tem `gen_random_uuid()`. Não substitui testes Supabase Auth, PostgREST,
 Storage, refresh/revogação de tokens ou integração no projeto cloud.
 
+## Continuação em 13-10-2026
+
+Foi reforçada a invalidação imediata de pedidos em `/` e `/marca` ao trocar de
+organização/identidade, incluindo gravações tardias e desmontagem em `/avaliacoes`.
+A validação do nome da marca verifica agora também o limite de 100 caracteres.
+Seis testes, typecheck e build voltaram a passar após estas alterações.
+
+O runner `npm run test:auth:prepare` / `npm run test:auth` está preparado para
+quatro contas confirmadas independentes, sem chave administrativa na aplicação.
+O responsável confirmou que ainda não existem essas contas. Preparação sem
+credenciais foi executada e abortou como esperado; nenhum login ou teste autenticado
+foi marcado PASS. Seguir [o procedimento Auth](docs/AUTH_INTEGRATION.md) para fechar
+signup, criar as contas pelo Dashboard, provisionar, executar e limpar as fixtures.
+
 ## CI
 
 `npm run check` é o comando comum de validação. O workflow pronto está em
