@@ -18,7 +18,8 @@
     "test:accounts:create": "tsx scripts/admin-test-accounts.ts",
     "test:accounts:cleanup": "tsx scripts/admin-test-accounts.ts --cleanup",
     "test:deploy": "tsx scripts/deploy-smoke.ts",
-    "test:team:api": "tsx scripts/team-integration.ts"
+    "test:team:api": "tsx scripts/team-integration.ts",
+    "test:clients:api": "tsx scripts/clients-integration.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",

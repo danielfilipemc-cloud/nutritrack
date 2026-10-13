@@ -9,7 +9,7 @@
 - Validação de nomes, datas, limites e precisão; gráfico com escala temporal e tabela acessível.
 - Demonstração sem credenciais em /demo; dados fictícios apenas em memória.
 - Cabeçalhos de segurança, melhoria de foco/responsividade.
-- Oito testes automatizados, incluindo RLS PostgreSQL, replay, checksum e rollback do harness cloud.
+- Dez testes automatizados, incluindo RLS PostgreSQL, replay, checksum e rollback do harness cloud.
 - Build, typecheck e quatro rotas HTTP validados.
 
 ## Integração Supabase (12–13-10-2026)
@@ -32,7 +32,7 @@
 2. Testes Auth/PostgREST concluídos e demonstração publicada; validar fluxos no browser.
 3. Equipa e convites implementados; validar visual e emails reais, preparar entrega automática.
 4. Consentimento, retenção, direitos do titular, backups e política de sessões/MFA.
-5. Paginação, fluxo auditável de correção de avaliações e timestamps do servidor.
+5. Paginação de alunos/avaliações concluída; falta fluxo auditável de correção de avaliações.
 6. Validação visual e end-to-end desktop/mobile; ativar CI.
 
 ## Evolução comercial
@@ -48,3 +48,8 @@ confirmação por email continuam pendentes. Detalhes em DEPLOYMENT.md.
 /equipa e /convite, gestão por hierarquia, convites pessoais de utilização única,
 validade/revogação, cadastro com email confirmado e audit trail privado.
 Testes locais e JWT/PostgREST passaram. Ver TEAM_INVITATIONS.md.
+
+## Gestão de alunos concluída
+Pesquisa, paginação, edição, arquivo/reativação, versões concorrentes e audit trail.
+Avaliações individuais paginadas e histórico de arquivados preservado.
+Dez testes locais e integração JWT/PostgREST passaram. Ver CLIENT_MANAGEMENT.md.

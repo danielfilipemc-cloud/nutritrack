@@ -1,0 +1,15 @@
+"use client";
+import {useEffect,useRef,useState,type FormEvent} from "react";
+import {db} from "../lib/supabase";
+import {literalSearch,CLIENT_PAGE_SIZE} from "../lib/clients";
+import {RequestScope} from "../lib/request-scope";
+export type SelectedClient={id:string;full_name:string;archived_at:string|null;organization_id:string};
+export default function ClientPicker({org,selected,onSelect,disabled=false}:{org:string;selected:SelectedClient|null;onSelect:(c:SelectedClient|null)=>void;disabled?:boolean}){
+ const [rows,setRows]=useState<SelectedClient[]>([]),[query,setQuery]=useState(""),[search,setSearch]=useState(""),[page,setPage]=useState(0),[total,setTotal]=useState(0),[loading,setLoading]=useState(false),[error,setError]=useState("");const scope=useRef(new RequestScope());
+ useEffect(()=>{scope.current.invalidate();setRows([]);setTotal(0);setPage(0);setSearch("");setQuery("");},[org]);
+ useEffect(()=>{if(!db||!org)return;const valid=scope.current.begin();setLoading(true);setRows([]);setError("");let q=db.from("clients").select("id,full_name,archived_at,organization_id",{count:"exact"}).eq("organization_id",org);if(search)q=q.ilike("full_name",`%${literalSearch(search)}%`);
+ void q.order("full_name").order("id").range(page*CLIENT_PAGE_SIZE,(page+1)*CLIENT_PAGE_SIZE-1).then(({data,error,count})=>{if(!valid())return;setLoading(false);if(error){setError("Não foi possível procurar alunos.");return;}setRows(data||[]);setTotal(count||0);});return()=>scope.current.invalidate();},[org,search,page]);
+ function find(e:FormEvent){e.preventDefault();if(search===query.trim()&&page===0)return;scope.current.invalidate();setRows([]);setPage(0);setSearch(query.trim());}
+ const current=selected?.organization_id===org?selected:null;
+ return <section className="panel"><h2>Selecionar aluno</h2><form onSubmit={find}><label>Pesquisar por nome<input value={query} maxLength={160} disabled={disabled} onChange={e=>setQuery(e.target.value)}/></label><button disabled={disabled||loading}>Pesquisar</button></form><label>Aluno<select value={current?.id||""} disabled={disabled||loading} onChange={e=>onSelect(rows.find(c=>c.id===e.target.value)||null)}><option value="">Seleciona um aluno</option>{current&&!rows.some(c=>c.id===current.id)&&<option value={current.id}>{current.full_name}{current.archived_at?" (arquivado)":""}</option>}{rows.map(c=><option key={c.id} value={c.id}>{c.full_name}{c.archived_at?" (arquivado)":""}</option>)}</select></label><button className="outline" disabled={disabled||loading||page===0} onClick={()=>{scope.current.invalidate();setRows([]);setPage(page-1);}}>Anterior</button><span> Página {page+1} · {total} resultados </span><button className="outline" disabled={disabled||loading||(page+1)*CLIENT_PAGE_SIZE>=total} onClick={()=>{scope.current.invalidate();setRows([]);setPage(page+1);}}>Seguinte</button><p role="status">{error||(loading?"A procurar alunos...":"")}</p></section>;
+}

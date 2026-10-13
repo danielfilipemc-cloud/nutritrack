@@ -115,8 +115,8 @@ não foram consultados nem alterados dados das bases legadas.
 
 Existe registo por email em /convite, sem atribuição automática de acesso.
 Não há portal de alunos, faturação, subscrições, uploads ou
-domínios personalizados. O painel limita alunos a 100 e o histórico às últimas 100 avaliações
-do estabelecimento; o gráfico apresenta até 30 medições desse conjunto. Falta paginação.
+domínios personalizados. A gestão de alunos e o histórico individual de avaliações têm paginação de 25.
+O painel mostra uma pré-visualização de 10 e o total exato de ativos; o gráfico usa 30 avaliações.
 Branding suporta nome/cor; logótipos não são carregados. `updated_at` ainda vem do cliente.
 Os tokens são geridos pelo cliente Supabase: MFA, revogação e política de sessões exigem revisão.
 
@@ -198,3 +198,9 @@ Não há envio automático do convite; partilha manual de link. Signup com confi
 disponível ao destinatário, sem acesso automático à empresa. Ver docs/TEAM_INVITATIONS.md.
 Oito testes locais e teste remoto npm run test:team:api passaram, incluindo aceitação
 concorrente e revogação imediata de permissões. QA visual e emails reais pendentes.
+
+## Gestão de alunos implementada
+/alunos: pesquisa, paginação de 25, edição, arquivo/reativação e histórico de ações.
+Avaliações preservadas; novas medições bloqueadas no servidor para alunos arquivados.
+Conflitos de versão devolvem HTTP 409. Dez testes locais e teste remoto com 122 registos
+fictícios passaram, com limpeza verificada. Ver docs/CLIENT_MANAGEMENT.md.
