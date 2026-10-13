@@ -188,3 +188,12 @@ Painel profissional: https://aura-business-demo.onrender.com
 Render free / Frankfurt, deploy manual; estado live confirmado em 13-10-2026.
 Cinco rotas e 11 bundles JS verificados; npm run test:deploy permite repetir.
 Ver docs/DEPLOYMENT.md para configuração, evidência e limites. QA visual pendente.
+
+## Gestão de profissionais e convites
+
+Implementados /equipa e /convite: hierarquia owner/admin/coach, convites pessoais
+com validade de 7 dias, revogação, reenvio e aceitação única por email confirmado.
+Não há envio automático do convite; partilha manual de link. Signup com confirmação
+disponível ao destinatário, sem acesso automático à empresa. Ver docs/TEAM_INVITATIONS.md.
+Oito testes locais e teste remoto npm run test:team:api passaram, incluindo aceitação
+concorrente e revogação imediata de permissões. QA visual e emails reais pendentes.

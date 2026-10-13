@@ -6,3 +6,4 @@ node_modules/
 supabase/install.generated.sql
 .aura-integration/
 supabase/rls-check.generated.sql
+supabase/.temp/
