@@ -4,11 +4,12 @@ import {existsSync} from "node:fs";
 import {mkdir,readFile,writeFile} from "node:fs/promises";
 import {createClient,type SupabaseClient} from "@supabase/supabase-js";
 
-// Four confirmed, dedicated synthetic accounts must be created in trusted Auth Admin UI.
+// Four confirmed synthetic accounts are created through Auth Admin UI or the local admin command.
 // No service-role/secret key, public signup or direct writes to auth.users.
 type Fixture={project:string;oa:string;ob:string;ca:string;cb:string;users:string[]};
 const roles=["OWNER_A","ADMIN_B","COACH_A","UNASSIGNED"] as const;
 if(existsSync(".env.local"))process.loadEnvFile(".env.local");
+if(existsSync(".aura-integration/accounts.env"))process.loadEnvFile(".aura-integration/accounts.env");
 async function main(){
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
  if(!url||!key?.startsWith("sb_publishable_"))throw new Error("Configure the development URL and publishable key.");

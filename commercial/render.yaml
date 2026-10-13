@@ -1,0 +1,24 @@
+# Demonstration environment only. Blueprint path: commercial/render.yaml.
+# Never deploy from main or configure administrative Supabase credentials here.
+services:
+  - type: web
+    name: aura-business-demo
+    runtime: node
+    plan: free
+    region: frankfurt
+    repo: https://github.com/danielfilipemc-cloud/nutritrack
+    branch: saas-foundation
+    rootDir: commercial
+    buildCommand: npm ci --include=dev && npm run check
+    startCommand: npm run start -- --hostname 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    autoDeployTrigger: "off"
+    envVars:
+      - key: NODE_VERSION
+        value: 22.23.3
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        value: https://vfplbkfxipfictuwkkoe.supabase.co
+      - key: NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+        sync: false

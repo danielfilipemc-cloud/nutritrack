@@ -17,6 +17,8 @@ administrativa com confirmação automática, não Send invitation nem signup p�
 Exemplos: `owner-a@aura.example`, `admin-b@aura.example`, `coach-a@aura.example`,
 `unassigned@aura.example`. Estas contas não podem ter associações prévias.
 
+Alternativa automatizada preparada: seguir docs/ONLINE_DEMO.md e usar
+`npm run test:accounts:create` com chave secret apenas em .env.admin.local.
 O conector MCP atual não fornece operações Auth Admin/configuração Auth.
 O Browser falha ao inicializar com `node:process` bloqueado. Por isso esta etapa
 requer o Dashboard autenticado do responsável. Não enviar passwords, tokens nem

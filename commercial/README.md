@@ -161,3 +161,13 @@ Integração final com a branch remota em 13-10-2026: sete testes passaram, type
 build passaram com .env.local; cloud:check passou. Os commits remotos de proteção
 contra pedidos tardios e preparação Auth/PostgREST foram preservados. Signup por email
 permanece ativo por decisão do responsável; não concede memberships automaticamente.
+
+## Preparação da demonstração online
+
+Ver docs/ONLINE_DEMO.md. Inclui criação administrativa local de quatro contas
+fictícias sem envio de emails (chave secret só em .env.admin.local, ignorado),
+runner de login e configuração Render em commercial/render.yaml.
+Health check GET /api/health implementado. Sete testes, typecheck e build passaram.
+Nenhuma conta criada por este comando até disponibilizar a chave local; nenhum
+serviço de alojamento criado. O CLI Render não está instalado: YAML ainda sem
+validação pelo CLI. Publicação pendente de testes autenticados e validação final.
