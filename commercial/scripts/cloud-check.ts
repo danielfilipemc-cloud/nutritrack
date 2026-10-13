@@ -17,7 +17,7 @@ async function main() {
  if (!settings.ok) throw new Error(`Auth settings unavailable: HTTP ${settings.status}`);
  const auth=await settings.json() as {disable_signup?:boolean;external?:{anonymous_users?:boolean}};
  let failed=false;
- for (const table of ["organizations","organization_members","clients","assessments","organization_branding"]) {
+ for (const table of ["organizations","organization_members","clients","assessments","organization_branding","client_followups","appointments"]) {
   const response=await fetch(new URL(`/rest/v1/${table}?select=*&limit=0`,base),{headers,signal:AbortSignal.timeout(15000)});
   // Inspect the error code too: a missing table must not count as access denial.
   const error=await response.json() as {code?:string};

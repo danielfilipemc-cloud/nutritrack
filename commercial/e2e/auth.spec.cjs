@@ -23,7 +23,7 @@ test.afterEach(async({page})=>{
 });
 test('real owner session reads own profile and foreign client lookup exposes no history',async({page})=>{
  await login(page,'OWNER_A');await page.goto(`/alunos/${fixture.ca}?org=${fixture.oa}`);
- await expect(page.getByRole('heading',{name:/Histórico/})).toBeVisible();
+ await page.getByRole('button',{name:'Avaliações',exact:true}).click();await expect(page.getByRole('heading',{name:/Histórico/})).toBeVisible();
  await page.goto(`/alunos/${fixture.cb}?org=${fixture.oa}`);
  await expect(page.getByRole('status')).toContainText('Aluno indisponível');await expect(page.getByRole('heading',{name:/Histórico/})).toHaveCount(0);
 });

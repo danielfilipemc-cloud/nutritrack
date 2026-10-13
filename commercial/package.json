@@ -20,7 +20,8 @@
     "test:deploy": "tsx scripts/deploy-smoke.ts",
     "test:team:api": "tsx scripts/team-integration.ts",
     "test:clients:api": "tsx scripts/clients-integration.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:care:api": "tsx scripts/care-integration.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",

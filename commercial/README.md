@@ -33,14 +33,16 @@ por essas respostas de browser. Testes reais opcionais: ver a documentação aba
 
 - `/`: login e dashboard com ativos/arquivados, avaliações recentes e acompanhamento pendente.
 - `/alunos`: pesquisa literal, filtros, paginação de 25, criação, edição, arquivo e histórico auditável.
-- `/alunos/[id]?org=UUID`: ficha individual e avaliações; dados resolvidos apenas na organização autorizada.
+- `/alunos/[id]?org=UUID`: ficha com objetivo, responsável, estado, revisão, evolução, avaliações e agenda do aluno.
+- `/agenda`: sessões, avaliações e revisões, períodos de dia/7 dias, filtros, paginação e estados de presença.
 - `/avaliacoes`: seleção de aluno, registo, histórico paginado e gráfico das últimas 30 avaliações.
 - `/equipa` e `/convite`: hierarquia owner/admin/coach, convites pessoais de uso único e revogação.
 - `/marca`: nome/cor White Label, permissões e pré-visualização com contraste automático AA.
 - `/demo`: demonstração pública em memória, dados fictícios repostos ao recarregar.
 
 O indicador pendente significa aluno ativo sem avaliação, ou última avaliação há
-mais de 30 dias. Não representa consultas agendadas nem interpretação clínica.
+mais de 30 dias. Não representa consultas agendadas nem interpretação clínica. As revisões
+explícitas e as marcações de hoje aparecem separadamente nas prioridades do dashboard.
 
 ## Arquitetura e segurança
 
@@ -61,16 +63,19 @@ o código local do PR; não depende de uma versão antiga já publicada.
 
 ## Estado da entrega
 
-14 testes locais/PostgreSQL, TypeScript, build e auditoria npm aprovados; 12 cenários
-Chromium com API interceptada e três cenários Chromium reais com contas fictícias
-aprovados. Auth/PostgREST real também aprovado. Evidências e limites em
+21 testes locais/PostgreSQL, TypeScript, build e auditoria npm aprovados; 20 cenários
+Chromium locais aprovados. Três cenários Chromium reais com contas fictícias foram
+aprovados no workspace anterior. O novo runner `test:care:api` e os cenários
+`auth-care.spec.cjs` validam o bloco novo após aplicar a migração. Evidências e limites em
 [PROFESSIONAL_WORKSPACE.md](docs/PROFESSIONAL_WORKSPACE.md).
 
 Demonstração existente: https://aura-business-demo.onrender.com/ e `/demo`.
-Esta continuação é entregue por PR para `saas-foundation`, sem merge nem deploy.
-A migração `20261013202654_professional_dashboard.sql` aguarda integração; o novo
-dashboard não deve ser publicado antes dela. O projeto cloud mantém seis migrações
-registadas; o instalador da branch contém sete. Não é aprovação para produção.
+O workspace profissional (PR #7) está integrado e publicado. O novo bloco de ficha,
+acompanhamento e agenda é desenvolvido por PR na branch `feat/aura-followup-agenda`.
+A migração incremental é `20261013210823_followup_agenda.sql`; nunca publicar o novo
+frontend antes de aplicar e validar a migração no projeto AURA. Consultar
+[FOLLOWUP_AGENDA.md](docs/FOLLOWUP_AGENDA.md) para regras e testes reais opcionais.
+A publicação continua limitada a demonstração com dados fictícios.
 
 Proteção contra palavras-passe comprometidas ainda desativada. Consentimento,
 retenção, direitos dos titulares, backups e política de sessões/MFA exigem trabalho

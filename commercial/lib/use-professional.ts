@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useState} from "react";
 import type {User} from "@supabase/supabase-js";
 import {db} from "./supabase";
+import {organizationPreference} from "./organization-preference";
 export type Organization={id:string;name:string;role:"owner"|"admin"|"coach"};
 export function useProfessional(){
  const [user,setUser]=useState<User|null>(null),[orgs,setOrgs]=useState<Organization[]>([]),[org,setOrg]=useState(""),[status,setStatus]=useState("A verificar sessão...");
@@ -13,7 +14,10 @@ export function useProfessional(){
  return()=>{alive=false;sub.data.subscription.unsubscribe();};},[]);
  useEffect(()=>{if(!db||!user){setOrgs([]);setOrg("");setLoadedFor("");return;}let alive=true;setLoadedFor("");setStatus("A carregar estabelecimentos...");
  void db.from("organization_members").select("role,organizations(id,name)").then(({data,error})=>{if(!alive)return;if(error){setOrgs([]);setOrg("");setStatus("Não foi possível carregar estabelecimentos.");return;}
- const list:Organization[]=(data||[]).flatMap(row=>{const item=Array.isArray(row.organizations)?row.organizations[0]:row.organizations;return item?[{...item,role:row.role}]:[];});setOrgs(list);setOrg(previous=>list.some(o=>o.id===previous)?previous:list[0]?.id||"");setLoadedFor(user.id);setStatus(list.length?"":"Sem estabelecimento associado. Podes aceitar um convite válido.");});return()=>{alive=false;};},[user?.id,revision]);
+ const list:Organization[]=(data||[]).flatMap(row=>{const item=Array.isArray(row.organizations)?row.organizations[0]:row.organizations;return item?[{...item,role:row.role}]:[];});setOrgs(list);let stored:string|null=null;try{stored=sessionStorage.getItem(`aura.active-org:${user.id}`);}catch{}
+ const requested=new URLSearchParams(window.location.search).get("org");
+ setOrg(previous=>{const chosen=organizationPreference(list.map(o=>o.id),requested,stored,previous);try{sessionStorage.setItem(`aura.active-org:${user.id}`,chosen);}catch{}return chosen;});setLoadedFor(user.id);setStatus(list.length?"":"Sem estabelecimento associado. Podes aceitar um convite válido.");});return()=>{alive=false;};},[user?.id,revision]);
+ const selectOrg=useCallback((id:string)=>{if(!user||!orgs.some(o=>o.id===id))return;setOrg(id);try{sessionStorage.setItem(`aura.active-org:${user.id}`,id);}catch{}},[user?.id,orgs]);
  const current=!!user&&loadedFor===user.id;
- return {user,orgs:current?orgs:[],org:current?org:"",setOrg,status,authLoading,refreshOrganizations};
+ return {user,orgs:current?orgs:[],org:current?org:"",setOrg:selectOrg,status,authLoading,refreshOrganizations};
 }

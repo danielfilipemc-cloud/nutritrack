@@ -5,7 +5,7 @@ const base="https://aura-business-demo.onrender.com";
 async function main(){
  const chunks=new Set<string>();
  const secret=process.env.SUPABASE_SECRET_KEY;
- for(const path of ["/api/health","/","/avaliacoes","/marca","/demo","/equipa","/convite","/alunos"]){
+ for(const path of ["/api/health","/","/avaliacoes","/marca","/demo","/equipa","/convite","/alunos","/agenda"]){
   const response=await fetch(base+path,{signal:AbortSignal.timeout(45000)});
   assert.equal(response.status,200,`${path}: HTTP 200 required`);
   assert.equal(new URL(response.url).origin,base,"Unexpected redirect origin");

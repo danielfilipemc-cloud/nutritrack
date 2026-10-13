@@ -1,0 +1,19 @@
+"use client";
+import {useState,type FormEvent} from "react";
+import {appointmentInstant,appointmentKinds,appointmentStatuses,businessToday,followupLabels,formatAppointment} from "../lib/care";
+type DemoFollowup={goal:string;status:keyof typeof followupLabels;review:string};
+type DemoBooking={id:number;student:number;starts_at:string;ends_at:string;kind:keyof typeof appointmentKinds;status:keyof typeof appointmentStatuses};
+export default function DemoCare({studentId,name,onStatus}:{studentId:number;name:string;onStatus:(message:string)=>void}){
+ const [profiles,setProfiles]=useState<Record<number,DemoFollowup>>({}),[bookings,setBookings]=useState<DemoBooking[]>([]),[start,setStart]=useState(businessToday()+"T09:00"),[minutes,setMinutes]=useState(60),[kind,setKind]=useState<DemoBooking["kind"]>("session");
+ const profile=profiles[studentId]||{goal:"",status:"active",review:""};
+ function update(value:Partial<DemoFollowup>){setProfiles(previous=>({...previous,[studentId]:{...profile,...value}}));}
+ function book(e:FormEvent){e.preventDefault();try{const begins=appointmentInstant(start);if(minutes<5||minutes>480)throw new Error("Indica uma duração de 5 a 480 minutos.");const ends=new Date(Date.parse(begins)+minutes*60000).toISOString();
+ if(bookings.some(a=>a.status==="scheduled"&&Date.parse(a.starts_at)<Date.parse(ends)&&Date.parse(a.ends_at)>Date.parse(begins)))throw new Error("Horário já ocupado pelo profissional fictício.");
+ setBookings(previous=>[...previous,{id:Date.now(),student:studentId,starts_at:begins,ends_at:ends,kind,status:"scheduled"}]);onStatus("Marcação fictícia guardada.");
+ }catch(error){onStatus(error instanceof Error?error.message:"Não foi possível criar a marcação fictícia.");}}
+ return <section id="acompanhamento" className="panel demo-section"><h2>Ficha e agenda · {name}</h2><p>Experimenta o acompanhamento deste aluno. Responsável: profissional fictício. Recarregar apaga estas alterações.</p>
+ <form onSubmit={e=>{e.preventDefault();onStatus("Ficha fictícia guardada nesta demonstração.");}}><label>Objetivo fictício<textarea rows={3} maxLength={1000} value={profile.goal} onChange={e=>update({goal:e.target.value})}/></label><div className="columns"><label>Estado fictício<select value={profile.status} onChange={e=>update({status:e.target.value as DemoFollowup["status"]})}>{Object.entries(followupLabels).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label><label>Revisão fictícia<input type="date" min="2000-01-01" max="2100-12-31" value={profile.review} onChange={e=>update({review:e.target.value})}/></label></div><button>Guardar ficha fictícia</button></form>
+ <h3>Agenda fictícia</h3><form onSubmit={book}><div className="columns"><label>Tipo fictício<select value={kind} onChange={e=>setKind(e.target.value as DemoBooking["kind"])}>{Object.entries(appointmentKinds).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label><label>Data e hora fictícias (Lisboa)<input type="datetime-local" required min="2000-01-01T00:00" max="2100-12-31T23:59" value={start} onChange={e=>setStart(e.target.value)}/></label><label>Duração fictícia (minutos)<input type="number" required min={5} max={480} step={5} value={minutes} onChange={e=>setMinutes(Number(e.target.value))}/></label></div><button>Agendar sessão fictícia</button></form>
+ <ul className="aura-appointment-list">{bookings.filter(a=>a.student===studentId).map(a=><li key={a.id}><div><strong>{appointmentKinds[a.kind]}</strong><p>{formatAppointment(a.starts_at)} · {appointmentStatuses[a.status]}</p></div>{a.status==="scheduled"&&<button className="outline" onClick={()=>{if(window.confirm("Cancelar esta marcação fictícia?")){setBookings(previous=>previous.map(b=>b.id===a.id?{...b,status:"cancelled"}:b));onStatus("Marcação fictícia cancelada.");}}}>Cancelar sessão fictícia</button>}</li>)}</ul>
+ </section>;
+}
