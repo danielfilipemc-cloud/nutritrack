@@ -24,3 +24,19 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm audit --audit-level=moderate
+
+  live-browser:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: commercial
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm install --no-save --package-lock=false @playwright/test@1.58.2
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:deploy
+      - run: npx playwright test e2e/live.spec.cjs --reporter=line
