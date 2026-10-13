@@ -101,3 +101,39 @@ footer { border-color:var(--aura-line); }
 @media(max-width:650px){.aura-section-title .outline.link {width:100%;justify-content:center}.aura-section-title {align-items:stretch;}}
 
 .brandmark {color:var(--brand-foreground,#FFFFFF);}
+
+
+/* AURA Dark Premium — default theme. Preserve semantic accent and white-label brand colours. */
+:root {color-scheme:dark; --aura-ink:#F2F7F6;--aura-muted:#A8B8B5;--aura-canvas:#0F1414;--aura-surface:#161D1D;--aura-line:#2A3535;--aura-focus:#6DD4C7;--aura-primary-hover:#15928A;--aura-shadow:0 8px 28px rgb(0 0 0 / 16%);}
+html,body {background:var(--aura-canvas);color:var(--aura-ink);}
+header,footer {border-color:var(--aura-line);}
+header p,p,.stat span,.stat small,.brandhead p {color:var(--aura-muted);}
+h1,h2,h3,.stat strong,.brandhead strong,.aura-empty-state strong {color:var(--aura-ink);}
+.stat>div,.panel,.login,.brandhead,.demo-nav,.aura-app-nav {background:var(--aura-surface);border-color:var(--aura-line);box-shadow:var(--aura-shadow);}
+.brandhead {background:#192222;}
+.aura-app-nav__brand {color:var(--aura-ink);}
+.aura-app-nav__links a {color:#B5C7C2;}
+.aura-app-nav__links a:hover {background:#223A36;color:#E2FAF5;}
+.aura-app-nav__links a.is-active {background:#173F3B;color:#8BE6DA;}
+.aura-app-nav__foot {color:#98ACA6;}
+.demo-nav a {color:#B5C7C2;}
+.demo-nav a:first-child,.demo-nav a:hover {background:#173F3B;color:#8BE6DA;}
+input,select,textarea {background:#1D2626;color:#F2F7F6;border-color:#51615F;}
+input:hover:not(:disabled),select:hover:not(:disabled),textarea:hover:not(:disabled){border-color:#84AEA7;}
+input:disabled,select:disabled,textarea:disabled {background:#283131;color:#9FB0AB;}
+input::placeholder,textarea::placeholder {color:#A8B8B5;}
+button {background:#137F79;color:#FFFFFF;}
+button:hover:not(:disabled){background:#15928A;}
+.outline, .outline.link {background:#1C2928;color:#D7F4EE;border-color:#507A73;}
+button.outline:hover:not(:disabled),.outline.link:hover {background:#24443E;color:#FFFFFF;}
+th {background:#202B2A;color:#C5D5D1;}
+td {color:#E7F1EF;}
+td,th {border-bottom-color:#31403D;}
+tr:hover td {background:#21302E;}
+.status:not(:empty){background:#173C37;color:#B4F2E6;border-color:#397D72;}
+.aura-empty-state {background:#192322;border-color:#50645F;}
+.brand-powered {color:#B1C3BD;}
+label {color:#E1ECE9;}
+.chartbox svg text {fill:#C5D5D1;}
+:focus-visible {outline-color:var(--aura-focus);}
+@media (prefers-color-scheme:light) { :root {color-scheme:dark;} }
