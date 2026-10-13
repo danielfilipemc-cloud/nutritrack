@@ -1,5 +1,5 @@
-import AppNavigation from "../../components/AppNavigation";
 "use client";
+import AppNavigation from "../../components/AppNavigation";
 import { useEffect, useState, useRef, type FormEvent } from "react";
 import {db} from "../../lib/supabase";
 import {RequestScope} from "../../lib/request-scope";
