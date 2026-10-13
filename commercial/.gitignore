@@ -7,3 +7,6 @@ supabase/install.generated.sql
 .aura-integration/
 supabase/rls-check.generated.sql
 supabase/.temp/
+
+playwright-report/
+test-results/

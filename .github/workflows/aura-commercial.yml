@@ -1,8 +1,8 @@
-# Install at .github/workflows/aura-commercial.yml to activate on GitHub.
+# AURA-only validation; no deployment or production secrets.
 name: AURA commercial validation
 on:
   push:
-    branches: [saas-foundation, 'design/**']
+    branches: [saas-foundation, 'design/**', 'feat/aura-**']
     paths: ['commercial/**', '.github/workflows/aura-commercial.yml']
   pull_request:
     paths: ['commercial/**', '.github/workflows/aura-commercial.yml']
@@ -25,7 +25,7 @@ jobs:
       - run: npm run check
       - run: npm audit --audit-level=moderate
 
-  live-browser:
+  local-browser:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -36,7 +36,16 @@ jobs:
         with:
           node-version: 22
       - run: npm ci
-      - run: npm install --no-save --package-lock=false @playwright/test@1.58.2
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:deploy
-      - run: npx playwright test e2e/live.spec.cjs --reporter=line
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://aura-test.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_e2e_fixture
+          NEXT_TELEMETRY_DISABLED: '1'
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: aura-browser-failure
+          path: commercial/test-results
+          retention-days: 7
