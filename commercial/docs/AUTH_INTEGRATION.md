@@ -7,9 +7,9 @@ Não é um teste visual dos formulários.
 
 ## 1. Configuração no Dashboard
 
-Em Authentication → Sign In / Providers → User Signups, desativar **Allow new users
-to sign up** e guardar. Manter anonymous sign-ins desativados. Confirmar com
-`npm run cloud:check`: tem de terminar com exit code 0.
+Signup por email mantido ativo por decisão explícita do responsável em 13-10-2026.
+Manter anonymous sign-ins desativados. `npm run cloud:check` verifica negações anónimas
+na Data API e essa restrição Auth; não exige fechar signup por email.
 
 Em Authentication → Users → Add user → Create new user, criar quatro contas
 **fictícias e confirmadas**, com palavras-passe diferentes e fortes. Usar criação
@@ -73,5 +73,5 @@ Se o teste indicar falha de sign-out, revogar primeiro as sessões no Auth Admin
 - Runner passou no typecheck; caminho sem credenciais aborta com mensagem explícita.
 - Nenhuma conta de teste disponível, confirmado pelo responsável.
 - Auth/PostgREST autenticado: **pendente**, sem PASS atribuído.
-- Signup permanece ativo; `cloud:check` recusa dar PASS.
+- Signup permanece ativo por escolha do responsável; runner atualizado para essa política.
 - SQL cloud e seis testes locais continuam com PASS; QA visual continua pendente.

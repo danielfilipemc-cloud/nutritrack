@@ -24,9 +24,8 @@ ligação **Aura Business**, região `eu-west-1`, PostgreSQL 17.11. Foi confirma
 (sem tabelas da aplicação nem utilizadores) antes de instalar o esquema AURA.
 Não reutilizar a base do NutriTrack ou Sentinel nem executar o instalador noutras bases.
 
-1. **Pendente:** desativar inscrições públicas no Dashboard, Authentication → Sign In / Providers
-   → User Signups → Allow new users to sign up. A API reporta `disable_signup=false`.
-   Autenticação anónima já está desativada. Não criar contas através de signup público.
+1. Autenticação anónima desativada. Por decisão explícita do responsável em 13-10-2026,
+   manter signup por email ativo. Contas novas não recebem organização nem permissões.
 2. Configurar URLs de autenticação apenas para os ambientes aprovados.
 3. `npm run db:bundle` gera `supabase/install.generated.sql`.
 4. Instalador já aplicado neste projeto pelo MCP (`aura_business_foundation`), na ordem
@@ -58,8 +57,8 @@ precisam de novas migrações; nunca editar uma migração registada.
   A transação terminou com ROLLBACK; zero utilizadores, organizações e alunos persistidos.
 - RLS ativo nas cinco tabelas; advisor de segurança Supabase sem alertas.
 - `npm run cloud:check`: as cinco tabelas recusaram acesso anónimo com HTTP 401
-  e código PostgreSQL 42501. O comando **falha**, corretamente, porque signup público
-  continua ativo; autenticação anónima está desativada. Voltar a executar após corrigir Auth.
+  e código PostgreSQL 42501. O verificador foi atualizado para permitir signup email por escolha do responsável;
+  continua a exigir autenticação anónima desativada.
 - O harness SQL assume um projeto de desenvolvimento vazio e execução como postgres.
   Abrir `tests/cloud-rls.sql` no SQL Editor desse projeto e executar o ficheiro completo.
   Não o executar numa base com dados reais. Os UUIDs são aleatórios e não há passwords,
@@ -96,8 +95,8 @@ O runner `npm run test:auth:prepare` / `npm run test:auth` está preparado para
 quatro contas confirmadas independentes, sem chave administrativa na aplicação.
 O responsável confirmou que ainda não existem essas contas. Preparação sem
 credenciais foi executada e abortou como esperado; nenhum login ou teste autenticado
-foi marcado PASS. Seguir [o procedimento Auth](docs/AUTH_INTEGRATION.md) para fechar
-signup, criar as contas pelo Dashboard, provisionar, executar e limpar as fixtures.
+foi marcado PASS. Seguir [o procedimento Auth](docs/AUTH_INTEGRATION.md) para
+criar as contas pelo Dashboard, provisionar, executar e limpar as fixtures.
 
 ## CI
 
@@ -114,7 +113,7 @@ Avaliações não podem ser editadas/apagadas pelo browser. O cliente usa apenas
 Nesta continuação foi instalado apenas o projeto de desenvolvimento vazio indicado acima;
 não foram consultados nem alterados dados das bases legadas.
 
-Não há registo público, convites, portal de alunos, faturação, subscrições, uploads ou
+Não há formulário de registo público, convites, portal de alunos, faturação, subscrições, uploads ou
 domínios personalizados. O painel limita alunos a 100 e o histórico às últimas 100 avaliações
 do estabelecimento; o gráfico apresenta até 30 medições desse conjunto. Falta paginação.
 Branding suporta nome/cor; logótipos não são carregados. `updated_at` ainda vem do cliente.
@@ -125,3 +124,35 @@ cliques/formulários num browser nem inspeção visual desktop/mobile; responsiv
 melhorada em CSS, mas ainda exige validação visual. Não considerar esta entrega aprovada
 para produção ou para dados reais de saúde. Consentimento, minimização, retenção, exportação/
 apagamento, auditoria de alterações, backups e revisão legal continuam pendentes.
+
+## Integração Supabase — 13-10-2026
+
+Ligação «Aura Business» confirmada, projeto `vfplbkfxipfictuwkkoe`, eu-west-1.
+A fundação já estava aplicada (`20261012225833_aura_business_foundation`); não foi reaplicada.
+As cinco tabelas estavam vazias e com RLS. Verificador security: zero alertas.
+A configuração local `.env.local` usa URL/chave publishable do projeto e permanece fora de Git.
+
+`npm run db:verify:sql` gera um harness SQL para executar como administrador no projeto
+AURA: 57 verificações reais de RLS passaram no Supabase. Cria apenas fixtures sintéticas
+com UUIDs aleatórios numa transação e termina com ROLLBACK. Confirmação posterior:
+zero utilizadores, organizações, membros, alunos, avaliações ou marcas persistentes.
+Este teste simula claims no contexto SQL; não testa emissão/assinatura de JWT nem login.
+
+`npm run db:verify:api` verifica a API pública, com chave publishable e sem JWT de utilizador.
+As cinco tabelas recusaram acesso anónimo com HTTP 401. Autenticação anónima desativada,
+confirmação de email ativa. **Inscrições públicas por email mantidas ativas por decisão explícita do responsável** em 13-10-2026.
+Não existe formulário de signup na aplicação nem atribuição automática de organização.
+O comando API permite essa configuração, exige autenticação anónima desativada e não cria contas.
+
+Suite local: agora seis testes, incluindo execução e rollback do harness cloud em PGlite.
+Continuam pendentes login com utilizadores provisionados pela API Admin, testes JWT/PostgREST
+autenticados, revisão visual e ativação do workflow na raiz.
+
+## Verificações adicionais desta conversa — 13-10-2026
+
+`npm run db:verify:sql` gera SQL com UUIDs aleatórios e rollback obrigatório.
+Executado no Supabase: PASS, 57 verificações; contagens posteriores a zero nas cinco
+tabelas comerciais e em auth.users. O teste local desse gerador foi integrado sem
+remover o harness cloud já existente. `db:verify:api` usa o mesmo runner que cloud:check.
+Inscrições por email mantidas ativas por decisão explícita do responsável; sem formulário
+público nem atribuição de membership na aplicação. Ver docs/SUPABASE_VALIDATION.md.

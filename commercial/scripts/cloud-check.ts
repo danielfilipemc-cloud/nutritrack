@@ -9,7 +9,7 @@ async function main() {
   throw new Error("Configure NEXT_PUBLIC_SUPABASE_URL and a modern publishable key.");
  }
  const base=new URL(url);
- if (base.protocol!=="https:" || !base.hostname.endsWith(".supabase.co")) {
+ if (base.protocol!=="https:" || base.hostname!=="vfplbkfxipfictuwkkoe.supabase.co") {
   throw new Error("Use the HTTPS URL of the independent Supabase development project.");
  }
  const headers={apikey:key};
@@ -25,8 +25,9 @@ async function main() {
   console.log(`${denied?"PASS":"FAIL"}: anonymous ${table}, HTTP ${response.status}`);
   if (!denied) failed=true;
  }
- const closed=auth.disable_signup===true && auth.external?.anonymous_users===false;
- console.log(`${closed?"PASS":"FAIL"}: public signup disabled=${auth.disable_signup===true}, anonymous sign-in disabled=${auth.external?.anonymous_users===false}`);
+ // Public email signup remains enabled by the owner; no membership is granted automatically.
+ const closed=auth.external?.anonymous_users===false;
+ console.log(`${closed?"PASS":"FAIL"}: public email signup enabled=${auth.disable_signup===false} (owner preference), anonymous sign-in disabled=${auth.external?.anonymous_users===false}`);
  if (!closed) failed=true;
  if (failed) throw new Error("Cloud checks failed. Review Auth settings and Data API permissions; no users were created.");
  console.log("PASS: public API checks. Authenticated A/B sessions still require separate integration tests.");

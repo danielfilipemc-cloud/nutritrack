@@ -5,3 +5,4 @@ node_modules/
 *.tsbuildinfo
 supabase/install.generated.sql
 .aura-integration/
+supabase/rls-check.generated.sql

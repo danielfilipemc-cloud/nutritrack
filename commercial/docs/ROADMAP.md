@@ -21,8 +21,7 @@
 - `.env.local` configurado localmente com chave publishable, ignorado pelo Git.
 
 ## Bloqueios de integração
-- Signup público ainda ativo (`disable_signup=false`); desativar no Dashboard.
-  `npm run cloud:check` verifica esta condição e atualmente falha por esse motivo.
+- Signup email ativo por decisão do responsável; sem atribuição automática de membership.
 - Autenticação anónima desativada, mas faltam contas sintéticas provisionadas por Auth Admin
   e testes autenticados A/B via PostgREST; SQL com claims simulados não substitui esses testes.
 - Runner e procedimento em `docs/AUTH_INTEGRATION.md` preparados. Responsável confirmou
@@ -31,7 +30,7 @@
 - Browser indisponível: faltam QA visual e testes end-to-end de formulários/sessões.
 
 ## Antes de um piloto com dados reais
-1. Desativar signup público no projeto AURA e obter PASS em `npm run cloud:check`.
+1. Rever proteção antiabuso do signup email; manter anonymous sign-in desativado.
 2. Provisionar contas sintéticas por administração confiável e executar testes allow/deny pela API.
 3. Provisionamento/convites seguros; gestão de profissionais e auditoria.
 4. Consentimento, retenção, direitos do titular, backups e política de sessões/MFA.

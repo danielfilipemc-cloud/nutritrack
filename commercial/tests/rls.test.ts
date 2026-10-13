@@ -49,3 +49,13 @@ test("real PostgreSQL RLS: tenants, roles, foreign keys and forbidden writes",as
  await assert.rejects(db.exec(sql),/checksum mismatch/);await db.exec("rollback");
  } finally {await db.close();}
 });
+
+import {supabaseRlsSql} from "../scripts/supabase-rls-sql";
+test("cloud SQL harness asserts access and rolls back all synthetic fixtures",async()=>{
+ const db=new PGlite();try{
+ await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key,aud text,role text,email text,raw_user_meta_data jsonb);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema public,auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;`);
+ await db.exec((await migrationBundle()).replace("create extension if not exists pgcrypto;",""));
+ const results=await db.exec(supabaseRlsSql());const result=results[results.length-1].rows[0] as {result:string;assertions:number};assert.equal(result.result,"PASS");assert.ok(result.assertions>40);
+ const count=await db.query<{n:number}>("select count(*)::int n from auth.users");assert.equal(count.rows[0].n,0);
+ }finally{await db.close();}
+});
