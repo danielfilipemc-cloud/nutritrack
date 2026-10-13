@@ -99,3 +99,5 @@ footer { border-color:var(--aura-line); }
 .aura-empty-state p {font-size:13px;max-width:380px;margin:0}
 .aura-empty-state .outline.link {display:inline-flex;align-items:center;padding:10px 16px}
 @media(max-width:650px){.aura-section-title .outline.link {width:100%;justify-content:center}.aura-section-title {align-items:stretch;}}
+
+.brandmark {color:var(--brand-foreground,#FFFFFF);}
