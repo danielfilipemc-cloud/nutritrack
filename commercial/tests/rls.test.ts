@@ -20,7 +20,7 @@ test("real PostgreSQL RLS: tenants, roles, foreign keys and forbidden writes",as
  await db.exec(`create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz); create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$; grant usage on schema public,auth to anon,authenticated; grant execute on function auth.uid() to anon,authenticated;`);
  const sql=(await migrationBundle()).replace("create extension if not exists pgcrypto;","");
  await db.exec(sql);await db.exec(sql); // Recorded migrations must safely skip on replay.
- assert.equal(Number((await db.query<{n:number}>("select count(*)::int n from app_private.aura_migrations")).rows[0].n),7);
+ assert.equal(Number((await db.query<{n:number}>("select count(*)::int n from app_private.aura_migrations")).rows[0].n),8);
  const id=(n:number)=>`00000000-0000-0000-0000-${String(n).padStart(12,"0")}`;
  await db.exec(`insert into auth.users(id) values ('${id(1)}'),('${id(2)}'),('${id(3)}'),('${id(4)}'); insert into organizations(id,name) values ('${id(10)}','Studio A'),('${id(20)}','Studio B'); insert into organization_members(organization_id,user_id,role) values ('${id(10)}','${id(1)}','owner'),('${id(20)}','${id(2)}','admin'),('${id(10)}','${id(3)}','coach'); insert into clients(id,organization_id,full_name) values ('${id(100)}','${id(10)}','Aluno A'),('${id(200)}','${id(20)}','Aluno B');`);
  const asUser=async(n:number)=>{await db.exec(`reset role; set role authenticated; select set_config('request.jwt.claim.sub','${id(n)}',false)`);};
