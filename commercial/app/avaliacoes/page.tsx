@@ -31,17 +31,17 @@ export default function Avaliacoes(){
  if(s.error||a.error){setStatus("Não foi possível carregar alunos/avaliações. Confirma que a migração 002 foi aplicada.");return;}
  setStudents(s.data||[]);setAssessments(a.data||[]);setBranding(b.error?null:b.data);setChartStudent(prev=>(s.data||[]).some(x=>x.id===prev)?prev:(s.data?.[0]?.id||""));setStudentId(prev=>(s.data||[]).some(x=>x.id===prev)?prev:(s.data?.[0]?.id||""));setStatus("");
  }
- useEffect(()=>{if(org&&userId)void refresh(org);},[org,userId]);
- async function addStudent(e:FormEvent){e.preventDefault();if(!db||!org||!validName(name)||loading)return;setLoading(true);
- const {error}=await db.from("clients").insert({organization_id:org,full_name:name.trim()});setLoading(false);
+ useEffect(()=>{if(org&&userId)void refresh(org);return()=>scope.current.invalidate();},[org,userId]);
+ async function addStudent(e:FormEvent){e.preventDefault();if(!db||!org||!validName(name)||loading)return;const isCurrent=scope.current.begin();setLoading(true);
+ const {error}=await db.from("clients").insert({organization_id:org,full_name:name.trim()});if(!isCurrent())return;setLoading(false);
  if(error){setStatus("Não foi possível criar o aluno. Verifica permissões e dados.");return;}setName("");await refresh(org);}
  async function addAssessment(e:FormEvent){e.preventDefault();if(!db||!org||!studentId||!userId||loading)return;
  let w:number|null,h:number|null,wa:number|null;
  try {w=measurement(weight,500,2);h=measurement(height,300,1);wa=measurement(waist,300,1);
  if(!validDate(date)||[w,h,wa].every(x=>x===null)||!students.some(s=>s.id===studentId))throw new Error();
  }catch {setStatus("Indica uma data, aluno e medições válidos dentro dos limites.");return;}
- setLoading(true);const {error}=await db.from("assessments").insert({organization_id:org,client_id:studentId,recorded_by:userId,assessed_on:date,weight_kg:w,height_cm:h,waist_cm:wa});
- setLoading(false);if(error){setStatus("Não foi possível guardar a avaliação. Confirma limites e permissões.");return;}setWeight("");setHeight("");setWaist("");await refresh(org);}
+ const isCurrent=scope.current.begin();setLoading(true);const {error}=await db.from("assessments").insert({organization_id:org,client_id:studentId,recorded_by:userId,assessed_on:date,weight_kg:w,height_cm:h,waist_cm:wa});
+ if(!isCurrent())return;setLoading(false);if(error){setStatus("Não foi possível guardar a avaliação. Confirma limites e permissões.");return;}setWeight("");setHeight("");setWaist("");await refresh(org);}
  return <main className="shell"><header><div><strong>◉ AURA <span>Business</span></strong><p>Módulo de avaliações · Ambiente de desenvolvimento</p></div><a href="/" className="outline link">Painel principal</a></header>
  <div className="heading"><div><span className="eyebrow">ACOMPANHAMENTO</span><h1>Alunos e avaliações</h1><p>Protótipo destinado apenas a dados fictícios.</p></div><label>Organização<select value={org} disabled={loading} onChange={e=>{scope.current.invalidate();setStudents([]);setAssessments([]);setBranding(null);setStudentId("");setChartStudent("");setName("");setWeight("");setHeight("");setWaist("");setOrg(e.target.value)}}>{orgs.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label></div>
  {userId&&org&&<><BrandHeader branding={branding||{display_name:orgs.find(o=>o.id===org)?.name||"AURA",primary_color:"#137F79",logo_url:null}} subtitle="Avaliações físicas"/><div className="columns"><section className="panel"><h2>Novo aluno</h2><form onSubmit={addStudent}><label>Nome fictício<input value={name} onChange={e=>setName(e.target.value)} maxLength={160} minLength={2} required /></label><button disabled={loading}>Registar aluno</button></form></section>
