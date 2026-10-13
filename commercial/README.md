@@ -113,7 +113,8 @@ Avaliações não podem ser editadas/apagadas pelo browser. O cliente usa apenas
 Nesta continuação foi instalado apenas o projeto de desenvolvimento vazio indicado acima;
 não foram consultados nem alterados dados das bases legadas.
 
-Não há formulário de registo público, convites, portal de alunos, faturação, subscrições, uploads ou
+Existe registo por email em /convite, sem atribuição automática de acesso.
+Não há portal de alunos, faturação, subscrições, uploads ou
 domínios personalizados. O painel limita alunos a 100 e o histórico às últimas 100 avaliações
 do estabelecimento; o gráfico apresenta até 30 medições desse conjunto. Falta paginação.
 Branding suporta nome/cor; logótipos não são carregados. `updated_at` ainda vem do cliente.

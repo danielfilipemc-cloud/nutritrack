@@ -42,3 +42,11 @@ GitHub Actions ainda requer ativação na raiz .github/workflows; deploy executa
 Rever visual com ChatGPT. Portal de aluno, convites, subscrições e uploads ainda pendentes.
 O plano gratuito pode ter arranque a frio. Nenhum serviço existente foi alterado.
 Atualizações requerem deploy manual porque auto deploy está desativado.
+
+## Atualização equipa/convites — 13-10-2026
+Commit publicado 051a9e0; deploy dep-db777hivcj2c73cflqm0 confirmado live.
+Rotas adicionais /equipa e /convite. Sete rotas HTTP 200, cabeçalhos verificados e
+13 bundles JS inspecionados sem exposição da chave administrativa local.
+Testes locais: oito passaram. Testes novos via JWT/PostgREST passaram, incluindo
+aceitação concorrente de convite e perda imediata de acesso após remoção.
+QA visual e confirmação de email real continuam pendentes. Ver TEAM_INVITATIONS.md.

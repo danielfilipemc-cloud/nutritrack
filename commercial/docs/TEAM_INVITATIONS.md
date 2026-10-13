@@ -68,3 +68,10 @@ Sem teste visual/browser nesta etapa, conforme preferência do responsável.
 Fluxo de email real do signup e recuperação de password ainda não testados.
 SMTP e entrega automática de convites ficam para uma fase seguinte.
 Sem alteração de dados reais ou de NutriTrack original. Exclusivamente commercial/.
+
+## Demonstração atualizada
+Deploy dep-db777hivcj2c73cflqm0, commit 051a9e0, estado live confirmado em 13-10-2026.
+https://aura-business-demo.onrender.com/equipa e /convite responderam HTTP 200.
+As sete rotas passaram em test:deploy, com cabeçalhos DENY/nosniff/no-store.
+13 bundles JS públicos inspecionados; chave administrativa ausente do HTML/JS analisado.
+Não foram executados testes de interação browser, conforme solicitado pelo responsável.
