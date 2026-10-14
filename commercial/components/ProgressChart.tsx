@@ -1,7 +1,7 @@
 "use client";
 import {chartData,timePosition,type ChartPoint} from "../lib/chart";
-export default function ProgressChart({records,unit}:{records:ChartPoint[];unit:string}){
- const data=chartData(records);
+export default function ProgressChart({records,unit,maxPoints=30}:{records:ChartPoint[];unit:string;maxPoints?:number}){
+ const data=chartData(records,maxPoints);
  if(data.length===0)return <p>Regista avaliações para visualizar a evolução.</p>;
  const min=Math.min(...data.map(p=>p.value)),max=Math.max(...data.map(p=>p.value));
  const pad=Math.max((max-min)*.12,.5),lo=min-pad,hi=max+pad;
