@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import {PGlite} from '@electric-sql/pglite';
 import {migrationBundle} from '../scripts/migration-bundle';
 import {id} from './foundation-fixture';
-test('eight-file populated baseline upgrades without rewriting records, hashes or blanket permissions',async()=>{
- const db=new PGlite();try{
+import {snapshotLocalDevelopment,restoreLocalDevelopment} from '../scripts/local-recovery';
+test('eight-file populated baseline restores before upgrading without rewriting records, hashes or blanket permissions',async()=>{
+ let db=new PGlite();try{
  await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth,public to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;`);
  await db.exec((await migrationBundle({through:'20261013210823_followup_agenda.sql'})).replace('create extension if not exists pgcrypto;',''));
@@ -15,6 +16,10 @@ test('eight-file populated baseline upgrades without rewriting records, hashes o
  insert into assessments(id,organization_id,client_id,recorded_by,assessed_on,weight_kg,note) values('${id(300)}','${id(10)}','${id(100)}','${id(2)}','2026-01-01',80,'Synthetic preserved private note');`);
  const hashes=(await db.query<{name:string;checksum:string}>('select name,checksum from app_private.aura_migrations order by name')).rows;
  const before=(await db.query('select id,organization_id,client_id,recorded_by,assessed_on,weight_kg,note,created_at from assessments')).rows;
+ const snapshot=await snapshotLocalDevelopment(db),baseline=db;
+ db=await restoreLocalDevelopment(snapshot.bytes,snapshot.manifest);await baseline.close();
+ assert.deepEqual((await db.query('select name,checksum from app_private.aura_migrations order by name')).rows,hashes);
+ assert.deepEqual((await db.query('select id,organization_id,client_id,recorded_by,assessed_on,weight_kg,note,created_at from assessments')).rows,before);
  await db.exec((await migrationBundle()).replace('create extension if not exists pgcrypto;',''));
  assert.deepEqual((await db.query('select id,organization_id,client_id,recorded_by,assessed_on,weight_kg,note,created_at from assessments')).rows,before);
  for(const h of hashes){assert.deepEqual((await db.query('select name,checksum from app_private.aura_migrations where name=$1',[h.name])).rows[0],h);}

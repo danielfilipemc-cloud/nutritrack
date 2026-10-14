@@ -1,3 +1,5 @@
+import {refuseLegacyLiveRunner} from './staging-safety';
+refuseLegacyLiveRunner();
 import assert from "node:assert/strict";
 import {randomBytes,randomUUID} from "node:crypto";
 import {existsSync} from "node:fs";

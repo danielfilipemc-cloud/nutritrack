@@ -72,13 +72,13 @@ o código local do PR; não depende de uma versão antiga já publicada.
 
 ## Estado da entrega
 
-Fundações locais: 36 testes de domínio/PostgreSQL (21 contratos históricos e 15 testes do schema completo/upgrade), 25 Chromium com API interceptada, TypeScript e build no Node 22.23.3. O ensaio físico local de backup/restauro passou; não equivale a um backup do projeto Supabase.
+Fundações locais: 40 testes (21 contratos históricos, 15 do schema completo/upgrade e 4 de proteção do staging), 25 Chromium com API interceptada, TypeScript e build no Node 22.23.3. O ensaio físico local de backup/restauro passou; não equivale a um backup do projeto Supabase.
 
 A demo cloud/Render continua no baseline auditado. As duas migrations novas estão versionadas, mas não aplicadas na cloud. Novas permissões exigem competências e atribuições explícitas; não há backfill em massa de acesso sensível. Ver docs/FOUNDATIONS.md para a sequência de staging/recuperação antes de ligar o frontend novo a uma API real.
 
 O advisor cloud continua com proteção contra passwords comprometidas desativada. MFA/sessões, decisões jurídicas, direitos completos, backup/restauro cloud e JWT/PostgREST das políticas novas são gates pendentes antes de dados reais. Pedidos de eliminação são registados para análise, sem expurgo automático. NutriTrack permanece intacto e não foi usado para sincronização.
 
-Não se avançou para a Fase 2 e não houve push/merge/deploy automático.
+Não se avançou para a Fase 2. A integração GitHub é uma PR em draft para revisão, sem merge ou deploy. Ver [consolidação e gates de staging](docs/STAGING_VALIDATION.md). Os runners live antigos foram bloqueados porque apontavam para o projeto protegido; o novo runner exige staging e restauro verificado.
 ## Documentação
 
 - [Auditoria e decisões desta entrega](docs/PROFESSIONAL_WORKSPACE.md)

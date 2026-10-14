@@ -1,0 +1,424 @@
+EVIDENCE FILE: consolidation-final-check.log
+
+> nutritrack-business@0.1.0 check
+> npm run test && npm run typecheck && npm run build
+
+
+> nutritrack-business@0.1.0 test
+> tsx --test tests/*.test.ts
+
+TAP version 13
+# Subtest: access-only upgrade protects seeded measurements before and after explicit authorization
+ok 1 - access-only upgrade protects seeded measurements before and after explicit authorization
+  ---
+  duration_ms: 3680.7605
+  type: 'test'
+  ...
+# Subtest: student acceptance never provisions staff role or exposes sensitive table
+ok 2 - student acceptance never provisions staff role or exposes sensitive table
+  ---
+  duration_ms: 2069.2076
+  type: 'test'
+  ...
+# Subtest: tenant foreground meets WCAG AA across the sRGB cube and boundary colours
+ok 3 - tenant foreground meets WCAG AA across the sRGB cube and boundary colours
+  ---
+  duration_ms: 57.8441
+  type: 'test'
+  ...
+# Subtest: agenda resolves Lisbon independently of browser timezone and rejects DST gaps/repeated hours
+ok 4 - agenda resolves Lisbon independently of browser timezone and rejects DST gaps/repeated hours
+  ---
+  duration_ms: 3.5309
+  type: 'test'
+  ...
+# Subtest: measurement summaries compare available values without modifying input or inferring health
+ok 5 - measurement summaries compare available values without modifying input or inferring health
+  ---
+  duration_ms: 3.7174
+  type: 'test'
+  ...
+# Subtest: follow-up permissions, optimistic revisions, history minimization and archived read-only
+ok 6 - follow-up permissions, optimistic revisions, history minimization and archived read-only
+  ---
+  duration_ms: 3709.3838
+  type: 'test'
+  ...
+# Subtest: agenda checks tenant/client/staff, overlapping slots, adjacency and terminal states
+ok 7 - agenda checks tenant/client/staff, overlapping slots, adjacency and terminal states
+  ---
+  duration_ms: 2050.7595
+  type: 'test'
+  ...
+# Subtest: membership removal unassigns safely, increments revisions and archive preserves closure
+ok 8 - membership removal unassigns safely, increments revisions and archive preserves closure
+  ---
+  duration_ms: 1739.3984
+  type: 'test'
+  ...
+# Subtest: care dashboard combines due reviews and scheduled Lisbon day with tenant isolation
+ok 9 - care dashboard combines due reviews and scheduled Lisbon day with tenant isolation
+  ---
+  duration_ms: 1589.5391
+  type: 'test'
+  ...
+# Subtest: organization navigation preference cannot select a foreign or revoked membership
+ok 10 - organization navigation preference cannot select a foreign or revoked membership
+  ---
+  duration_ms: 0.8778
+  type: 'test'
+  ...
+# Subtest: literal name search escapes wildcards and backslashes
+ok 11 - literal name search escapes wildcards and backslashes
+  ---
+  duration_ms: 1.1052
+  type: 'test'
+  ...
+# Subtest: client lifecycle, optimistic writes, audit and assessment preservation
+ok 12 - client lifecycle, optimistic writes, audit and assessment preservation
+  ---
+  duration_ms: 3657.175
+  type: 'test'
+  ...
+# Subtest: dashboard aggregates all rows, handles date boundaries and enforces tenant access
+ok 13 - dashboard aggregates all rows, handles date boundaries and enforces tenant access
+  ---
+  duration_ms: 4057.3215
+  type: 'test'
+  ...
+# Subtest: branding server authorship rejects spoofing and organization reassignment
+ok 14 - branding server authorship rejects spoofing and organization reassignment
+  ---
+  duration_ms: 1918.4002
+  type: 'test'
+  ...
+# Subtest: measurement bounds and precision
+ok 15 - measurement bounds and precision
+  ---
+  duration_ms: 1.7349
+  type: 'test'
+  ...
+# Subtest: calendar and trimmed names
+ok 16 - calendar and trimmed names
+  ---
+  duration_ms: 3.5499
+  type: 'test'
+  ...
+# Subtest: tenant switch and late response invalidation
+ok 17 - tenant switch and late response invalidation
+  ---
+  duration_ms: 0.4376
+  type: 'test'
+  ...
+# Subtest: chart uses elapsed dates and never mutates source
+ok 18 - chart uses elapsed dates and never mutates source
+  ---
+  duration_ms: 30.4119
+  type: 'test'
+  ...
+# Subtest: full upgraded RLS requires competency AND assignment; management does not grant measurements
+ok 19 - full upgraded RLS requires competency AND assignment; management does not grant measurements
+  ---
+  duration_ms: 4014.6853
+  type: 'test'
+  ...
+# Subtest: revocation gates existing definer commands and inaccessible historical implementations
+ok 20 - revocation gates existing definer commands and inaccessible historical implementations
+  ---
+  duration_ms: 2006.4784
+  type: 'test'
+  ...
+# Subtest: student links require verified matching email, single use, tenant validity and no membership elevation
+ok 21 - student links require verified matching email, single use, tenant validity and no membership elevation
+  ---
+  duration_ms: 1761.6209
+  type: 'test'
+  ...
+# Subtest: student sees only published metrics; private notes never leak, export is scoped and not truncated
+ok 22 - student sees only published metrics; private notes never leak, export is scoped and not truncated
+  ---
+  duration_ms: 1652.4147
+  type: 'test'
+  ...
+# Subtest: assessment corrections preserve original, prevent stale writes and require republication
+ok 23 - assessment corrections preserve original, prevent stale writes and require republication
+  ---
+  duration_ms: 1382.7538
+  type: 'test'
+  ...
+# Subtest: dates, authorship and column grants resist crafted Data API inserts
+ok 24 - dates, authorship and column grants resist crafted Data API inserts
+  ---
+  duration_ms: 1391.8181
+  type: 'test'
+  ...
+# Subtest: privacy preferences are append-only, subject-only and requests are reviewable without deletion
+ok 25 - privacy preferences are append-only, subject-only and requests are reviewable without deletion
+  ---
+  duration_ms: 1374.7277
+  type: 'test'
+  ...
+# Subtest: retention is unconfigured by default, owner-reviewed and dry-run only
+ok 26 - retention is unconfigured by default, owner-reviewed and dry-run only
+  ---
+  duration_ms: 1384.034
+  type: 'test'
+  ...
+# Subtest: full migrations replay safely and historical hashes remain intact
+ok 27 - full migrations replay safely and historical hashes remain intact
+  ---
+  duration_ms: 1390.5257
+  type: 'test'
+  ...
+# Subtest: synthetic backup/restore verifies checksum, migration registry and restored authorization
+ok 28 - synthetic backup/restore verifies checksum, migration registry and restored authorization
+  ---
+  duration_ms: 2390.339
+  type: 'test'
+  ...
+# Subtest: student invitations expire, replacement revokes old links and lost creator authority blocks acceptance
+ok 29 - student invitations expire, replacement revokes old links and lost creator authority blocks acceptance
+  ---
+  duration_ms: 1413.0053
+  type: 'test'
+  ...
+# Subtest: agenda commands enforce assignment revocation and care history filters each competency
+ok 30 - agenda commands enforce assignment revocation and care history filters each competency
+  ---
+  duration_ms: 1491.525
+  type: 'test'
+  ...
+# Subtest: migration checksums match the existing cloud registry on Windows and Linux
+ok 31 - migration checksums match the existing cloud registry on Windows and Linux
+  ---
+  duration_ms: 28.3552
+  type: 'test'
+  ...
+# Subtest: cloud SQL harness runs and rolls back every fixture
+ok 32 - cloud SQL harness runs and rolls back every fixture
+  ---
+  duration_ms: 3856.4936
+  type: 'test'
+  ...
+# Subtest: real PostgreSQL RLS: tenants, roles, foreign keys and forbidden writes
+ok 33 - real PostgreSQL RLS: tenants, roles, foreign keys and forbidden writes
+  ---
+  duration_ms: 1929.8294
+  type: 'test'
+  ...
+# Subtest: cloud SQL harness asserts access and rolls back all synthetic fixtures
+ok 34 - cloud SQL harness asserts access and rolls back all synthetic fixtures
+  ---
+  duration_ms: 1732.3851
+  type: 'test'
+  ...
+# Subtest: staging guard rejects production even when a manifest names it
+ok 35 - staging guard rejects production even when a manifest names it
+  ---
+  duration_ms: 1.7161
+  type: 'test'
+  ...
+# Subtest: staging guard requires exact destination and verified synthetic restore
+ok 36 - staging guard requires exact destination and verified synthetic restore
+  ---
+  duration_ms: 0.5742
+  type: 'test'
+  ...
+# Subtest: legacy cloud mutators stop before provisioning or cleanup
+ok 37 - legacy cloud mutators stop before provisioning or cleanup
+  ---
+  duration_ms: 0.282
+  type: 'test'
+  ...
+# Subtest: staging refuses missing approval and a modified restore evidence file
+ok 38 - staging refuses missing approval and a modified restore evidence file
+  ---
+  duration_ms: 37.7932
+  type: 'test'
+  ...
+# Subtest: team permissions, private invite hashes, verified email, revocation and single use
+ok 39 - team permissions, private invite hashes, verified email, revocation and single use
+  ---
+  duration_ms: 3857.4792
+  type: 'test'
+  ...
+# Subtest: eight-file populated baseline upgrades without rewriting records, hashes or blanket permissions
+ok 40 - eight-file populated baseline upgrades without rewriting records, hashes or blanket permissions
+  ---
+  duration_ms: 3744.4163
+  type: 'test'
+  ...
+1..40
+# tests 40
+# suites 0
+# pass 40
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 22648.8558
+
+> nutritrack-business@0.1.0 typecheck
+> tsc --noEmit
+
+
+> nutritrack-business@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.27
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 3.3s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/13) ...
+   Generating static pages (3/13)
+   Generating static pages (6/13)
+   Generating static pages (9/13)
+ ✓ Generating static pages (13/13)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                    5.91 kB         177 kB
+├ ○ /_not-found                            994 B         104 kB
+├ ○ /acessos                             5.56 kB         176 kB
+├ ○ /agenda                                684 B         179 kB
+├ ○ /aluno                               4.16 kB         171 kB
+├ ○ /alunos                              5.51 kB         176 kB
+├ ƒ /alunos/[id]                           288 B         187 kB
+├ ƒ /api/health                            123 B         103 kB
+├ ○ /avaliacoes                            170 B         187 kB
+├ ○ /convite                             2.72 kB         170 kB
+├ ○ /demo                                5.13 kB         108 kB
+├ ○ /equipa                              4.83 kB         175 kB
+└ ○ /marca                               3.98 kB         175 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/255-ce8c7c75002f810b.js       46.5 kB
+  ├ chunks/4bd1b696-c023c6e3521b1417.js  54.2 kB
+  └ other shared chunks (total)          1.99 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+EVIDENCE FILE: consolidation-browser.log
+
+> nutritrack-business@0.1.0 test:e2e
+> playwright test --workers=2
+
+[WebServer] (node:37468) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 25 tests using 2 workers
+
+(node:23356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23356) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  2 [chromium] › e2e\care.spec.cjs:39:1 › conflicting profile write keeps draft and requires explicit reload (1.1s)
+  ok  1 [chromium] › e2e\care.spec.cjs:8:1 › profile saves goal, responsible and review, then shows them on the dashboard (1.5s)
+  ok  3 [chromium] › e2e\care.spec.cjs:69:1 › coach edits follow-up but cannot assign responsible; archived profile is read-only (714ms)
+  ok  4 [chromium] › e2e\care.spec.cjs:77:1 › archived overview disables follow-up and hides appointment creation (772ms)
+  ok  5 [chromium] › e2e\care.spec.cjs:89:1 › student agenda handles slot conflict, cancellation confirmation and reopening (1.8s)
+  ok  6 [chromium] › e2e\care.spec.cjs:145:1 › agenda paginates and retains establishment across navigation (2.0s)
+  ok  7 [chromium] › e2e\care.spec.cjs:170:1 › agenda rejects Lisbon repeated hour and remains usable on mobile (858ms)
+  ok  8 [chromium] › e2e\foundations.spec.cjs:3:1 › commercial-only administrator cannot see measurements or follow-up sections (737ms)
+  ok  9 [chromium] › e2e\foundations.spec.cjs:10:1 › read-only competency hides measurement writes while keeping history (820ms)
+  ok 10 [chromium] › e2e\foundations.spec.cjs:17:1 › explicit publication updates the current row (899ms)
+  ok 11 [chromium] › e2e\foundations.spec.cjs:22:1 › student invitation uses the separate acceptance endpoint and removes its token from URL (719ms)
+  ok 13 [chromium] › e2e\live.spec.cjs:2:1 › live demo renders (273ms)
+  ok 12 [chromium] › e2e\foundations.spec.cjs:30:1 › student area renders own published projection and registers privacy request (748ms)
+  ok 14 [chromium] › e2e\live.spec.cjs:3:1 › demo fictitious student and assessment (386ms)
+  ok 15 [chromium] › e2e\live.spec.cjs:4:1 › mobile dark layout and nav (471ms)
+  ok 16 [chromium] › e2e\live.spec.cjs:6:1 › public demo previews follow-up and agenda without persisting records (530ms)
+  ok 17 [chromium] › e2e\workspace.spec.cjs:3:1 › dashboard retries errors and opens a student profile with preserved history (1.1s)
+  ok 18 [chromium] › e2e\workspace.spec.cjs:13:1 › late dashboard response cannot repopulate another establishment (1.4s)
+  ok 19 [chromium] › e2e\workspace.spec.cjs:20:1 › foreign student lookup shows no assessment or personal data (598ms)
+  ok 20 [chromium] › e2e\workspace.spec.cjs:26:1 › archived profile is read only while retaining its history (754ms)
+  ok 21 [chromium] › e2e\workspace.spec.cjs:32:1 › coach cannot edit branding or manage the team (656ms)
+  ok 22 [chromium] › e2e\workspace.spec.cjs:37:1 › white tenant colour uses readable black text in the preview (693ms)
+  ok 23 [chromium] › e2e\workspace.spec.cjs:42:1 › directory and six item navigation fit a small mobile viewport (699ms)
+  ok 24 [chromium] › e2e\workspace.spec.cjs:48:1 › signed-out professional routes never show records or privileged actions (593ms)
+  ok 25 [chromium] › e2e\workspace.spec.cjs:55:1 › revoking an invitation requires confirmation and cancellation leaves access unchanged (814ms)
+
+  25 passed (16.4s)
+
+EVIDENCE FILE: consolidation-recovery.log
+
+> nutritrack-business@0.1.0 test:recovery:local
+> tsx scripts/local-recovery-demo.ts
+
+{"result":"PASS","scope":"synthetic-local-only","migrations":10,"restored_assessments":1,"restored_admin_has_measurements":false,"sha256":"d044adff0b439bded5741951873a6d36219287bc393dafcc0cd3c9e763697cd2"}
+
+EVIDENCE FILE: consolidation-recovery-upgrade.log
+TAP version 13
+# Subtest: staging guard rejects production even when a manifest names it
+ok 1 - staging guard rejects production even when a manifest names it
+  ---
+  duration_ms: 1.2843
+  type: 'test'
+  ...
+# Subtest: staging guard requires exact destination and verified synthetic restore
+ok 2 - staging guard requires exact destination and verified synthetic restore
+  ---
+  duration_ms: 0.4557
+  type: 'test'
+  ...
+# Subtest: legacy cloud mutators stop before provisioning or cleanup
+ok 3 - legacy cloud mutators stop before provisioning or cleanup
+  ---
+  duration_ms: 0.2364
+  type: 'test'
+  ...
+# Subtest: staging refuses missing approval and a modified restore evidence file
+ok 4 - staging refuses missing approval and a modified restore evidence file
+  ---
+  duration_ms: 19.5226
+  type: 'test'
+  ...
+# Subtest: eight-file populated baseline restores before upgrading without rewriting records, hashes or blanket permissions
+ok 5 - eight-file populated baseline restores before upgrading without rewriting records, hashes or blanket permissions
+  ---
+  duration_ms: 2446.3746
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2994.5618
+
+EVIDENCE FILE: consolidation-npm-audit.json
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {},
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "dependencies": {
+      "prod": 26,
+      "dev": 37,
+      "optional": 67,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 101
+    }
+  }
+}
