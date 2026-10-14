@@ -16,6 +16,14 @@ test('staging guard requires exact destination and verified synthetic restore',(
  assert.throws(()=>assertStagingTarget('https://abcdefghijklmnopqrst.supabase.co',{...approval,restore:{...approval.restore,verified:false}} as unknown as StagingApproval));
 });
 test('legacy cloud mutators stop before provisioning or cleanup',()=>assert.throws(refuseLegacyLiveRunner,/Legacy live runner disabled/));
+test('local validation permits only the two named projects at their dedicated loopback ports',()=>{
+ const local={...approval,kind:'local' as const,project_ref:'aura-foundations-local'};
+ assert.doesNotThrow(()=>assertStagingTarget('http://127.0.0.1:57321',local));
+ assert.doesNotThrow(()=>assertStagingTarget('http://127.0.0.1:58321',{...local,project_ref:'aura-foundations-restore'}));
+ for(const url of ['http://localhost:57321','http://0.0.0.0:57321','http://192.168.1.1:57321','http://127.0.0.1:54321','http://127.0.0.1:58321','https://vfplbkfxipfictuwkkoe.supabase.co'])assert.throws(()=>assertStagingTarget(url,local));
+ assert.throws(()=>assertStagingTarget('http://127.0.0.1:57321',{...local,project_ref:'vfplbkfxipfictuwkkoe'}));
+ assert.throws(()=>assertStagingTarget('http://127.0.0.1:57321',approval));
+});
 test('staging refuses missing approval and a modified restore evidence file',async()=>{
  const previous=process.env.AURA_STAGING_APPROVAL_FILE,dir=await mkdtemp(join(tmpdir(),'aura-staging-guard-'));
  const evidence=join(dir,'restore.json'),manifest=join(dir,'approval.json'),bytes='{"synthetic_restore":"test fixture only"}';
