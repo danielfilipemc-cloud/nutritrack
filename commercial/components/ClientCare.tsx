@@ -38,12 +38,14 @@ export default function ClientCare({
   userId,
   client,
   manager,
+  writable=true,
   onDirtyChange,
 }: {
   org: string;
   userId: string;
   client: SelectedClient;
   manager: boolean;
+  writable?: boolean;
   onDirtyChange?: (dirty: boolean) => void;
 }) {
   const scope = useRef(new RequestScope()),
@@ -146,7 +148,7 @@ export default function ClientCare({
   }
   async function save(event: FormEvent) {
     event.preventDefault();
-    if (!db || !ready || busy || client.archived_at || conflict) return;
+    if (!db || !ready || busy || client.archived_at || conflict || !writable) return;
     if (
       draft.status === "completed" &&
       saved.status !== "completed" &&
@@ -190,7 +192,7 @@ export default function ClientCare({
       if (valid()) setBusy(false);
     }
   }
-  const disabled = !ready || busy || !!client.archived_at || conflict;
+  const disabled = !ready || busy || !!client.archived_at || conflict || !writable;
   return (
     <>
       <section className="panel" aria-busy={loading}>

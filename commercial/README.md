@@ -1,5 +1,14 @@
 # AURA Business
 
+## Entrega de fundações — 14-10-2026
+
+Fases 0 e 1A implementadas localmente; controlos técnicos da Fase 1B implementados. A aplicação cloud/Render continua no baseline anterior: **as duas migrations novas não foram aplicadas na cloud e não houve publicação**. Antes de ligar este frontend novo a Supabase real, seguir [FOUNDATIONS.md](docs/FOUNDATIONS.md), incluindo backup/restauro cloud, provisionamento explícito e JWT/PostgREST em staging.
+
+Novas áreas: /acessos para competências/atribuições e convites do aluno; /aluno para acesso próprio mínimo, medições publicadas e privacidade. Não se avançou para a Fase 2. [Baseline](docs/FOUNDATION_BASELINE.md), [segurança, limites e recuperação](docs/FOUNDATIONS.md).
+
+O responsável mantém pendentes as decisões jurídicas e o gate cloud de recuperação. Não há eliminação automática. Para ensaio físico de recuperação **apenas sintético local**: npm run test:recovery:local.
+
+
 SaaS White Label para PTs, estúdios e ginásios. A aplicação está exclusivamente em
 `commercial/`; o NutriTrack pessoal e `main` não fazem parte deste desenvolvimento.
 Tema Dark Premium: #0F1414, #161D1D, #1D2626, #137F79 e #F2F7F6.
@@ -63,25 +72,13 @@ o código local do PR; não depende de uma versão antiga já publicada.
 
 ## Estado da entrega
 
-21 testes locais/PostgreSQL, TypeScript, build e auditoria npm aprovados; 20 cenários
-Chromium locais aprovados. Três cenários Chromium reais com contas fictícias foram
-aprovados no workspace anterior. O novo runner `test:care:api` e os cenários
-`auth-care.spec.cjs` validam o bloco novo após aplicar a migração. Evidências e limites em
-[PROFESSIONAL_WORKSPACE.md](docs/PROFESSIONAL_WORKSPACE.md).
+Fundações locais: 36 testes de domínio/PostgreSQL (21 contratos históricos e 15 testes do schema completo/upgrade), 25 Chromium com API interceptada, TypeScript e build no Node 22.23.3. O ensaio físico local de backup/restauro passou; não equivale a um backup do projeto Supabase.
 
-Demonstração existente: https://aura-business-demo.onrender.com/ e `/demo`.
-O workspace profissional (PR #7) está integrado e publicado. O novo bloco de ficha,
-acompanhamento e agenda é desenvolvido por PR na branch `feat/aura-followup-agenda`.
-A migração incremental é `20261013210823_followup_agenda.sql`; nunca publicar o novo
-frontend antes de aplicar e validar a migração no projeto AURA. Consultar
-[FOLLOWUP_AGENDA.md](docs/FOLLOWUP_AGENDA.md) para regras e testes reais opcionais.
-A publicação continua limitada a demonstração com dados fictícios.
+A demo cloud/Render continua no baseline auditado. As duas migrations novas estão versionadas, mas não aplicadas na cloud. Novas permissões exigem competências e atribuições explícitas; não há backfill em massa de acesso sensível. Ver docs/FOUNDATIONS.md para a sequência de staging/recuperação antes de ligar o frontend novo a uma API real.
 
-Proteção contra palavras-passe comprometidas ainda desativada. Consentimento,
-retenção, direitos dos titulares, backups e política de sessões/MFA exigem trabalho
-antes de dados reais. Logótipos/uploads, portal de alunos, domínios personalizados,
-subscrições e pagamentos continuam fora desta entrega.
+O advisor cloud continua com proteção contra passwords comprometidas desativada. MFA/sessões, decisões jurídicas, direitos completos, backup/restauro cloud e JWT/PostgREST das políticas novas são gates pendentes antes de dados reais. Pedidos de eliminação são registados para análise, sem expurgo automático. NutriTrack permanece intacto e não foi usado para sincronização.
 
+Não se avançou para a Fase 2 e não houve push/merge/deploy automático.
 ## Documentação
 
 - [Auditoria e decisões desta entrega](docs/PROFESSIONAL_WORKSPACE.md)

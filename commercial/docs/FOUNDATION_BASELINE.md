@@ -9,7 +9,9 @@ Baseline local/remoto: `543e3a0b78e864cc65a8c07dec0736c8ee6c39af`, branch `saas-
 - CLI oficial Supabase **2.120.0**, obtido pela distribuição npm fixada e autorizado. Criou as migrations novas com `migration new`, sem db push/reset.
 - Changelog/documentação RLS/funções consultados. A depreciação de ciphers TLS antigos anunciada em 12-10 não exige trocar a stack Node/browser suportada; acompanhar clientes obsoletos antes de piloto.
 
-Fontes oficiais: https://supabase.com/changelog ; https://supabase.com/docs/guides/database/postgres/row-level-security ; https://supabase.com/docs/guides/database/functions
+Fontes oficiais: [changelog](https://supabase.com/changelog), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [funções](https://supabase.com/docs/guides/database/functions).
+
+Instalação reproduzível adicional: `npm ci --ignore-scripts --no-audit --no-fund` numa pasta vazia de trabalho instalou 43 pacotes em 46 s, sem mudar o lockfile. `npm ls` identifica `@img/sharp-wasm32@0.35.5` e `@emnapi/runtime@1.11.3` como extraneous também nessa instalação limpa; ambos são opcionais e constam do lockfile com versão/integrity. O aviso não é resíduo da instalação anterior nem foi resolvido por remover pacotes manualmente. Reavaliar o comportamento npm/Sharp ao atualizar dependências.
 
 ## Registos existentes, imutáveis
 

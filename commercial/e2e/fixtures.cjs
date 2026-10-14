@@ -17,6 +17,8 @@ async function fixture(
     followupConflict = false,
     slotConflict = false,
     seedAppointments = 0,
+    restricted = false,
+    readOnly = false,
   } = {},
 ) {
   let failures = dashboardError ? 1 : 0,
@@ -80,6 +82,7 @@ async function fixture(
   const assessments = [
     {
       id: "measurement-1",
+      revision: 1, student_visible: false, superseded_at: null,
       assessed_on: today,
       weight_kg: 80,
       height_cm: 175,
@@ -171,6 +174,12 @@ async function fixture(
           .map((a) => ({ ...a, full_name: client.full_name })),
       });
     }
+    if(path.endsWith('/rpc/aura_client_permissions'))return respond({assessments_read:!restricted,assessments_write:!restricted&&!readOnly,followup_read:!restricted,followup_write:!restricted&&!readOnly,schedule_read:true,schedule_write:!readOnly});
+    if(path.endsWith('/rpc/aura_privacy_context'))return respond({consents:[],requests:[]});
+    if(path.endsWith('/staff_capabilities')||path.endsWith('/client_assignments')||path.endsWith('/client_users'))return respond([]);
+    if(path.endsWith('/rpc/aura_assessment_create')){const p=request.postDataJSON();assessments.unshift({id:'new-synthetic-measurement',assessed_on:p.p_date,weight_kg:p.p_weight,height_cm:p.p_height,waist_cm:p.p_waist,revision:1,student_visible:false,superseded_at:null});return respond('new-synthetic-measurement');}
+    if(path.endsWith('/rpc/aura_assessment_share')){const input=request.postDataJSON();const a=assessments.find(a=>a.id===input.p_assessment);a.student_visible=input.p_visible;a.revision++;return respond(a.revision);}
+    if(path.endsWith('/rpc/aura_visible_export'))return respond({format_version:1,scope:'visible_records_only',client:{id:C},assessments:[]});
     if (path.endsWith("/rpc/aura_team_list"))
       return respond([
         { user_id: U, email: user.email, role: "owner", joined_at: today },
