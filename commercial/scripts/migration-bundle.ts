@@ -7,14 +7,14 @@ export function migrationSource(name:string,source:string){
  return ["schema.sql","002_assessments.sql","003_branding.sql"].includes(name)
   ?lf.replace(/\n/g,"\r\n"):lf;
 }
-export async function migrationBundle(){
+export async function migrationBundle(options:{through?:string}={}){
  let sql=`begin;
 create schema if not exists app_private;
 revoke all on schema app_private from public,anon;
 create table if not exists app_private.aura_migrations(name text primary key,checksum text not null,applied_at timestamptz not null default now());
 revoke all on app_private.aura_migrations from public,anon,authenticated;
 `;
- const extra=(await readdir(new URL("../supabase/migrations/",import.meta.url))).filter(n=>n.endsWith(".sql")).sort().map(n=>"migrations/"+n);
+ const extra=(await readdir(new URL("../supabase/migrations/",import.meta.url))).filter(n=>n.endsWith(".sql")&&(!options.through||n<=options.through)).sort().map(n=>"migrations/"+n);
  for(const name of ["schema.sql","002_assessments.sql","003_branding.sql",...extra]){
  const body=migrationSource(name,await readFile(new URL("../supabase/"+name,import.meta.url),"utf8"));const hash=createHash("sha256").update(body).digest("hex");
  sql+=`do $migration$ begin

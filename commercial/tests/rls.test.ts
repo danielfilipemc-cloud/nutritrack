@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {migrationBundle} from "../scripts/migration-bundle";
+import {baselineMigrationBundle as migrationBundle} from "./baseline";
 import {PGlite} from "@electric-sql/pglite";
 import {readFile} from "node:fs/promises";
 test("cloud SQL harness runs and rolls back every fixture",async()=>{
