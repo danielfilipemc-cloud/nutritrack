@@ -6,6 +6,8 @@ import {migrationSource} from "../scripts/migration-bundle";
 
 test("migration checksums match the existing cloud registry on Windows and Linux",async()=>{
  const registered:Record<string,string>={
+  "migrations/20261013202654_professional_dashboard.sql":"665047dd2eba7f069a701aa941df5054ff88d17042ae598fea006baf8efc8512",
+  "migrations/20261013210823_followup_agenda.sql":"105bd1fb0ef9f5a7161bf3369a45789efcac69f528a067f0add31d9ae0ef9b08",
   "schema.sql":"c45dd37d5cbddeaa65ded29d631421d06593fc76014cb38b68128660e8a8b890",
   "002_assessments.sql":"99b9e62c5f558321700b1f1415d9fcd9898093bf3d52b908cc3ec3617816dd96",
   "003_branding.sql":"97dc0225af4f4ca37b0463bf259efec2856646dc4b0ac06da3adf2f99bc683eb",
