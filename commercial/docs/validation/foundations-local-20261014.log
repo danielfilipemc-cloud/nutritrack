@@ -1,0 +1,29 @@
+
+> nutritrack-business@0.1.0 test:foundations:staging
+> tsx scripts/foundations-staging.ts
+
+PASS: provision confirmed synthetic users through Auth Admin, without emails
+PASS: unconfirmed synthetic email cannot sign in
+PASS: seed two isolated synthetic organizations through service role
+PASS: competency without assignment grants no access
+PASS: assigned competent professional can create a server-authored assessment
+PASS: owner/admin lack implicit access to measurements; unassigned and other tenant are isolated
+PASS: read permission does not grant write and browser cannot bypass the command
+PASS: student invitation binds confirmed identity once without staff membership
+PASS: followup and schedule require competency and assignment; student sees only own appointment
+PASS: student sees only explicitly published own projection, not raw assessments or another pupil
+PASS: concurrent PostgREST corrections produce one success and HTTP 409
+PASS: subject preferences, privacy request and visible export exclude private fields
+PASS: assignment and competency revocation take effect with unchanged existing JWT
+PASS: student revocation takes effect with unchanged JWT
+PASS: professional membership removal revokes access with unchanged JWT
+PASS: anonymous and forged JWT cannot invoke protected PostgREST RPC
+Staging evidence retained: <commercial>/.aura-integration/staging-9bd01a67-2acd-4ce1-8737-ff5f0be34db8/; no cleanup or production operations
+
+PASS: provision two confirmed synthetic security accounts, without emails
+PASS: fresh JWT containing forged user_metadata does not confer organization authority
+PASS: app_private cannot be selected through exposed PostgREST schemas
+PASS: TOTP enrollment, challenge and verification issue AAL2
+PASS: refresh tokens rotate and global sign-out prevents subsequent refresh
+PASS: password recovery stays in Mailpit, clamps unapproved redirects and accepts only the new password
+PASS: real local Auth security checks completed; secrets and mail tokens were not logged

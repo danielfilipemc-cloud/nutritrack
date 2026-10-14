@@ -23,7 +23,10 @@
     "test:e2e": "playwright test",
     "test:care:api": "tsx scripts/care-integration.ts",
     "test:recovery:local": "tsx scripts/local-recovery-demo.ts",
-    "test:foundations:staging": "tsx scripts/foundations-staging.ts"
+    "test:foundations:staging": "tsx scripts/foundations-staging.ts",
+    "test:auth:local-security": "tsx scripts/auth-local-security.cjs",
+    "test:recovery:supabase:prepare": "node scripts/local-baseline-fixture.cjs",
+    "test:recovery:supabase:verify": "node scripts/local-baseline-fixture.cjs --verify-restored"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",

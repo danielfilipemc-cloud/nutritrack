@@ -3,6 +3,8 @@ $ErrorActionPreference='Stop'
 # Only prepares/starts a named local runtime. Does not install app migrations,
 # delete/reset data, connect to a cloud project or publish the Next.js app.
 $commercialRoot=Split-Path $PSScriptRoot -Parent
+$dockerStorageDrive=[IO.Path]::GetPathRoot($env:LOCALAPPDATA).TrimEnd('\').TrimEnd(':')
+if((Get-PSDrive -Name $dockerStorageDrive).Free -lt 10GB){throw 'At least 10 GiB free on the Docker Desktop storage drive is required before downloading images.'}
 if((& node -p 'process.versions.node') -ne '22.23.3'){throw 'Activate the repository Node 22.23.3 runtime before starting local validation.'}
 $dockerCommand=Get-Command docker -ErrorAction SilentlyContinue
 $dockerExe=if($dockerCommand){$dockerCommand.Source}else{Join-Path $env:LOCALAPPDATA 'Programs\DockerDesktop\resources\bin\docker.exe'}
