@@ -1,3 +1,5 @@
+// Historical protected-cloud harness. Stop before loading credentials or fixtures.
+throw new Error('Legacy live Auth E2E disabled: protected project. Use the explicitly selected auth-objectives-local.spec.cjs sandbox test.');
 const {test,expect}=require('@playwright/test');
 const {createClient}=require('@supabase/supabase-js');
 const {randomUUID}=require('node:crypto');

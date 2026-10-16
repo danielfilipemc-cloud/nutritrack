@@ -13,6 +13,9 @@
   --aura-shadow: 0 5px 24px rgb(24 59 55 / 5%);
 }
 html { scroll-behavior: smooth; }
+.aura-objectives {list-style:none;padding:0;margin:16px 0;display:grid;gap:12px;}
+.aura-objectives>li {border:1px solid var(--aura-line);border-radius:var(--aura-radius);padding:16px;overflow-wrap:anywhere;}
+.aura-objectives h3 {margin:0 0 8px;}
 body { background:var(--aura-canvas); color:var(--aura-ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; -webkit-font-smoothing:antialiased; }
 .shell { max-width:1380px; padding:clamp(16px,3vw,40px); }
 header { padding:14px 0 24px; border-color:var(--aura-line); }

@@ -1,13 +1,13 @@
 import {PGlite} from '@electric-sql/pglite';
 import {migrationBundle} from '../scripts/migration-bundle';
 export const id=(n:number)=>`00000000-0000-0000-0000-${String(n).padStart(12,'0')}`;
-export async function foundationFixture(){
+export async function foundationFixture(through?:string){
  const db=new PGlite();
  await db.exec(`create role anon;create role authenticated;create schema auth;
  create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
  grant usage on schema public,auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;`);
- await db.exec((await migrationBundle()).replace('create extension if not exists pgcrypto;',''));
+ await db.exec((await migrationBundle({through})).replace('create extension if not exists pgcrypto;',''));
  await db.exec(`insert into auth.users values
  ('${id(1)}','owner@example.invalid',now()),('${id(2)}','coach@example.invalid',now()),('${id(3)}','admin@example.invalid',now()),
  ('${id(4)}','student@example.invalid',now()),('${id(5)}','foreign@example.invalid',now()),('${id(6)}','unconfirmed@example.invalid',null),

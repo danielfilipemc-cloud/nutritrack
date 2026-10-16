@@ -19,6 +19,8 @@ async function fixture(
     seedAppointments = 0,
     restricted = false,
     readOnly = false,
+    seedObjectives = 0,
+    objectiveConflict = false,
   } = {},
 ) {
   let failures = dashboardError ? 1 : 0,
@@ -28,6 +30,9 @@ async function fixture(
     careEvents = [],
     followupConflicts = followupConflict ? 1 : 0,
     slotConflicts = slotConflict ? 1 : 0;
+  let objectiveConflicts=objectiveConflict?1:0;
+  let objectives=Array.from({length:seedObjectives},(_,i)=>({id:`10000000-0000-0000-0000-${String(i+1).padStart(12,'0')}`,organization_id:A,client_id:C,title:`Objetivo fictício ${i+1}`,state:'active',due_on:today,completed_at:null,revision:1,created_at:today+'T09:00:00Z',updated_at:today+'T09:00:00Z'}));
+  const objectiveEvents=[];
   const second = "00000000-0000-0000-0000-000000000005";
   let appointments = Array.from({ length: seedAppointments }, (_, i) => {
     const start = new Date(today + "T09:00:00Z");
@@ -209,6 +214,27 @@ async function fixture(
       ]);
     if (path.endsWith("/client_followups"))
       return respond(followup ? [followup] : []);
+    if(path.endsWith('/client_objectives')){
+      let items=url.searchParams.get('organization_id')===`eq.${A}`&&url.searchParams.get('client_id')===`eq.${C}`?objectives:[];
+      if(url.searchParams.get('state'))items=items.filter(item=>'eq.'+item.state===url.searchParams.get('state'));
+      const offset=Number(url.searchParams.get('offset')||0),size=Number(url.searchParams.get('limit')||25),rows=items.slice(offset,offset+size);
+      return respond(rows,200,{'content-range':`${offset}-${offset+rows.length-1}/${items.length}`});
+    }
+    if(path.endsWith('/rpc/aura_objective_history')){
+      const input=request.postDataJSON();if(input.p_org!==A||input.p_client!==C||restricted)return respond({code:'42501'},403);
+      return respond(objectiveEvents.slice(input.p_offset,input.p_offset+25));
+    }
+    if(path.endsWith('/rpc/aura_objective_save')){
+      const input=request.postDataJSON();if(input.p_org!==A||input.p_client!==C||restricted||readOnly||archived)return respond({code:'42501'},403);
+      const existing=objectives.find(item=>item.id===input.p_id);
+      if(objectiveConflicts-- >0){if(existing){existing.title='Objetivo alterado noutro pedido';existing.revision++;}return respond({code:'PT409',message:'Revision conflict'},409);}
+      if(existing&&existing.revision!==input.p_revision)return respond({code:'PT409'},409);
+      const oldState=existing?.state||null,goal=existing||{id:`20000000-0000-0000-0000-${String(objectives.length+1).padStart(12,'0')}`,organization_id:A,client_id:C,created_at:today+'T10:00:00Z',revision:0};
+      Object.assign(goal,{title:input.p_title,state:input.p_state,due_on:input.p_due,revision:goal.revision+1,completed_at:input.p_state==='completed'?today+'T10:00:00Z':null,updated_at:today+'T10:00:00Z'});
+      if(!existing)objectives.unshift(goal);
+      objectiveEvents.unshift({id:'objective-event-'+objectiveEvents.length,objective_id:goal.id,action:!existing?'created':oldState!=='active'?'reopened':goal.state==='completed'?'completed':goal.state==='cancelled'?'cancelled':'updated',revision:goal.revision,from_state:oldState,to_state:goal.state,created_at:today+'T10:00:00Z'});
+      return respond(goal.id);
+    }
     if (path.endsWith("/rpc/aura_care_history")) {
       const offset = request.postDataJSON().p_offset;
       return respond(careEvents.slice(offset, offset + 25));
@@ -338,6 +364,7 @@ async function fixture(
     calls: () => calls,
     revocations: () => revocations,
     followup: () => followup,
+    objectives: () => objectives,
     appointments: () => appointments,
     second,
   };

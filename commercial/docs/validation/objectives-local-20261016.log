@@ -1,0 +1,21 @@
+AURA student objectives — local synthetic validation, 2026-10-16
+Migration: 20261016184133_student_objectives.sql
+SHA256 LF: 6bf231893d6343885e0c1da7bec87c49a532d73561cc2deaf22525fef150e73d
+Additive local upgrade 10→11: PASS; private pg_dump retained.
+Existing clients/assessments/followups/memberships/capabilities/assignments/registry fingerprints: unchanged.
+Objectives real Auth/PostgREST matrix: 8/8 PASS.
+Evidence run: d40668ec-3b65-4add-8131-e51745045907
+Foundation real regression after export wrapper: 16/16 PASS.
+Evidence run: 7bc7bdfe-2ccb-4343-ab8d-67fe1ad80e69
+Real local Chromium flow: login → profile → create → complete → history → logout PASS.
+Legacy protected-cloud Auth E2E: collection refused before env loading or mutation, expected PASS.
+npm audit --audit-level=moderate: zero vulnerabilities reported.
+Unit/domain/PostgreSQL suite before cloud smoke addition: 55/55 PASS.
+Final suite including cloud smoke rollback regression: 56/56 PASS.
+Final suite including exact fresh-staging/empty-project guard: 57/57 PASS; TypeScript PASS.
+Chromium fixture suite: 43/43 PASS; real local Chromium: 1/1 PASS.
+TypeScript and production build: PASS.
+Approved independent cloud staging created and installed; see STAGING_20261016.md.
+Cloud SQL simulated-claims smoke: 16/16 PASS, all synthetic fixtures rolled back.
+No production mutation/deploy, merge into published branch or destructive cleanup.
+Auth credentials, dumps, JWTs and private evidence are excluded from this log and Git.
