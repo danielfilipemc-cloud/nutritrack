@@ -1,5 +1,7 @@
 # AURA Business
 
+Esta branch acrescenta o primeiro incremento [Aluno 360º](docs/STUDENT_360.md) sobre as fundações: evolução por período/indicador, carregamento incremental e `/demo/aluno-360` sem conta ou persistência. Validação conjunta: 45 testes e 32 Chromium. PR #10 depende de #9; ambos permanecem fora da versão publicada.
+
 ## Entrega de fundações — 14-10-2026
 
 Fases 0 e 1A implementadas localmente; controlos técnicos da Fase 1B implementados. A aplicação cloud/Render continua no baseline anterior: **as duas migrations novas não foram aplicadas na cloud e não houve publicação**. Antes de ligar este frontend novo a Supabase real, seguir [FOUNDATIONS.md](docs/FOUNDATIONS.md), incluindo backup/restauro cloud, provisionamento explícito e JWT/PostgREST em staging.
@@ -48,6 +50,7 @@ por essas respostas de browser. Testes reais opcionais: ver a documentação aba
 - `/equipa` e `/convite`: hierarquia owner/admin/coach, convites pessoais de uso único e revogação.
 - `/marca`: nome/cor White Label, permissões e pré-visualização com contraste automático AA.
 - `/demo`: demonstração pública em memória, dados fictícios repostos ao recarregar.
+- `/demo/aluno-360`: preview sintético da ficha, avaliações, evolução, objetivos e agenda em memória; não publicado nesta entrega.
 
 O indicador pendente significa aluno ativo sem avaliação, ou última avaliação há
 mais de 30 dias. Não representa consultas agendadas nem interpretação clínica. As revisões

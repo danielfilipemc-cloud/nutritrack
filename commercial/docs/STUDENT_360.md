@@ -1,5 +1,13 @@
 # Aluno 360º — primeiro incremento da Fase 2
 
+## Consolidação de 16/10/2026
+
+A branch incorpora a consolidação das fundações `2c98474`, mantendo o PR #10 dependente do PR #9 e sem alterar o código da ficha ou das migrations. A suite Chromium completa passou **32/32 numa única execução**, substituindo o limite das execuções parciais descritas historicamente abaixo. Os 45 testes, TypeScript e build da revisão de entrada também passaram. As fundações foram verificadas separadamente: 41 testes, build e TypeScript PASS; 16 grupos reais Auth/RLS e seis Auth PASS novamente. O controlo restaurado passou login, isolamento e preservação de avaliação.
+
+Ver [estado de integração e gates](INTEGRATION_STATUS.md). As funcionalidades desta branch continuam fora da demonstração publicada. Treino, nutrição e comunicação permanecem incompletos; a aritmética alimentar pura não representa sincronização NutriTrack ou plano nutricional.
+
+Após incorporar as fundações: `npm run check` voltou a passar integralmente (45/45, TypeScript e build, 14 rotas). O código da aplicação/fixtures/testes/SQL não mudou relativamente à execução Chromium de 32/32; as alterações desta consolidação são documentação e repetição segura do runner Auth. CI das fundações `2c98474` aprovado: [run 38943372078](https://github.com/danielfilipemc-cloud/nutritrack/actions/runs/38943372078). O CI do próximo commit desta branch deve ser consultado separadamente.
+
 ## Entrega
 
 A ficha individual reúne o resumo, plano de acompanhamento com objetivo/responsável/revisão, avaliações e agenda já existentes, e acrescenta uma área própria de evolução. Mantém a experiência do aluno separada da interface profissional e continua a usar as permissões por aluno e competência das fundações.
