@@ -1,5 +1,7 @@
 # Estado de integração — 16/10/2026
 
+Checkpoint atual: ponte NutriTrack efetiva em `feat/aura-nutritrack-bridge`, dependente de #13. Catorze migrations no staging e sandbox local, Auth/JWT/PostgREST cloud aprovado e recuperação lógica sintética num destino local novo demonstrada. Ver NUTRITRACK_BRIDGE.md, STAGING_RECOVERY_20261016.md e validation/nutritrack-staging-20261016.log. Produção mantém #8; não houve merge/deploy. Checkpoints seguintes são históricos.
+
 Checkpoint mais recente: painel diário no PR #12, dependente de #11, e evolução integrada na branch `feat/aura-integrated-evolution`, dependente do painel. Ver DAILY_WORKSPACE.md, INTEGRATED_EVOLUTION.md e validation/daily-evolution-local-20261016.log. Treze migrations no sandbox local, onze no staging cloud independente e oito no baseline publicado. As contagens e branches abaixo são checkpoints anteriores, não evidência de publicação dos novos blocos. Gates Auth/recuperação cloud continuam abertos.
 
 Este documento distingue código remoto, validação local e publicação. Substitui as indicações históricas de que ainda não existe Supabase local ou de que a Fase 2 não pode começar com dados fictícios.

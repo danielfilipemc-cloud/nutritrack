@@ -2,7 +2,7 @@
 set -euo pipefail
 umask 077
 instance=${1:-baseline}
-case "$instance" in baseline|restore|rehearsal) ;; *) printf '%s\n' 'Only baseline, restore or rehearsal is permitted' >&2; exit 1;; esac
+case "$instance" in baseline|restore|rehearsal|cloud-recovery) ;; *) printf '%s\n' 'Only named synthetic local runtimes are permitted' >&2; exit 1;; esac
 case "${2:-}" in ''|--keep-alive) ;; *) printf '%s\n' 'Optional second argument: --keep-alive' >&2; exit 1;; esac
 grep -qx AURA-Dev /etc/aura-development-runtime || { printf '%s\n' 'Dedicated AURA-Dev runtime marker required' >&2; exit 1; }
 host_storage=$(cat /etc/aura-development-storage)
@@ -35,6 +35,8 @@ if test "$instance" = restore; then
  sed -e 's/aura-foundations-local/aura-foundations-restore/g' -e 's/573/583/g' "$template" > "$runtime/config.expected.toml"
 elif test "$instance" = rehearsal; then
  sed -e 's/aura-foundations-local/aura-foundations-rehearsal/g' -e 's/573/593/g' "$template" > "$runtime/config.expected.toml"
+elif test "$instance" = cloud-recovery; then
+ sed -e 's/aura-foundations-local/aura-foundations-cloud-recovery/g' -e 's/573/603/g' "$template" > "$runtime/config.expected.toml"
 else
  cat "$template" > "$runtime/config.expected.toml"
 fi

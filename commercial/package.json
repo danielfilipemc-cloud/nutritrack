@@ -28,7 +28,10 @@
     "test:recovery:supabase:prepare": "node scripts/local-baseline-fixture.cjs",
     "test:recovery:supabase:verify": "node scripts/local-baseline-fixture.cjs --verify-restored",
     "test:evolution:local": "tsx scripts/evolution-local.ts",
-    "test:objectives:local": "tsx scripts/objectives-local.ts"
+    "test:objectives:local": "tsx scripts/objectives-local.ts",
+    "test:nutritrack:staging": "tsx scripts/nutritrack-integration.ts",
+    "test:recovery:cloud:prepare": "tsx scripts/cloud-recovery-restore.ts",
+    "test:recovery:cloud:verify": "tsx scripts/cloud-recovery-verify.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",

@@ -1,6 +1,6 @@
 # Fronteira futura de medições NutriTrack
 
-Este incremento define um contrato de leitura validável em `lib/measurement-contract.ts`. Não liga bases de dados, cria identidades, concede acesso, importa medições ou ativa nutrição. O NutriTrack pessoal permanece intacto.
+O contrato de leitura em `lib/measurement-contract.ts` foi a primeira fronteira técnica. Existe agora uma ponte efetiva de importação assistida do backup NutriTrack v2, descrita em NUTRITRACK_BRIDGE.md. Não liga bases de dados ou contas, nem ativa nutrição/sincronização automática. O NutriTrack pessoal permanece intacto. Os requisitos abaixo continuam aplicáveis ao futuro transporte automático.
 
 Versão 1: origem `aura`/`nutritrack`, ID estável no sistema de origem, organization_id e client_id AURA, data civil da medição e valores com unidades explícitas. Campos suportados: peso em kg (duas casas), altura e cintura em cm (uma casa), com os mesmos limites atuais AURA. Rejeita unidades desconhecidas, valores não finitos/negativos, precisão excessiva, identidade diferente do contexto, campos extra e datas inválidas. Não converte silenciosamente libras, gramas ou polegadas.
 
