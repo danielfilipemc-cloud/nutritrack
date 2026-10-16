@@ -21,6 +21,7 @@ async function fixture(
     readOnly = false,
     seedObjectives = 0,
     objectiveConflict = false,
+    seedTimeline = 0,
   } = {},
 ) {
   let failures = dashboardError ? 1 : 0,
@@ -190,6 +191,20 @@ async function fixture(
           )
           .map((a) => ({ ...a, full_name: client.full_name })),
       });
+    }
+    if(path.endsWith('/rpc/aura_client_timeline')){
+      const p=request.postDataJSON();let rows=[];
+      if(p.p_org===A&&p.p_client===C){
+       if(!restricted){
+        rows.push(...assessments.filter(a=>!a.superseded_at&&a.assessed_on<=today).map(a=>({event_key:'assessment:'+a.id,kind:'assessment',record_id:a.id,occurred_at:a.assessed_on+'T00:00:00Z',occurred_on:a.assessed_on,action:'assessment_recorded',details:{source:'aura',weight_kg:a.weight_kg,height_cm:a.height_cm,waist_cm:a.waist_cm}})));
+        rows.push(...Array.from({length:seedTimeline},(_,i)=>({event_key:'objective:'+String(i).padStart(36,'0'),kind:'objective',record_id:String(i).padStart(36,'0'),occurred_at:today+'T09:00:00Z',occurred_on:today,action:'created',details:{to_state:'active',revision:1}})));
+        rows.push(...objectiveEvents.map(e=>({event_key:'objective:'+e.id,kind:'objective',record_id:e.objective_id,occurred_at:e.created_at,occurred_on:e.created_at.slice(0,10),action:e.action,details:{to_state:e.to_state,revision:e.revision}})));
+       }
+       rows.push(...appointments.map(a=>({event_key:'appointment:'+a.id,kind:'appointment',record_id:a.id,occurred_at:a.starts_at,occurred_on:a.starts_at.slice(0,10),action:a.status,details:{kind:a.kind,status:a.status,ends_at:a.ends_at}})));
+      }
+      rows=rows.filter(e=>(!p.p_from||e.occurred_on>=p.p_from)&&e.occurred_on<=p.p_to&&(p.p_kind==='all'||e.kind===p.p_kind)).sort((a,b)=>b.occurred_at.localeCompare(a.occurred_at)||b.event_key.localeCompare(a.event_key));
+      const total=rows.length;if(p.p_before)rows=rows.filter(e=>e.occurred_at<p.p_before||(e.occurred_at===p.p_before&&e.event_key<p.p_key));const more=rows.length>25,items=rows.slice(0,25),last=items.at(-1);
+      return respond({as_of:today,total,items,more,next:last?{before:last.occurred_at,key:last.event_key}:null});
     }
     if(path.endsWith('/rpc/aura_client_permissions'))return respond({assessments_read:!restricted,assessments_write:!restricted&&!readOnly,followup_read:!restricted,followup_write:!restricted&&!readOnly,schedule_read:true,schedule_write:!readOnly});
     if(path.endsWith('/rpc/aura_privacy_context'))return respond({consents:[],requests:[]});

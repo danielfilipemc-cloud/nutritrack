@@ -33,6 +33,12 @@ test('real local synthetic account manages an objective through the existing pro
  await expect(region.getByRole('heading',{name:title,exact:true})).toHaveCount(0);await region.getByLabel('Estado dos objetivos').selectOption('completed');
  await expect(region.getByRole('heading',{name:title,exact:true})).toBeVisible();await region.getByText('Histórico dos objetivos',{exact:true}).click();
  await expect(region.getByText(/Objetivo concluído/).first()).toBeVisible();
+ await page.goto(demo.profile_url+'&section=evolution');
+ await expect(page.getByRole('heading',{name:'Evolução do aluno'})).toBeVisible();
+ const timeline=page.getByRole('region',{name:'Cronologia integrada do aluno'});
+ await timeline.getByLabel('Tipo de registo').selectOption('assessment');await expect(timeline.getByText('80 kg',{exact:true})).toBeVisible();
+ await timeline.getByLabel('Tipo de registo').selectOption('objective');await expect(timeline.getByRole('heading',{name:'Objetivo concluído',exact:true}).first()).toBeVisible();
+ await page.goto('/');await expect(page.getByRole('region',{name:'Prioridades do profissional'})).toBeVisible();
  await page.getByRole('button',{name:'Terminar sessão',exact:true}).click();await expect(page.getByRole('button',{name:'Entrar na plataforma'})).toBeVisible();
  expect(unexpected).toEqual([]);
 });
