@@ -1,5 +1,11 @@
 # Estado de integração — 16/10/2026
 
+## Estado efetivo após consolidação
+
+PRs #9–#14 integrados, pela ordem das dependências, em `saas-foundation` (`deea349103ddf7462d254efc35b26d9e87c5967f`). O diff dessa revisão contra `78dd98b` é vazio: os merges preservaram exatamente a árvore validada. `main` não foi alterada. Os checkpoints abaixo descrevem o estado anterior à integração.
+
+Staging separado: https://aura-business-staging.onrender.com, serviço `srv-db9al5ajnfac73bivqr0`, branch `integration/aura-staging`, plano free e auto-deploy desligado. Primeira publicação validada em `78dd98b`; Supabase dedicado `vgbwmamntjmhzrpvhxzb`, 14 migrations. Três fluxos Chromium com login cloud real aprovados (profissional, aluno e gestor); smoke de dez rotas e vinte assets aprovado. Produção continua no serviço anterior, sem nova publicação ou migration. Ver ONLINE_STAGING.md para configuração e limites; INDEPENDENT_AUDIT_BRIEF.md prepara a revisão externa.
+
 Checkpoint atual: ponte NutriTrack efetiva em `feat/aura-nutritrack-bridge`, dependente de #13. Catorze migrations no staging e sandbox local, Auth/JWT/PostgREST cloud aprovado e recuperação lógica sintética num destino local novo demonstrada. Ver NUTRITRACK_BRIDGE.md, STAGING_RECOVERY_20261016.md e validation/nutritrack-staging-20261016.log. Produção mantém #8; não houve merge/deploy. Checkpoints seguintes são históricos.
 
 Checkpoint mais recente: painel diário no PR #12, dependente de #11, e evolução integrada na branch `feat/aura-integrated-evolution`, dependente do painel. Ver DAILY_WORKSPACE.md, INTEGRATED_EVOLUTION.md e validation/daily-evolution-local-20261016.log. Treze migrations no sandbox local, onze no staging cloud independente e oito no baseline publicado. As contagens e branches abaixo são checkpoints anteriores, não evidência de publicação dos novos blocos. Gates Auth/recuperação cloud continuam abertos.

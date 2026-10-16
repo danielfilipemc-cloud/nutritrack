@@ -1,0 +1,30 @@
+AURA Business — isolated online staging consolidation, 2026-10-16
+PR9 merge 0fc07d7a79295e843673f515cf6c14c1bb74b423
+PR10 merge ff9f0fed28243f24811ef119b8865f2fa8f1f3e9
+PR11 merge c73612538e8dd02bcdd0c5cfea74ad80b1597083
+PR12 merge 59a925f4bc61fc724664695a31af3e3c9ee6f25a
+PR13 merge 746cf7f04654ed6fe91e6423a250be5ceab49dbb
+PR14 merge deea349103ddf7462d254efc35b26d9e87c5967f
+All six heads had successful GitHub Actions runs before merging.
+git diff 78dd98b origin/saas-foundation: empty after six merges.
+Dedicated Render srv-db9al5ajnfac73bivqr0, free, Frankfurt, autoDeploy off.
+Initial deploy dep-db9al62jnfac73bivshg: live, commit 78dd98b.
+Supabase staging vgbwmamntjmhzrpvhxzb only. No new migrations this block.
+Synthetic demo run 0dbc6ba9-0341-4ec4-ae7e-d52a5276aa0a READY.
+First partial fixture run retained; coach responsible assignment correctly denied.
+Generator corrected to leave responsible null, without relaxing permissions.
+npm run check: PASS 66/66, TypeScript PASS, production build PASS.
+npm run test:e2e -- --workers=2: PASS 56/56, 29.8s.
+Dedicated online Chromium: PASS 3/3, 14.9s.
+Online coach: evolution, create objective, complete objective PASS.
+Online student: only one explicitly shared measurement PASS.
+Online manager: team navigation, no implicit measurement UI PASS.
+Staging public smoke: PASS 10 routes, security headers, 20 JS assets.
+Staging public project reference present; protected project refs absent.
+Key-shaped value scan PASS; literal SDK key prefix is not a credential.
+npm audit --audit-level=moderate: 0 vulnerabilities reported.
+git diff --check PASS. Private runtime/credential files not tracked.
+Original Render service checked after merges: autoDeploy off, unchanged configuration.
+No production deployment, protected database access, destructive operation, or main change.
+Pending: Auth email URLs/recovery for new frontend, password protection/MFA policy,
+operational cloud recovery, privacy/legal decisions, independent audit.
