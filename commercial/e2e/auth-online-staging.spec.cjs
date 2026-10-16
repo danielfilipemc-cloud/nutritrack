@@ -32,7 +32,11 @@ test('student receives only the explicitly shared measurement',async({page})=>{
  await expect(page.getByLabel('Título do objetivo',{exact:true})).toHaveCount(0);
 });
 test('manager can manage the team without implicit measurement access',async({page})=>{
- await login(page,'manager');await page.goto('/equipa');await expect(page.getByRole('combobox',{name:/^Estabelecimento/})).toBeVisible();
- await page.goto(demo.profile_url+'&section=evolution');await expect(page.getByRole('heading',{name:'Evolução do aluno'})).toHaveCount(0);
+ await login(page,'manager');await page.goto('/equipa');await expect(page.getByRole('heading',{name:'Convidar profissional',exact:true})).toBeVisible();
+ const permissions=page.waitForResponse(r=>r.url().endsWith('/rest/v1/rpc/aura_client_permissions')&&r.status()===200);
+ await page.goto(demo.profile_url+'&section=evolution');const access=await (await permissions).json();expect(access.assessments_read).toBe(false);
+ await expect(page.getByRole('heading',{name:'Alex — aluno fictício',exact:true})).toBeVisible();
+ await expect(page.getByText('Medições reservadas aos profissionais autorizados.',{exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Evolução do aluno'})).toHaveCount(0);
  await expect(page.getByText('81 kg',{exact:true})).toHaveCount(0);
 });

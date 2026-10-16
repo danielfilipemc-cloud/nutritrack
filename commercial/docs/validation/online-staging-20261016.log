@@ -16,6 +16,10 @@ Generator corrected to leave responsible null, without relaxing permissions.
 npm run check: PASS 66/66, TypeScript PASS, production build PASS.
 npm run test:e2e -- --workers=2: PASS 56/56, 29.8s.
 Dedicated online Chromium: PASS 3/3, 14.9s.
+Online regression repeated: PASS 3/3, 14.3s, after strengthening readiness.
+Manager test waits for the actual permissions response (assessments_read=false),
+loaded pupil heading and reserved-measurement message before negative assertions.
+Team management is proved by the loaded invitation form, not just a selector.
 Online coach: evolution, create objective, complete objective PASS.
 Online student: only one explicitly shared measurement PASS.
 Online manager: team navigation, no implicit measurement UI PASS.
