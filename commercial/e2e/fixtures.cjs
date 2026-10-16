@@ -34,6 +34,7 @@ async function fixture(
   let objectiveConflicts=objectiveConflict?1:0;
   let objectives=Array.from({length:seedObjectives},(_,i)=>({id:`10000000-0000-0000-0000-${String(i+1).padStart(12,'0')}`,organization_id:A,client_id:C,title:`Objetivo fictício ${i+1}`,state:'active',due_on:today,completed_at:null,revision:1,created_at:today+'T09:00:00Z',updated_at:today+'T09:00:00Z'}));
   const objectiveEvents=[];
+  let bridgeLink=null;const bridgeRecords=new Map();
   const second = "00000000-0000-0000-0000-000000000005";
   let appointments = Array.from({ length: seedAppointments }, (_, i) => {
     const start = new Date(today + "T09:00:00Z");
@@ -192,11 +193,14 @@ async function fixture(
           .map((a) => ({ ...a, full_name: client.full_name })),
       });
     }
+    if(path.endsWith('/rpc/aura_nutritrack_context')){const p=request.postDataJSON();if(restricted||p.p_org!==A||p.p_client!==C)return respond({code:'42501'},403);return respond({link:bridgeLink,can_manage:!readOnly&&['owner','admin'].includes(role),records:(p.p_keys||[]).map(key=>bridgeRecords.get(key)).filter(Boolean)});}
+    if(path.endsWith('/rpc/aura_nutritrack_link_save')){const p=request.postDataJSON();if(readOnly||restricted||!['owner','admin'].includes(role))return respond({code:'42501'},403);bridgeLink={id:'00000000-0000-0000-0000-000000000900',source_subject:p.p_subject,active:p.p_active};return respond(bridgeLink.id);}
+    if(path.endsWith('/rpc/aura_nutritrack_import')){const p=request.postDataJSON();if(restricted||readOnly||!bridgeLink?.active||p.p_link!==bridgeLink.id)return respond({code:'42501'},403);const result=[];for(const row of p.p_records){const content={observed_on:row.observed_on,weight_kg:row.weight_kg,height_cm:row.height_cm,waist_cm:row.waist_cm},old=bridgeRecords.get(row.source_record_id);if(old&&JSON.stringify(old.content)===JSON.stringify(content)){result.push({status:'duplicate'});continue;}if(row.expected_revision!==(old?.revision||0))return respond({code:'PT409'},409);const revision=(old?.revision||0)+1;if(old){const assessment=assessments.find(a=>a.id===old.assessment_id);if(assessment)assessment.superseded_at=today;}const id='bridge-assessment-'+assessments.length;assessments.unshift({id,assessed_on:row.observed_on,weight_kg:row.weight_kg,height_cm:row.height_cm,waist_cm:row.waist_cm,revision:1,student_visible:false,superseded_at:null,source_system:'nutritrack',source_revision:revision});bridgeRecords.set(row.source_record_id,{source_record_id:row.source_record_id,revision,content,assessment_id:id,superseded:false});result.push({status:old?'updated':'created'});}return respond(result);}
     if(path.endsWith('/rpc/aura_client_timeline')){
       const p=request.postDataJSON();let rows=[];
       if(p.p_org===A&&p.p_client===C){
        if(!restricted){
-        rows.push(...assessments.filter(a=>!a.superseded_at&&a.assessed_on<=today).map(a=>({event_key:'assessment:'+a.id,kind:'assessment',record_id:a.id,occurred_at:a.assessed_on+'T00:00:00Z',occurred_on:a.assessed_on,action:'assessment_recorded',details:{source:'aura',weight_kg:a.weight_kg,height_cm:a.height_cm,waist_cm:a.waist_cm}})));
+        rows.push(...assessments.filter(a=>!a.superseded_at&&a.assessed_on<=today).map(a=>({event_key:'assessment:'+a.id,kind:'assessment',record_id:a.id,occurred_at:a.assessed_on+'T00:00:00Z',occurred_on:a.assessed_on,action:'assessment_recorded',details:{source:a.source_system||'aura',weight_kg:a.weight_kg,height_cm:a.height_cm,waist_cm:a.waist_cm}})));
         rows.push(...Array.from({length:seedTimeline},(_,i)=>({event_key:'objective:'+String(i).padStart(36,'0'),kind:'objective',record_id:String(i).padStart(36,'0'),occurred_at:today+'T09:00:00Z',occurred_on:today,action:'created',details:{to_state:'active',revision:1}})));
         rows.push(...objectiveEvents.map(e=>({event_key:'objective:'+e.id,kind:'objective',record_id:e.objective_id,occurred_at:e.created_at,occurred_on:e.created_at.slice(0,10),action:e.action,details:{to_state:e.to_state,revision:e.revision}})));
        }
