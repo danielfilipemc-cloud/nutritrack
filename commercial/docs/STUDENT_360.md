@@ -1,5 +1,7 @@
 # Aluno 360º — primeiro incremento da Fase 2
 
+Atualização posterior de 16/10: corrigido histórico acima do limite real de 1000 da API, ensaio real com 1205 medições e logout global partilhado com tratamento de falhas parciais. Resultado atual: **48 testes, 35 Chromium, TypeScript e build PASS**; cinco grupos reais de volume/isolamento/revogação PASS. Ver [revisão técnica atual](SECURITY_REVIEW_20261016.md). Os resultados de 45/32 abaixo são o checkpoint histórico anterior.
+
 ## Consolidação de 16/10/2026
 
 A branch incorpora a consolidação das fundações `2c98474`, mantendo o PR #10 dependente do PR #9 e sem alterar o código da ficha ou das migrations. A suite Chromium completa passou **32/32 numa única execução**, substituindo o limite das execuções parciais descritas historicamente abaixo. Os 45 testes, TypeScript e build da revisão de entrada também passaram. As fundações foram verificadas separadamente: 41 testes, build e TypeScript PASS; 16 grupos reais Auth/RLS e seis Auth PASS novamente. O controlo restaurado passou login, isolamento e preservação de avaliação.

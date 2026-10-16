@@ -1,6 +1,6 @@
 # AURA Business
 
-Esta branch acrescenta o primeiro incremento [Aluno 360º](docs/STUDENT_360.md) sobre as fundações: evolução por período/indicador, carregamento incremental e `/demo/aluno-360` sem conta ou persistência. Validação conjunta: 45 testes e 32 Chromium. PR #10 depende de #9; ambos permanecem fora da versão publicada.
+Esta branch acrescenta o primeiro incremento [Aluno 360º](docs/STUDENT_360.md) sobre as fundações: evolução por período/indicador, páginas abaixo do limite da API e `/demo/aluno-360` sem conta ou persistência. Validação conjunta: 48 testes e 35 Chromium, cinco grupos reais com 1205 medições e recuperação real num terceiro destino novo. Logout global partilhado trata também revogação não confirmada. Ver [revisão técnica atual](docs/SECURITY_REVIEW_20261016.md). PR #10 depende de #9; ambos permanecem fora da versão publicada.
 
 ## Entrega de fundações — 14-10-2026
 
