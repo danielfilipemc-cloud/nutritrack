@@ -12,7 +12,10 @@ commercial_root=$(cd -- "$(dirname -- "$0")/.." && pwd)
 backup=${AURA_LOCAL_BACKUP_DIR:-/mnt/e/AURA-Development-20261014/backups/supabase-baseline-20261014}
 [[ "$backup" =~ ^/mnt/[a-z]/AURA-Development-[0-9]{8}/backups/[a-zA-Z0-9_-]+$ ]] || { printf '%s\n' 'Dedicated local backup path required' >&2; exit 1; }
 source_db=supabase_db_aura-foundations-local
-restored_db=supabase_db_aura-foundations-restore
+instance=${2:-restore}
+case "$instance" in restore|rehearsal) ;; *) printf '%s\n' 'Only restore or rehearsal local destinations are permitted' >&2; exit 1;; esac
+restored_db="supabase_db_aura-foundations-$instance"
+output="$commercial_root/.aura-integration/local-runtime/$instance"
 sql(){ docker exec -i "$1" psql -X -v ON_ERROR_STOP=1 -U postgres -d postgres -At; }
 if test "$mode" = backup; then
  test ! -e "$backup"
@@ -34,9 +37,16 @@ if test "$mode" = backup; then
  printf '%s\n' 'Synthetic baseline8 backup created; private dumps are not publication artifacts.'
  exit 0
 fi
+test -d "$output"
+# Container names alone are not sufficient proof of a local isolated database.
+port=58322
+if test "$instance" = rehearsal; then port=59322; fi
+test "$(docker inspect --format '{{(index (index .NetworkSettings.Ports "5432/tcp") 0).HostIp}}' "$restored_db")" = 127.0.0.1
+test "$(docker inspect --format '{{(index (index .NetworkSettings.Ports "5432/tcp") 0).HostPort}}' "$restored_db")" = "$port"
 cd "$backup"
 sha256sum --check SHA256SUMS
 if test "$mode" = restore; then
+ test ! -e "$output/restore.private.log"
  empty=$(printf '%s\n' "select to_regclass('app_private.aura_migrations') is null and (select count(*) from auth.users)=0;" | sql "$restored_db")
  test "$empty" = t
  # Defaults on an existing Supabase platform can silently add object grants.
@@ -54,8 +64,8 @@ if test "$mode" = restore; then
   # statements are single-line pg_dump output. Never use arbitrary SQL input here.
   grep -E '^(GRANT|REVOKE) ' schema.sql
   printf '%s\n' "NOTIFY pgrst, 'reload schema';"
- } | docker exec -i "$restored_db" psql -X -v ON_ERROR_STOP=1 --single-transaction --file=- -U postgres -d postgres > restore.private.log 2>&1
+ } | docker exec -i "$restored_db" psql -X -v ON_ERROR_STOP=1 --single-transaction --file=- -U postgres -d postgres > "$output/restore.private.log" 2>&1
 fi
-sql "$restored_db" < "$commercial_root/scripts/local-baseline-fingerprint.sql" > restored-fingerprints.json
-node -e 'const fs=require("node:fs");const expected=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));const actual=JSON.parse(fs.readFileSync(process.argv[2],"utf8"));if(Object.keys(expected).length!==Object.keys(actual).length||!Object.keys(expected).every(key=>expected[key]===actual[key]))process.exit(1);' baseline-fingerprints.json restored-fingerprints.json || { printf '%s\n' 'Restored data or authorization differs: recovery is NOT approved' >&2; exit 1; }
+sql "$restored_db" < "$commercial_root/scripts/local-baseline-fingerprint.sql" > "$output/restored-fingerprints.json"
+node -e 'const fs=require("node:fs");const expected=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));const actual=JSON.parse(fs.readFileSync(process.argv[2],"utf8"));if(Object.keys(expected).length!==Object.keys(actual).length||!Object.keys(expected).every(key=>expected[key]===actual[key]))process.exit(1);' baseline-fingerprints.json "$output/restored-fingerprints.json" || { printf '%s\n' 'Restored data or authorization differs: recovery is NOT approved' >&2; exit 1; }
 printf '%s\n' 'PASS: baseline8 fingerprints match. Also run restored Auth/JWT verification before approving recovery.'

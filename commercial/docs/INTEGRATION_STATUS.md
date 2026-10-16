@@ -33,7 +33,7 @@ Ao mudar entre branches com rotas diferentes, executar `npm run build` antes de 
 
 ## Limites e prioridades
 
-O restauro sintético real anterior preservou dados/Auth/RLS/ACLs; a normalização final do helper ainda necessita de ensaio num terceiro destino novo. Nenhum banco existente foi apagado para repetir esse ensaio. Não equivale a recuperação operacional cloud ou de Storage.
+O helper final foi agora ensaiado num terceiro Supabase local novo/vazio (`rehearsal`, API 59321): restauro transacional com normalização ACL, fingerprints e login/isolamento/preservação passaram sem ajustes manuais posteriores. Nenhum banco existente foi apagado. Ver [ensaio completo](LOCAL_VALIDATION.md). Isto não equivale a recuperação operacional cloud ou de Storage.
 
 Logout impede refresh, mas um access JWT pode sobreviver até 900s. MFA foi ensaiado, não imposto globalmente. Decisões de sessões, base jurídica, retenção, direitos completos, recuperação cloud e revisão independente permanecem antes de dados reais.
 

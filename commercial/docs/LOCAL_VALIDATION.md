@@ -1,5 +1,22 @@
 # Supabase local — validação de 14/10/2026
 
+## Ensaio completo num terceiro destino — 16/10/2026
+
+O helper final foi executado de ponta a ponta num Supabase **novo e vazio**, `aura-foundations-rehearsal`, API/DB/Mailpit 59321/59322/59324, apenas loopback. Restaurou o mesmo arquivo sintético validado por SHA-256; a normalização de ACLs correu dentro da transação. Os fingerprints de dados, registry, funções, policies, RLS e grants coincidiram sem ajustes manuais posteriores. Ambos os utilizadores Auth iniciaram sessão; identidade, isolamento A/B e avaliação preservada passaram.
+
+Isto fecha o limite anterior sobre o helper combinado não ensaiado. Não fecha recuperação cloud, Storage, rotação/guarda operacional de backups ou decisões RPO/RTO. Nenhum destino existente foi apagado ou reposto. O bootstrap aceita agora `rehearsal`; o runner de fixtures aceita apenas verificação com `--verify-restored --rehearsal`, nunca criação nesse destino. O script de restauro recusa um destino com dados ou um relatório de restauro já existente; logs/fingerprints ficam no runtime ignorado, sem sobrescrever o arquivo original.
+
+Comandos usados, dentro de WSL `AURA-Dev` e com Node22.23.3:
+
+```sh
+bash scripts/start-local-validation-wsl.sh rehearsal --keep-alive
+# noutra sessão, depois de guardar status JSON privado no runtime ignorado:
+bash scripts/local-baseline-recovery.sh restore rehearsal
+npm run test:recovery:supabase:verify -- --rehearsal
+```
+
+Foi acrescentado um teste de catálogo PostgreSQL: API AURA invoker sem EXECUTE anónimo, funções privadas sem EXECUTE anónimo, search_path vazio nas definer, implementações históricas sem EXECUTE authenticated e RLS em todas as tabelas da aplicação. Este teste passou; não substitui revisão de segurança independente.
+
 Revalidação em 16/10/2026: 16 grupos de fundações e seis Auth novamente PASS; login e isolamento do controlo restaurado também PASS. Ver [estado de integração](INTEGRATION_STATUS.md). Para repetir Auth sem substituir a evidência original: `npm run test:auth:local-security -- --repeat`, com o manifesto local explícito e runtime disponível. As credenciais continuam exclusivamente no diretório ignorado.
 
 ## Resultado posterior à preparação
