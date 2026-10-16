@@ -1,3 +1,5 @@
+import {refuseLegacyLiveRunner} from './staging-safety';
+refuseLegacyLiveRunner();
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";

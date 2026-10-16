@@ -1,7 +1,7 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {PGlite} from "@electric-sql/pglite";
-import {migrationBundle} from "../scripts/migration-bundle";
+import {baselineMigrationBundle as migrationBundle} from "./baseline";
 import {literalSearch} from "../lib/clients";
 test("literal name search escapes wildcards and backslashes",()=>{assert.equal(literalSearch("  50%_\\  "),"50\\%\\_\\\\");});
 test("client lifecycle, optimistic writes, audit and assessment preservation",async()=>{

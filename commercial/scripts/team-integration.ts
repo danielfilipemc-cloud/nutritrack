@@ -1,3 +1,5 @@
+import {refuseLegacyLiveRunner} from './staging-safety';
+refuseLegacyLiveRunner();
 import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import {createClient,type SupabaseClient} from "@supabase/supabase-js";

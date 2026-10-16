@@ -1,7 +1,7 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {PGlite} from "@electric-sql/pglite";
-import {migrationBundle} from "../scripts/migration-bundle";
+import {baselineMigrationBundle as migrationBundle} from "./baseline";
 test("team permissions, private invite hashes, verified email, revocation and single use",async()=>{
  const db=new PGlite();const id=(n:number)=>`00000000-0000-0000-0000-${String(n).padStart(12,"0")}`;
  try{

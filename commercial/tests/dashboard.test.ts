@@ -1,7 +1,7 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {PGlite} from "@electric-sql/pglite";
-import {migrationBundle} from "../scripts/migration-bundle";
+import {baselineMigrationBundle as migrationBundle} from "./baseline";
 import type {Dashboard} from "../lib/dashboard";
 
 test("dashboard aggregates all rows, handles date boundaries and enforces tenant access",async()=>{
