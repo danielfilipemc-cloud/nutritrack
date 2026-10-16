@@ -12,6 +12,7 @@ Legacy protected-cloud Auth E2E: collection refused before env loading or mutati
 npm audit --audit-level=moderate: zero vulnerabilities reported.
 Unit/domain/PostgreSQL suite before cloud smoke addition: 55/55 PASS.
 Final suite including cloud smoke rollback regression: 56/56 PASS.
+Final suite including exact fresh-staging/empty-project guard: 57/57 PASS; TypeScript PASS.
 Chromium fixture suite: 43/43 PASS; real local Chromium: 1/1 PASS.
 TypeScript and production build: PASS.
 Approved independent cloud staging created and installed; see STAGING_20261016.md.

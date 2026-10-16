@@ -19,7 +19,7 @@ Na interface, conflitos conservam o rascunho e bloqueiam gravação até atualiz
 
 ## Validação e ambiente
 
-Suite de domínio/PostgreSQL/guards: 56 testes. Chromium por fixtures: 43 cenários, incluindo oito novos de objetivos (ciclo completo, conflitos, consulta/arquivo, permissões, paginação/mobile, rascunhos, filtro e resultado de gravação incerto). TypeScript/build verificados; npm audit sem vulnerabilidades reportadas.
+Suite de domínio/PostgreSQL/guards: 57 testes. Chromium por fixtures: 43 cenários, incluindo oito novos de objetivos (ciclo completo, conflitos, consulta/arquivo, permissões, paginação/mobile, rascunhos, filtro e resultado de gravação incerto). TypeScript/build verificados; npm audit sem vulnerabilidades reportadas.
 
 No Supabase local principal, o upgrade **10 → 11** fez primeiro dump privado do sandbox. Comparou antes/depois os alunos, avaliações, acompanhamentos, memberships, competências, atribuições e as dez entradas antigas do registry, incluindo checksums e datas: igualdade. `scripts/apply-objectives-local.sh` recusa cloud, Docker remoto, bindings diferentes de 127.0.0.1:57322, Auth não sintético ou contagem diferente de dez; não faz reset. O backup fica ignorado em `.aura-integration/objectives-upgrade-*`; não representa uma política de recuperação cloud.
 

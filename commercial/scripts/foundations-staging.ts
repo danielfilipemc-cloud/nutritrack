@@ -3,6 +3,7 @@ import {randomBytes,randomUUID} from 'node:crypto';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {createClient,type SupabaseClient} from '@supabase/supabase-js';
 import {loadStagingApproval} from './staging-safety';
+import {assertFreshStagingTarget,assertFreshStagingEmpty} from './fresh-staging-safety';
 
 // Explicit staging credentials only. Never loads .env.local or old fixture accounts.
 // No delete/reset/cleanup: synthetic fixtures are retained for evidence and review.
@@ -11,10 +12,17 @@ type Check={name:string;result:'PASS'|'FAIL'};
 async function main(){
  const url=process.env.AURA_STAGING_URL;
  if(!url)throw new Error('AURA_STAGING_URL is required');
- const approval=await loadStagingApproval(url); // Must run before any request.
+ const fresh=process.argv.includes('--fresh-staging');
+ const approval=fresh?assertFreshStagingTarget(url,process.env.AURA_FRESH_STAGING_PROJECT):await loadStagingApproval(url); // Must run before any request.
  const publishable=process.env.AURA_STAGING_PUBLISHABLE_KEY,secret=process.env.AURA_STAGING_SECRET_KEY;
  if(!publishable||!secret)throw new Error('Explicit staging publishable/admin credentials required');
  const admin=createClient(url,secret,options),anon=createClient(url,publishable,options);
+ if(fresh){
+  const orgs=await admin.from('organizations').select('id',{count:'exact',head:true});
+  const users=await admin.auth.admin.listUsers({page:1,perPage:1});
+  if(orgs.error||users.error)throw new Error('Fresh staging preflight failed; credentials and API bodies omitted');
+  assertFreshStagingEmpty(orgs.count,users.data.users.length);
+ }
  const run=randomUUID(),org=randomUUID(),otherOrg=randomUUID(),pupil=randomUUID(),secondPupil=randomUUID(),foreignPupil=randomUUID();
  const dir=new URL(`../.aura-integration/staging-${run}/`,import.meta.url);
  await mkdir(dir,{recursive:true});
