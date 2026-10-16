@@ -3,7 +3,7 @@
 set -euo pipefail
 umask 077
 expected=${1:?expected registry count};target=${2:?target registry count}
-case "$expected:$target" in 11:12|12:13) ;; *) exit 1;; esac
+case "$expected:$target" in 11:12|12:13|13:14) ;; *) exit 1;; esac
 grep -qx AURA-Dev /etc/aura-development-runtime
 test "${DOCKER_HOST:-unix:///var/run/docker.sock}" = unix:///var/run/docker.sock
 test "$(docker context inspect --format '{{.Endpoints.docker.Host}}')" = unix:///var/run/docker.sock
@@ -20,7 +20,7 @@ docker exec "$container" pg_dump -U postgres -d postgres --format=custom > "$run
 test -s "$run/before.private.dump"
 sha256sum "$run/before.private.dump" > "$run/SHA256SUMS"
 # All existing application rows, not just selected modules, must remain unchanged.
-printf '%s\n' "select string_agg(format('select %L as relation,md5(coalesce(jsonb_agg(to_jsonb(t) order by to_jsonb(t)::text),\$\$[]\$\$::jsonb)::text) as fingerprint from %I.%I t;',schemaname||'.'||tablename,schemaname,tablename),' ' order by schemaname,tablename) from pg_tables where schemaname in ('public','app_private') and tablename<>'aura_migrations';" | sql > "$run/fingerprint.sql"
+printf '%s\n' "select string_agg(format('select %L as relation,md5(coalesce(jsonb_agg((to_jsonb(t)-''source_system''-''source_link_id''-''source_record_id''-''source_revision'') order by (to_jsonb(t)-''source_system''-''source_link_id''-''source_record_id''-''source_revision'')::text),\$\$[]\$\$::jsonb)::text) as fingerprint from %I.%I t;',schemaname||'.'||tablename,schemaname,tablename),' ' order by schemaname,tablename) from pg_tables where schemaname in ('public','app_private') and tablename<>'aura_migrations';" | sql > "$run/fingerprint.sql"
 sql < "$run/fingerprint.sql" > "$run/before.txt"
 printf '%s\n' 'select name,checksum,applied_at from app_private.aura_migrations order by name;' | sql > "$run/registry-before.txt"
 sql < "$root/supabase/install.generated.sql" > "$run/upgrade.private.log" 2>&1

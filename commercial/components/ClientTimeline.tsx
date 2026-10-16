@@ -31,12 +31,12 @@ export default function ClientTimeline({org,clientId,userId,period,onPeriodChang
   {!loading&&!error&&!items.length&&<div className="aura-empty-state"><strong>Sem registos neste período</strong><p>Seleciona outro período ou tipo de registo.</p></div>}
   {items.length>0&&<><p>{items.length} de {total} registos autorizados carregados. {more?'Existem mais registos.':'Fim dos registos deste filtro.'}</p><ol className="aura-timeline">{items.map(event=><li key={event.event_key}>
    <span className="eyebrow">{timelineLabels[event.kind]}</span><h3>{timelineTitle(event)}</h3><p><time dateTime={event.kind==='assessment'?event.occurred_on:event.occurred_at}>{event.kind==='assessment'?event.occurred_on:objectiveTimestamp(event.occurred_at)}</time>{timelineState(event)?` · ${timelineState(event)}`:''}</p>
-   {event.kind==='assessment'&&<><dl className="aura-measurement-values">{Object.entries(measurementFields).map(([key,definition])=>{const value=event.details[key];return typeof value==='number'&&Number.isFinite(value)?<div key={key}><dt>{definition.label}</dt><dd>{value} {definition.unit}</dd></div>:null;})}</dl><p>Origem: AURA · avaliação {event.record_id.slice(0,8)}. Data da medição; versões substituídas não entram na evolução.</p></>}
+   {event.kind==='assessment'&&<><dl className="aura-measurement-values">{Object.entries(measurementFields).map(([key,definition])=>{const value=event.details[key];return typeof value==='number'&&Number.isFinite(value)?<div key={key}><dt>{definition.label}</dt><dd>{value} {definition.unit}</dd></div>:null;})}</dl><p>Origem: {event.details.source==='nutritrack'?'NutriTrack':'AURA'} · avaliação {event.record_id.slice(0,8)}. Data da medição; versões substituídas não entram na evolução.</p></>}
    {event.kind==='objective'&&<p>Objetivo #{event.record_id.slice(0,8)} · versão {String(event.details.revision||'—')}. O histórico não copia o texto anterior.</p>}
    <a href={profileSectionUrl(org,clientId,event.kind==='assessment'?'assessments':event.kind==='appointment'?'agenda':event.kind==='objective'?'objectives':'overview')}>Abrir {event.kind==='assessment'?'avaliações':event.kind==='appointment'?'agenda':event.kind==='objective'?'objetivos':'acompanhamento'}</a>
   </li>)}</ol></>}
   {more&&items.length<500&&<button className="outline" disabled={loading} onClick={()=>void load(next)}>Carregar mais registos</button>}
   {more&&items.length>=500&&<p>Limite de 500 registos carregados. Escolhe um período menor.</p>}
-  <p>Horários em Europe/Lisbon. Sem interpretação clínica. NutriTrack ainda não está ligado; nenhuma medição é importada automaticamente.</p>
+  <p>Horários em Europe/Lisbon. Sem interpretação clínica. Medições NutriTrack entram apenas por importação assistida e confirmada; não existe sincronização automática.</p>
  </section>;
 }

@@ -1,5 +1,7 @@
 # AURA Business — estado e próximos passos
 
+Atualização: importação efetiva de peso/cintura do backup NutriTrack v2 com vínculo explícito, versões e evolução; Auth cloud e recuperação lógica sintética validados. Ver NUTRITRACK_BRIDGE.md e STAGING_RECOVERY_20261016.md. Próximas prioridades: revisão/integrar PRs ordenadamente, configurar passwords comprometidas/MFA e recuperação operacional; depois transporte automático e contrato nutricional. Os blocos abaixo conservam checkpoints anteriores.
+
 Incremento atual: painel diário pesquisável/paginado e evolução integrada na ficha, com cronologia e gráfico sincronizados por período. Ver DAILY_WORKSPACE.md e INTEGRATED_EVOLUTION.md. Treze migrations apenas no sandbox local; staging cloud permanece com onze. Os PRs encadeados continuam por integrar; produção mantém #8. A futura fronteira NutriTrack está documentada e testada, sem sincronização/importação ou nutrição ativa.
 
 ## Atualização — 16/10/2026

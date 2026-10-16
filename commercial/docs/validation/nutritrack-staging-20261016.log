@@ -1,0 +1,28 @@
+AURA NutriTrack bridge + cloud Auth/recovery — 2026-10-16
+Migration 20261016221754_nutritrack_measurement_bridge.sql SHA256 LF:
+02c2738a6680d2bd288dec3ed80ad6d53353c78e743fab7af722614dce4a298b
+Local 13→14 upgrade: PASS; private dump retained; old fields and registry unchanged.
+Staging cloud 11→14 upgrade: PASS; 24 preexisting relation/Auth fingerprints unchanged, excluding new source fields and new registry rows.
+Cloud canonical registry: 14. Public tables without RLS: 0. Public SECURITY DEFINER functions: 0.
+Domain/PostgreSQL/guard suite: 66/66 PASS.
+Chromium fixture suite final: 56/56 PASS, including long backup period selection.
+Real local Chromium final: 2/2 PASS; NutriTrack upload/import/provenance plus objectives/evolution/dashboard.
+TypeScript and final production build: PASS. npm audit: zero vulnerabilities reported.
+Foundation cloud Auth/JWT/PostgREST before upgrade: 16/16 PASS.
+Run 40b3b92a-104d-4141-a1e7-b363a7382a99
+Foundation cloud Auth/JWT/PostgREST after upgrade and verified logical recovery: 16/16 PASS.
+Run d39b75a5-989b-456e-924c-5269507d8cfe
+NutriTrack real local Auth/PostgREST: 6/6 PASS.
+Run a6255be0-8fa5-4204-80a6-5aa9c9e0ab94
+NutriTrack real cloud Auth/PostgREST: 6/6 PASS.
+Run ddb43133-bf42-42da-b3cb-08a252ebf944
+Authorized synthetic cloud archive: 27 table projections, 14 synthetic Auth identities; SHA256 integrity verified.
+Fresh fourth local recovery target: aura-foundations-cloud-recovery, loopback API60321/DB60322.
+Recovered projections/password hashes/identity links/canonical registry: identical to exported source fields.
+Original synthetic password login, own assessment read, foreign tenant/RPC denial and anonymous denial: PASS.
+Populated recovery destination rejects a repeated restore: PASS.
+Auth token NULL compatibility repaired locally and incorporated into restore generator; active sessions/tokens deliberately excluded.
+Initial broad export was rejected by automatic approval review; narrowly scoped synthetic export succeeded after explicit user approval.
+Cloud security advisor: 13 INFO private RLS-without-policy (intentional deny direct access); 1 WARN leaked-password protection disabled.
+No production publishing, production data access/mutation, main merge, personal NutriTrack modification or destructive cleanup.
+Private credentials, archive rows, password hashes, JWTs and logs remain ignored and are not included here.
