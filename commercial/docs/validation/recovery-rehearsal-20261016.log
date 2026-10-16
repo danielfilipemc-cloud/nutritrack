@@ -1,0 +1,16 @@
+AURA synthetic recovery rehearsal — 2026-10-16
+Destination: aura-foundations-rehearsal, NEW empty local Supabase, API 127.0.0.1:59321.
+No cloud operation, reset, existing-target overwrite or production deployment.
+Archive SHA256: 3b89227e433940b248c7dafec81fdc27d7653d98c67907ad4be8310b9e0d1178
+SHA256SUMS roles/schema/data/fingerprints: PASS.
+Full helper restore with ACL normalization in the same transaction: PASS.
+Registry/data/functions/policies/RLS/grants fingerprint comparison: PASS.
+Real Auth login/identity/tenant separation/assessment preservation for two users: PASS.
+Repeat restore of occupied destination: REFUSED as expected; original log digest unchanged.
+Database binding guard: 127.0.0.1:59322 verified, fingerprints reverified PASS.
+Bash syntax for both scripts: PASS. PowerShell bootstrap parser: PASS.
+Foundation build, TypeScript and 42/42 tests: PASS.
+New catalog regression: invoker public RPCs, no anonymous private EXECUTE,
+empty definer search_path, historical bypass denied, all application tables RLS: PASS.
+Credentials, Auth tokens, dumps and private logs remain excluded from Git.
+Cloud/Storage recovery and an independent security review are not demonstrated by this rehearsal.

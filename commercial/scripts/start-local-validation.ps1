@@ -1,4 +1,4 @@
-param([ValidateSet('baseline','restore')][string]$Instance='baseline')
+param([ValidateSet('baseline','restore','rehearsal')][string]$Instance='baseline')
 $ErrorActionPreference='Stop'
 # Only prepares/starts a named local runtime. Does not install app migrations,
 # delete/reset data, connect to a cloud project or publish the Next.js app.
@@ -29,6 +29,7 @@ $configDir=Join-Path $runtime 'supabase'
 New-Item -ItemType Directory -Force -Path $configDir | Out-Null
 $config=[IO.File]::ReadAllText((Join-Path $commercialRoot 'supabase/local-validation/config.toml'))
 if($Instance -eq 'restore'){$config=$config.Replace('aura-foundations-local','aura-foundations-restore').Replace('573','583')}
+if($Instance -eq 'rehearsal'){$config=$config.Replace('aura-foundations-local','aura-foundations-rehearsal').Replace('573','593')}
 $configPath=Join-Path $configDir 'config.toml'
 if(Test-Path -LiteralPath $configPath){
  if([IO.File]::ReadAllText($configPath) -ne $config){throw 'Existing runtime configuration differs; review it instead of overwriting'}
