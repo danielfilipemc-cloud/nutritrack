@@ -27,7 +27,8 @@
     "test:auth:local-security": "tsx scripts/auth-local-security.cjs",
     "test:recovery:supabase:prepare": "node scripts/local-baseline-fixture.cjs",
     "test:recovery:supabase:verify": "node scripts/local-baseline-fixture.cjs --verify-restored",
-    "test:evolution:local": "tsx scripts/evolution-local.ts"
+    "test:evolution:local": "tsx scripts/evolution-local.ts",
+    "test:objectives:local": "tsx scripts/objectives-local.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",
