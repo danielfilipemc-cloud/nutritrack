@@ -1,3 +1,5 @@
+// Historical protected-cloud harness. Stop before loading credentials or fixtures.
+throw new Error('Legacy live Auth E2E disabled: protected project. Use the explicitly selected auth-objectives-local.spec.cjs sandbox test.');
 const {test,expect}=require('@playwright/test');
 const {existsSync,readFileSync}=require('node:fs');
 if(existsSync('.env.local'))process.loadEnvFile('.env.local');
