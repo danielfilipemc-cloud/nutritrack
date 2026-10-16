@@ -24,9 +24,9 @@ test("profile saves goal, responsible and review, then shows them on the dashboa
   expect(state.followup().responsible_id).toBe(state.second);
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Revisões a realizar" }),
+    page.getByRole("heading", { name: "Prioridades de hoje" }),
   ).toBeVisible();
-  await expect(page.getByText("Revisão prevista: " + today)).toBeVisible();
+  await expect(page.getByText("Revisão pendente · " + today)).toBeVisible();
   await profile(page);
   await expect(page.getByLabel("Objetivo do acompanhamento")).toHaveValue(
     "Melhorar consistência do treino fictício",

@@ -134,6 +134,18 @@ async function fixture(
         primary_color: "#137F79",
         logo_url: null,
       });
+    if(path.endsWith('/rpc/aura_daily_priorities')){
+      const p=request.postDataJSON();if(slowA&&p.p_org===A)await new Promise(resolve=>setTimeout(resolve,700));
+      let rows=[];
+      if(p.p_org===A&&!archived){
+       if(!restricted)rows.push({kind:'assessment',id:C,client_id:C,full_name:client.full_name,due_on:null,starts_at:null,label:'Sem avaliação'});
+       if(!restricted&&followup?.next_review&&followup.next_review<=today)rows.push({kind:'review',id:C,client_id:C,full_name:client.full_name,due_on:followup.next_review,starts_at:null,label:'Revisão pendente'});
+       if(!restricted)rows.push(...objectives.filter(o=>o.state==='active'&&o.due_on&&o.due_on<=today).map(o=>({kind:'objective',id:o.id,client_id:C,full_name:client.full_name,due_on:o.due_on,starts_at:null,label:o.title})));
+       rows.push(...appointments.filter(a=>a.status==='scheduled'&&a.starts_at.slice(0,10)===today).map(a=>({kind:'session',id:a.id,client_id:C,full_name:client.full_name,due_on:today,starts_at:a.starts_at,label:'Marcação agendada'})));
+      }
+      rows=rows.filter(r=>r.full_name.toLowerCase().includes(p.p_search.trim().toLowerCase()));const counts=Object.fromEntries(['session','review','objective','assessment'].map(kind=>[kind,rows.filter(r=>r.kind===kind).length]));
+      rows=rows.filter(r=>p.p_kind==='all'||r.kind===p.p_kind);return respond({as_of:today,total:rows.length,counts,items:rows.slice(p.p_offset,p.p_offset+25)});
+    }
     if (
       path.endsWith("/rpc/aura_dashboard") ||
       path.endsWith("/rpc/aura_care_dashboard")

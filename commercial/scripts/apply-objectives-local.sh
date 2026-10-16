@@ -14,6 +14,7 @@ test "$(printf '%s\n' 'select count(*) from app_private.aura_migrations;' | sql)
 test "$(printf '%s\n' "select count(*) from auth.users where coalesce(raw_app_meta_data->>'synthetic','false')<>'true';" | sql)" = 0
 test -s "$root/supabase/install.generated.sql"
 grep -Fq '20261016184133_student_objectives.sql' "$root/supabase/install.generated.sql"
+test "$(grep -c 'insert into app_private.aura_migrations(name,checksum)' "$root/supabase/install.generated.sql")" = 11
 run=$(mktemp -d "$root/.aura-integration/objectives-upgrade-XXXXXXXX")
 docker exec "$container" pg_dump -U postgres -d postgres --format=custom > "$run/before.private.dump"
 test -s "$run/before.private.dump"
