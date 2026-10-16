@@ -78,6 +78,27 @@ async function main(){
    value(await owner.rpc('aura_assignment_save',{p_org:org,p_client:pupil,p_user:actors.coach.id,p_enabled:false}));assert.equal((await rows(coach)).length,0);
    await denied(coach,'aura_objective_history',{p_org:org,p_client:pupil,p_offset:0});await denied(coach,'aura_objective_save',input);assert.equal((await coach.auth.getSession()).data.session?.access_token,actors.coach.token);
   });
+  await check('daily queue and integrated timeline respect real reader, manager, student and foreign scopes',async()=>{
+   const goal=(await rows(reader))[0];
+   // Reauthorize this synthetic coach explicitly for the additional read-contract matrix.
+   value(await owner.rpc('aura_assignment_save',{p_org:org,p_client:pupil,p_user:actors.coach.id,p_enabled:true}));
+   value(await coach.rpc('aura_objective_save',{...input,p_id:goal.id,p_title:goal.title,p_due:addDays(businessToday(),-1),p_revision:goal.revision}));
+   const queue=value(await reader.rpc('aura_daily_priorities',{p_org:org,p_kind:'objective',p_search:'',p_offset:0}));assert.equal(queue.total,1);
+   const timeline=value(await reader.rpc('aura_client_timeline',{p_org:org,p_client:pupil}));assert.equal(timeline.total,5);assert.ok(timeline.items.every((e:any)=>e.kind==='objective'&&!('actor_id' in e)&&!('title' in e.details)));
+   assert.equal(value(await owner.rpc('aura_client_timeline',{p_org:org,p_client:pupil})).total,0);
+   for(const actor of [student,foreign])await denied(actor,'aura_client_timeline',{p_org:org,p_client:pupil});
+  });
+  await check('real queue counts and timeline cursor pass twenty-five rows without duplicates',async()=>{
+   for(let i=0;i<28;i++)value(await coach.rpc('aura_objective_save',{...input,p_title:'Synthetic paged objective '+i,p_due:businessToday()}));
+   const queue=value(await reader.rpc('aura_daily_priorities',{p_org:org,p_kind:'objective',p_search:'',p_offset:25}));assert.equal(queue.total,29);assert.equal(queue.items.length,4);
+   const first=value(await reader.rpc('aura_client_timeline',{p_org:org,p_client:pupil,p_kind:'objective'}));assert.equal(first.items.length,25);assert.equal(first.more,true);
+   const second=value(await reader.rpc('aura_client_timeline',{p_org:org,p_client:pupil,p_kind:'objective',p_before:first.next.before,p_key:first.next.key}));assert.equal(second.items.length,8);assert.equal(new Set([...first.items,...second.items].map((e:any)=>e.event_key)).size,33);
+  });
+  await check('revocation removes daily and integrated reads without a refreshed real JWT',async()=>{
+   value(await owner.rpc('aura_assignment_save',{p_org:org,p_client:pupil,p_user:actors.coach.id,p_enabled:false}));
+   await denied(coach,'aura_client_timeline',{p_org:org,p_client:pupil});assert.equal(value(await coach.rpc('aura_daily_priorities',{p_org:org})).total,0);
+   assert.equal((await coach.auth.getSession()).data.session?.access_token,actors.coach.token);
+  });
   if(args.length){
    // Deliberate synthetic demo grants, never a bulk permission backfill.
    for(const module of ['followup','assessments'])value(await owner.rpc('aura_capability_save',{p_org:org,p_user:actors.owner.id,p_module:module,p_enabled:true,p_write:true}));

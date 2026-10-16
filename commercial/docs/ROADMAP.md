@@ -1,6 +1,6 @@
 # AURA Business — estado e próximos passos
 
-Incremento atual: objetivos operacionais acompanháveis na ficha, com estados/prazos, histórico, concorrência e permissões. Ver [STUDENT_OBJECTIVES.md](STUDENT_OBJECTIVES.md). Branch própria dependente do PR #10; apenas sandbox local atualizado para onze migrations. Nutrição, treino e portal completo continuam por implementar, com contratos/permissões próprios e integração futura NutriTrack.
+Incremento atual: painel diário pesquisável/paginado e evolução integrada na ficha, com cronologia e gráfico sincronizados por período. Ver DAILY_WORKSPACE.md e INTEGRATED_EVOLUTION.md. Treze migrations apenas no sandbox local; staging cloud permanece com onze. Os PRs encadeados continuam por integrar; produção mantém #8. A futura fronteira NutriTrack está documentada e testada, sem sincronização/importação ou nutrição ativa.
 
 ## Atualização — 16/10/2026
 
