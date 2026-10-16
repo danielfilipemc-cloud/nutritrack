@@ -137,7 +137,7 @@ test('retention is unconfigured by default, owner-reviewed and dry-run only',asy
 test('full migrations replay safely and historical hashes remain intact',async()=>{
  const f=await foundationFixture();try{
  await f.db.exec((await migrationBundle()).replace('create extension if not exists pgcrypto;',''));
- assert.equal((await f.db.query<{n:number}>('select count(*)::int n from app_private.aura_migrations')).rows[0].n,11);
+ assert.equal((await f.db.query<{n:number}>('select count(*)::int n from app_private.aura_migrations')).rows[0].n,12);
  const anon=(await f.db.query<{allowed:boolean}>("select has_table_privilege('authenticated','app_private.aura_migrations','SELECT') allowed")).rows[0].allowed;assert.equal(anon,false);
  const exposed=(await f.db.query<{n:number}>("select count(*)::int n from pg_proc p join pg_namespace n on p.pronamespace=n.oid where n.nspname='public' and p.proname like 'aura_%' and p.prosecdef")).rows[0].n;assert.equal(exposed,0);
  }finally{await f.db.close();}

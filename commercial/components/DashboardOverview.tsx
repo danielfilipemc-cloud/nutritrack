@@ -1,6 +1,6 @@
 "use client";
 import {useEffect,useState} from "react";
-import {appointmentKinds,formatAppointment} from "../lib/care";
+import DailyPriorities from "./DailyPriorities";
 import {db} from "../lib/supabase";
 import {clientProfileUrl,type Dashboard} from "../lib/dashboard";
 export default function DashboardOverview({org,userId}:{org:string;userId:string}){
@@ -21,9 +21,7 @@ export default function DashboardOverview({org,userId}:{org:string;userId:string
  <div><span>Alunos a acompanhar</span><strong>{data.pending_clients}</strong><small>Sem avaliação ou última há mais de 30 dias</small></div>
  </div>
  <section className="panel"><h2>Operações frequentes</h2><div className="aura-quick-actions"><a className="outline link" href="/alunos">Registar ou gerir aluno</a><a className="outline link" href="/avaliacoes">Registar avaliação</a><a className="outline link" href="/agenda">Abrir agenda</a><a className="outline link" href="/equipa">Gerir equipa</a><a className="outline link" href="/marca">Personalizar marca</a></div></section>
- <section className="panel"><h2>Prioridades de hoje</h2><p>{data.appointments_today||0} marcações agendadas hoje · {data.reviews_due||0} revisões a realizar até hoje. Horários em Europe/Lisbon.</p>
- <h3>Agenda de hoje</h3>{!data.today_appointments?.length?<p>Sem marcações agendadas para hoje.</p>:<ul className="aura-activity-list">{data.today_appointments.map(a=><li key={a.id}><a href={`/agenda?org=${org}`}>{appointmentKinds[a.kind]} · {a.full_name}</a><span>{formatAppointment(a.starts_at)}</span></li>)}</ul>}
- <h3>Revisões a realizar</h3>{!data.due_reviews?.length?<p>Sem revisões pendentes.</p>:<ul className="aura-activity-list">{data.due_reviews.map(c=><li key={c.id}><a href={clientProfileUrl(org,c.id)}>{c.full_name}</a><span>Revisão prevista: {c.next_review}</span></li>)}</ul>}</section>
+ <DailyPriorities key={`${userId}:${org}`} org={org} userId={userId}/>
  <section className="panel"><h2>Acompanhamento pendente</h2><p>Indicador baseado nas avaliações registadas, sem interpretação clínica. Mostra até 10 alunos ativos, começando pelos que nunca foram avaliados.</p>
  {!data.pending.length?<div className="aura-empty-state"><strong>Sem acompanhamento pendente</strong><p>Os alunos ativos têm avaliações recentes, ou ainda não existem alunos.</p></div>:<div className="tablewrap"><table><thead><tr><th>Aluno</th><th>Última avaliação</th><th>Ação</th></tr></thead><tbody>{data.pending.map(c=><tr key={c.id}><td>{c.full_name}</td><td>{c.assessed_on||"Sem avaliação"}</td><td><a href={clientProfileUrl(org,c.id)}>Abrir ficha de {c.full_name}</a></td></tr>)}</tbody></table></div>}</section>
  <section className="panel"><h2>Avaliações recentes</h2><p>Até 10 avaliações realizadas nos últimos 30 dias.</p>
