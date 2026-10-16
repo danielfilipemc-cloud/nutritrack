@@ -1,5 +1,7 @@
 # Supabase local — validação de 14/10/2026
 
+Revalidação em 16/10/2026: 16 grupos de fundações e seis Auth novamente PASS; login e isolamento do controlo restaurado também PASS. Ver [estado de integração](INTEGRATION_STATUS.md). Para repetir Auth sem substituir a evidência original: `npm run test:auth:local-security -- --repeat`, com o manifesto local explícito e runtime disponível. As credenciais continuam exclusivamente no diretório ignorado.
+
 ## Resultado posterior à preparação
 
 A preparação histórica abaixo foi ultrapassada: Docker Engine 29.8.2 funciona na distribuição WSL exclusiva `AURA-Dev`, com armazenamento em E: e socket Unix, sem exposição TCP do motor. O erro do Docker Desktop continua sem correção; não se alteraram EFS/ACLs nem se executou factory reset. A tentativa inicial esgotou o espaço em C:, pelo que a distribuição foi parada, copiada com verificação SHA-256 e movida pelo comando oficial WSL. O sistema de ficheiros recuperou escrita; os dados de teste só foram criados depois.

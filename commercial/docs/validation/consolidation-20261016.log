@@ -1,0 +1,24 @@
+AURA local consolidation — 2026-10-16
+No cloud mutation, deployment, destructive restore or production merge.
+
+Remote input refs verified:
+saas-foundation 543e3a0b78e864cc65a8c07dec0736c8ee6c39af
+feat/aura-foundations ee203a1b8ea2ec64c443d8d7fc529d8a1c04f63b
+feat/aura-student-360 864108130c7839ed4d88b02d1d8171a792e13263
+
+Student360 input: npm run check PASS, 45 tests / typecheck / build.
+Student360 input: full Chromium PASS, 32/32, 37.9s, 2 workers.
+Supabase local foundations: PASS, 16/16 groups, synthetic fixtures retained.
+Evidence run: c929c4a4-f655-44cc-891e-238e68168251
+Supabase local Auth security: PASS, 6/6 groups, separate repeated evidence.
+Evidence run: 50052172-f642-4f69-9cef-80378975b684
+Original Auth evidence retained: SHA256 8ae0810d11fcad0afe35246dd4765769843c5bf341cbe61bd5aeb7ab9b612002
+Restored control: PASS, two accounts login/identity/tenant isolation/assessment preservation.
+Local SQL migration count: principal 10, restored control 8.
+npm audit --audit-level=moderate: found 0 vulnerabilities.
+git diff --check: PASS.
+
+Initial local Auth attempt failed during service startup; complete retry passed.
+Initial sandboxed Chromium run interrupted; elevated local-only run passed.
+Neither interruption is counted as a successful test run.
+Private evidence, keys, account credentials and mail tokens are not included here.
