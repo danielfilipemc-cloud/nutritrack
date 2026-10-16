@@ -1,5 +1,7 @@
 # AURA Business — estado e próximos passos
 
+Incremento atual: objetivos operacionais acompanháveis na ficha, com estados/prazos, histórico, concorrência e permissões. Ver [STUDENT_OBJECTIVES.md](STUDENT_OBJECTIVES.md). Branch própria dependente do PR #10; apenas sandbox local atualizado para onze migrations. Nutrição, treino e portal completo continuam por implementar, com contratos/permissões próprios e integração futura NutriTrack.
+
 ## Atualização — 16/10/2026
 
 PR #8 (ficha, acompanhamento e agenda) já integrado/publicado. Não repetir essa implementação. Fundações no PR #9: validação real local de permissões/Auth e recuperação sintética; integração cloud pendente. PR #10: primeiro incremento Aluno 360º sobre a ficha existente, com evolução por período e preview sem conta. Regressão conjunta: 45 testes e 32 Chromium; ver [estado efetivo](INTEGRATION_STATUS.md).
