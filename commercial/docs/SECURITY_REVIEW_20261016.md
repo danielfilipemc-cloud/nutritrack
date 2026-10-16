@@ -22,6 +22,8 @@ O primeiro ensaio E2E identificou este comportamento do SDK; a UI e o teste fora
 
 48/48 testes de domínio/PostgreSQL/guards, TypeScript e build PASS. 35/35 Chromium numa execução completa final, incluindo 1205 medições, logout, permissões, preview e mobile. Auditoria npm: zero vulnerabilidades reportadas; nenhuma dependência nova. Testes de browser usam fixtures; os cinco grupos de volume e a recuperação acima usam Supabase/Auth/PostgREST reais, exclusivamente locais.
 
+A configuração ignorada `.env.local` foi alterada para URL/chave pública do principal loopback, sem chave administrativa no frontend. Build e 35 Chromium passaram novamente nessa configuração; as fixtures intercetam também a API local exata, enquanto CI conserva URL fictícia. Inspeção dos 35 bundles JS públicos não encontrou chaves administrativas locais nem referências aos projetos protegidos. Não é um secret scan universal; os valores privados testados não foram impressos. O Render e as suas variáveis não foram alterados.
+
 ## Gates que não foram fechados por esta revisão
 
 Esta é uma revisão técnica do próprio desenvolvimento, não uma auditoria externa independente. Produção, Auth cloud, as dez migrations, NutriTrack pessoal e `main` não foram alterados. Não se criaram recursos pagos nem se publicou frontend.
