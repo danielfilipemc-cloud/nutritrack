@@ -1,6 +1,6 @@
 # Consolidação das fundações — 14/10/2026
 
-Estado: validação local concluída; validação cloud pendente. Não iniciar Fase 2, fazer merge, publicar ou aplicar migrations em produção com base neste documento.
+Estado atual: validação Supabase local real concluída; desenvolvimento da Fase 2 autorizado com dados fictícios. Validação cloud e autorização de produção continuam pendentes. Ver [LOCAL_VALIDATION.md](LOCAL_VALIDATION.md) e [INTEGRATION_STATUS.md](INTEGRATION_STATUS.md). As secções seguintes conservam o procedimento e o diagnóstico históricos, anteriores ao runtime local; não autorizam merge, publicação ou migrations em produção.
 
 ## Destinos e decisão operacional
 

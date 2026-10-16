@@ -10,7 +10,11 @@ const options={auth:{persistSession:false,autoRefreshToken:false,detectSessionIn
 const make=()=>createClient(status.API_URL,key,options),admin=createClient(status.API_URL,secret,options);
 const value=(r,name)=>{if(r.error)throw Object.assign(new Error(name),{code:r.error.code||r.error.status});return r.data;};
 const report={scope:'synthetic-local-auth-security',run:randomUUID(),checks:[],accounts:[],observations:{},result:'RUNNING'};
-const output=root+'auth-security-evidence.json';if(fs.existsSync(output))throw new Error('Security run evidence exists; do not rerun provisioning');
+const repeat=process.argv.slice(2);
+assert.ok(repeat.length===0||(repeat.length===1&&repeat[0]==='--repeat'),'Only --repeat is supported');
+// Rehearsals keep the original evidence and create distinct synthetic accounts.
+const output=root+(repeat.length?`auth-security-evidence-${report.run}.json`:'auth-security-evidence.json');
+if(fs.existsSync(output))throw new Error('Security run evidence exists; use --repeat to retain it and record a new isolated rehearsal');
 const save=()=>fs.writeFileSync(output,JSON.stringify(report,null,2));save();
 async function check(name,fn){try{await fn();report.checks.push({name,result:'PASS'});console.log('PASS: '+name);}catch(error){report.checks.push({name,result:'FAIL',error_code:error.code||error.name});throw Object.assign(new Error(name),{code:error.code||error.name});}finally{save();}}
 function totp(secret,millis){

@@ -1,6 +1,6 @@
 # Relatório de validação das fundações — 14/10/2026
 
-**Resultado: validação local aprovada; prontidão cloud não demonstrada. Manter a PR em draft e não iniciar Aluno 360º/Fase 2.** O utilizador confirmou a organização Aura Business e, depois de informado do preço indicativo, decidiu não criar recursos pagos e preparar a validação pendente.
+**Registo histórico, ultrapassado pela validação Supabase local real.** O resultado atual está em [LOCAL_VALIDATION.md](LOCAL_VALIDATION.md) e [INTEGRATION_STATUS.md](INTEGRATION_STATUS.md). A Fase 2 pode evoluir com dados fictícios; staging cloud e produção mantêm gates separados. As restrições e resultados abaixo descrevem o momento anterior à disponibilização do runtime local.
 
 ## Âmbito e integridade
 
