@@ -1,0 +1,43 @@
+const {test,expect}=require('@playwright/test');
+test('360 preview works without backend, isolates students and resets on reload',async({page})=>{
+ const external=[];page.on('request',r=>{if(!r.url().startsWith('http://127.0.0.1:3187/'))external.push(r.url());});
+ await page.goto('/demo/aluno-360');
+ await expect(page.getByRole('heading',{name:'Sofia · Exemplo',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Avaliações',exact:true}).click();
+ await page.getByLabel('Peso fictício (kg)',{exact:true}).fill('69.25');await page.getByRole('button',{name:'Adicionar avaliação fictícia'}).click();
+ await expect(page.getByRole('cell',{name:'69.25',exact:true})).toBeVisible();
+ await page.getByLabel('Aluno de exemplo',{exact:true}).selectOption('2');
+ await expect(page.getByRole('cell',{name:'69.25',exact:true})).toHaveCount(0);
+ await page.getByLabel('Aluno de exemplo',{exact:true}).selectOption('1');
+ await expect(page.getByRole('cell',{name:'69.25',exact:true})).toBeVisible();
+ await page.reload();await page.getByRole('button',{name:'Avaliações',exact:true}).click();
+ await expect(page.getByRole('cell',{name:'69.25',exact:true})).toHaveCount(0);
+ expect(external).toEqual([]);
+});
+test('360 preview filters evolution, preserves care drafts across sections and disables writes in read mode',async({page})=>{
+ await page.goto('/demo/aluno-360');await page.getByRole('button',{name:'Evolução',exact:true}).click();
+ await expect(page.getByRole('img',{name:/Evolução: 4 medições/})).toBeVisible();
+ await page.getByLabel('Período da evolução',{exact:true}).selectOption('30');
+ await expect(page.getByRole('img',{name:/Evolução: 2 medições/})).toBeVisible();
+ await page.getByLabel('Aluno de exemplo',{exact:true}).selectOption('2');
+ await page.getByLabel('Indicador',{exact:true}).selectOption('waist_cm');
+ await expect(page.getByText('Regista avaliações para visualizar a evolução.')).toBeVisible();
+ await page.getByRole('button',{name:'Objetivos e agenda',exact:true}).click();
+ await page.getByLabel('Objetivo fictício',{exact:true}).fill('Exemplo de rotina');
+ await page.getByRole('button',{name:'Resumo',exact:true}).click();
+ await page.getByRole('button',{name:'Objetivos e agenda',exact:true}).click();
+ await expect(page.getByLabel('Objetivo fictício',{exact:true})).toHaveValue('Exemplo de rotina');
+ await page.getByLabel('Modo de demonstração',{exact:true}).selectOption('read');
+ await expect(page.getByLabel('Objetivo fictício',{exact:true})).toBeDisabled();
+ await expect(page.getByRole('button',{name:'Agendar sessão fictícia',exact:true})).toBeDisabled();
+ await page.getByRole('button',{name:'Avaliações',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Adicionar avaliação fictícia'})).toHaveCount(0);
+});
+test('360 preview is usable on mobile and reachable from demo',async({page})=>{
+ await page.setViewportSize({width:375,height:812});await page.goto('/demo');
+ await page.getByRole('link',{name:'Experimentar Aluno 360º'}).click();
+ await expect(page.getByRole('heading',{name:'Todo o acompanhamento, numa ficha.'})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
+ await page.getByRole('button',{name:'Próximas áreas',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Treino',exact:true})).toBeVisible();
+});

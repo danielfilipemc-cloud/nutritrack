@@ -1,5 +1,13 @@
 # AURA Business — estado e próximos passos
 
+## Atualização — 16/10/2026
+
+PR #8 (ficha, acompanhamento e agenda) já integrado/publicado. Não repetir essa implementação. Fundações no PR #9: validação real local de permissões/Auth e recuperação sintética; integração cloud pendente. PR #10: primeiro incremento Aluno 360º sobre a ficha existente, com evolução por período e preview sem conta. Regressão conjunta: 45 testes e 32 Chromium; ver [estado efetivo](INTEGRATION_STATUS.md).
+
+Próximas prioridades: revisão e integração ordenada #9 → #10; staging cloud separado com recuperação demonstrada e Auth configurado; política MFA/sessões e privacidade antes de dados reais. Depois, ampliar Aluno 360º com contratos explícitos de nutrição/medições/evolução para NutriTrack, mantendo tenant/aluno, origem, unidades e competências próprias. Treino, nutrição, mensagens e sincronização ainda não são módulos concluídos.
+
+As secções seguintes descrevem a evolução histórica; o bloco de ficha e agenda já está entregue, e a correção auditável pertence às fundações.
+
 ## Base existente em saas-foundation
 
 Login, membership/RLS, avaliações e gráficos, branding, diretório paginado,

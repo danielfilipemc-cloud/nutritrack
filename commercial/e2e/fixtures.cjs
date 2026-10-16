@@ -89,7 +89,7 @@ async function fixture(
       waist_cm: null,
     },
   ];
-  await page.route("https://*.supabase.co/**", async (route) => {
+  await page.route(url => (url.protocol==='https:'&&url.hostname.endsWith('.supabase.co'))||url.origin==='http://127.0.0.1:57321', async (route) => {
     const request = route.request(),
       url = new URL(request.url()),
       path = url.pathname;

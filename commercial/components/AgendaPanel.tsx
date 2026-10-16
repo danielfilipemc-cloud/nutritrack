@@ -22,11 +22,13 @@ export default function AgendaPanel({
   userId,
   role,
   client,
+  writable = true,
 }: {
   org: string;
   userId: string;
   role: string;
   client?: SelectedClient;
+  writable?: boolean;
 }) {
   const reads = useRef(new RequestScope()),
     writes = useRef(new RequestScope());
@@ -173,7 +175,7 @@ export default function AgendaPanel({
     setPage(0);
     setRevision((v) => v + 1);
   }
-  const allowed = (a: Appointment) => manager || a.professional_id === userId;
+  const allowed = (a: Appointment) => writable && (manager || a.professional_id === userId);
   function edit(a: Appointment) {
     if (!allowed(a)) return;
     setEditing(a);
@@ -197,7 +199,7 @@ export default function AgendaPanel({
     status: Appointment["status"],
     form = false,
   ) {
-    if (!db || busy || !rosterReady || conflict) return;
+    if (!db || !writable || busy || !rosterReady || conflict) return;
     const target = form ? selected : null;
     if (form && (!target || target.archived_at)) {
       setMessage("Seleciona um aluno ativo.");
@@ -492,7 +494,7 @@ export default function AgendaPanel({
           </button>
         </nav>
       </section>
-      {!client?.archived_at && (
+      {writable && !client?.archived_at && (
         <section className="panel">
           <h2>{editing ? "Editar marcação" : "Nova marcação"}</h2>
           {!client && (
