@@ -1,0 +1,21 @@
+AURA daily workspace + integrated evolution — synthetic local validation, 2026-10-16
+Daily migration 20261016195103_daily_priorities.sql SHA256 LF:
+ae5d07ba1989d3fd491aa9d1b84acc57b32bfc629f49bdb33605b3ef31bd61a3
+Timeline migration 20261016195602_integrated_timeline.sql SHA256 LF:
+811ab7c767adc58fb52844dc8546e1086a0a2439cc9ba9a375bd2fa5e874ad04
+Local additive upgrades 11→12 and 12→13: PASS.
+Private dump retained before each upgrade; all prior public/app_private rows and registry entries unchanged.
+Evidence directories: workspace-upgrade-HedgZklR and workspace-upgrade-oZMaxCc8 (ignored/private).
+Daily block: 59/59 domain/PostgreSQL/guard tests and 46/46 Chromium scenarios PASS.
+Final integrated suite: 63/63 domain/PostgreSQL/guard tests PASS.
+Final Chromium fixtures: 51/51 PASS, including partial competency revocation and synchronized periods.
+Final real local Chromium: 1/1 PASS; Auth login → objectives → integrated measurements/history → daily dashboard → logout.
+TypeScript: PASS. Final production build: PASS, without CSS compatibility warning.
+One intermediate build failed with Windows EPERM in generated .next cache; final rerun passed.
+Real local Auth/PostgREST objectives + daily/timeline: 11/11 groups PASS.
+Run: 047ec14a-779e-4824-8e63-00a3b8c2f06a
+Foundation real Auth/PostgREST regression: 16/16 groups PASS.
+Run: d6c67f84-62b2-440c-880f-1f41661e9403
+npm audit --audit-level=moderate: zero vulnerabilities reported.
+No dependency changes, production operations, cloud migrations, reset or destructive cleanup.
+No credentials, JWTs, personal health data or dumps included in this evidence file.
