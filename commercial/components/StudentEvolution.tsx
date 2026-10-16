@@ -3,7 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {db} from '../lib/supabase';
 import {RequestScope} from '../lib/request-scope';
 import {businessToday} from '../lib/care';
-import {evolutionStart,evolutionSeries,evolutionChange,type EvolutionRecord,type EvolutionMetric} from '../lib/evolution';
+import {evolutionStart,evolutionSeries,evolutionChange,loadEvolutionWindow,type EvolutionRecord,type EvolutionMetric} from '../lib/evolution';
 import ProgressChart from './ProgressChart';
 export default function StudentEvolution({org,clientId}:{org:string;clientId:string}){
  const scope=useRef(new RequestScope());
@@ -11,9 +11,13 @@ export default function StudentEvolution({org,clientId}:{org:string;clientId:str
  const [records,setRecords]=useState<EvolutionRecord[]>([]),[limit,setLimit]=useState(200),[more,setMore]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(''),[reload,setReload]=useState(0);
  const today=businessToday();
  useEffect(()=>{if(!db)return;const valid=scope.current.begin();setLoading(true);setError('');setRecords([]);setMore(false);
-  let q=db.from('assessments').select('id,assessed_on,weight_kg,height_cm,waist_cm,superseded_at').eq('organization_id',org).eq('client_id',clientId).is('superseded_at',null).lte('assessed_on',today);
-  const start=evolutionStart(today,days);if(start)q=q.gte('assessed_on',start);
-  void (async()=>{try{const {data,error}=await q.order('assessed_on',{ascending:false}).order('id',{ascending:false}).limit(limit+1);if(!valid())return;if(error)throw error;setRecords((data||[]).slice(0,limit));setMore((data||[]).length>limit);}catch{if(valid())setError('Não foi possível carregar a evolução.');}finally{if(valid())setLoading(false);}})();
+  const client=db,start=evolutionStart(today,days);
+  void (async()=>{try{const window=await loadEvolutionWindow<EvolutionRecord>(async(offset,size)=>{
+   let q=client.from('assessments').select('id,assessed_on,weight_kg,height_cm,waist_cm,superseded_at').eq('organization_id',org).eq('client_id',clientId).is('superseded_at',null).lte('assessed_on',today);
+   if(start)q=q.gte('assessed_on',start);
+   const {data,error}=await q.order('assessed_on',{ascending:false}).order('id',{ascending:false}).range(offset,offset+size-1);
+   if(error)throw error;return data||[];
+  },limit,valid);if(!window||!valid())return;setRecords(window.rows);setMore(window.more);}catch{if(valid())setError('Não foi possível carregar a evolução.');}finally{if(valid())setLoading(false);}})();
   return()=>scope.current.invalidate();
  },[org,clientId,days,limit,reload,today]);
  const points=evolutionSeries(records,metric,today,days),change=evolutionChange(points),unit=metric==='weight_kg'?'kg':'cm';

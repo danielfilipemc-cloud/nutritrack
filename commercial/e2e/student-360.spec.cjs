@@ -31,12 +31,13 @@ test('commercial permissions never reveal evolution and planned integrations do 
 test('evolution marks incomplete windows and recovers from a failed read',async({page})=>{
  await fixture(page);let calls=0;
  await page.route('**/rest/v1/assessments?**',async route=>{
-  const url=new URL(route.request().url());if(Number(url.searchParams.get('limit'))<201)return route.fallback();
+  const url=new URL(route.request().url());if(url.searchParams.get('select')!=='id,assessed_on,weight_kg,height_cm,waist_cm,superseded_at')return route.fallback();
   // PostgREST retries transient 503 responses; use a terminal read error to exercise the UI retry action.
   calls++;if(calls===1)return route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({message:'Synthetic read failure'})});
-  const count=calls===2?201:205;
   const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Lisbon'}).format(new Date());
-  return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(Array.from({length:count},(_,i)=>({id:`synthetic-${i}`,assessed_on:today,weight_kg:80,height_cm:null,waist_cm:null,superseded_at:null})))});
+  const records=Array.from({length:205},(_,i)=>({id:`synthetic-${i}`,assessed_on:today,weight_kg:80,height_cm:null,waist_cm:null,superseded_at:null}));
+  const offset=Number(url.searchParams.get('offset')||0),size=Number(url.searchParams.get('limit'));
+  return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(records.slice(offset,offset+size))});
  });
  await page.goto(`/alunos/${C}?org=${A}`);await page.getByRole('button',{name:'Evolução',exact:true}).click();
  await expect(page.getByText('Não foi possível carregar a evolução.',{exact:true})).toBeVisible();
@@ -45,4 +46,26 @@ test('evolution marks incomplete windows and recovers from a failed read',async(
  await page.getByRole('button',{name:'Carregar mais avaliações'}).click();
  await expect(page.getByText(/205 avaliações carregadas/)).toBeVisible();
  await expect(page.getByRole('button',{name:'Carregar mais avaliações'})).toHaveCount(0);
+});
+
+test('evolution passes one thousand records without falsely marking the API cap as complete',async({page})=>{
+ test.setTimeout(60000);
+ await fixture(page);const requests=[];
+ const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Lisbon'}).format(new Date());
+ const records=Array.from({length:1205},(_,i)=>({id:`synthetic-${String(i).padStart(5,'0')}`,assessed_on:today,weight_kg:80+i/100,height_cm:null,waist_cm:null,superseded_at:null}));
+ await page.route('**/rest/v1/assessments?**',async route=>{
+  const url=new URL(route.request().url());if(url.searchParams.get('select')!=='id,assessed_on,weight_kg,height_cm,waist_cm,superseded_at')return route.fallback();
+  const offset=Number(url.searchParams.get('offset')||0),size=Number(url.searchParams.get('limit'));requests.push({offset,size,org:url.searchParams.get('organization_id'),client:url.searchParams.get('client_id')});
+  return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(records.slice(offset,offset+Math.min(size,1000)))});
+ });
+ await page.goto(`/alunos/${C}?org=${A}`);await page.getByRole('button',{name:'Evolução',exact:true}).click();
+ for(const count of [200,400,600,800,1000,1200]){
+  await expect(page.getByText(new RegExp(`^${count} avaliações carregadas`))).toBeVisible();
+  await expect(page.getByText(/Todas as avaliações atuais do período foram carregadas/)).toHaveCount(0);
+  await page.getByRole('button',{name:'Carregar mais avaliações'}).click();
+ }
+ await expect(page.getByText(/^1205 avaliações carregadas/)).toBeVisible();
+ await expect(page.getByRole('button',{name:'Carregar mais avaliações'})).toHaveCount(0);
+ expect(requests.some(r=>r.offset>1000)).toBe(true);
+ for(const r of requests){expect(r.size).toBeLessThanOrEqual(201);expect(r.org).toBe(`eq.${A}`);expect(r.client).toBe(`eq.${C}`);}
 });
