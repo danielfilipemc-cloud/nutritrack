@@ -5,7 +5,7 @@ test('commercial-only administrator cannot see measurements or follow-up section
  await expect(page.getByText('Medições reservadas aos profissionais autorizados.')).toBeVisible();
  await expect(page.getByRole('button',{name:'Avaliações',exact:true})).toHaveCount(0);
  await expect(page.getByRole('heading',{name:'Plano de acompanhamento'})).toHaveCount(0);
- await expect(page.getByRole('heading',{name:'Privacidade e dados'})).toBeVisible();
+ await page.getByRole('button',{name:'Privacidade',exact:true}).click();await expect(page.getByRole('heading',{name:'Privacidade e dados'})).toBeVisible();
 });
 test('read-only competency hides measurement writes while keeping history',async({page})=>{
  await fixture(page,{readOnly:true});await page.goto(`/alunos/${C}?org=${A}`);

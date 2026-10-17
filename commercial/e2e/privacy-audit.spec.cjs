@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');const {fixture,A,B,C}=require('./fixtures.cjs');
 const reply=(route,data,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)});
 const request={id:'privacy-one',kind:'erasure',status:'requested',revision:1};
-async function open(page){await page.goto(`/alunos/${C}?org=${A}`);return page.getByRole('region',{name:'Privacidade e dados',exact:true});}
+async function open(page){await page.goto(`/alunos/${C}?org=${A}&section=privacy`);return page.getByRole('region',{name:'Privacidade e dados',exact:true});}
 test('privacy network read failure recovers and does not leave an endless loading state',async({page})=>{
  await fixture(page);let fail=true;const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/rpc/aura_privacy_context',r=>fail?r.abort('failed'):reply(r,{can_review:true,consents:[],requests:[]}));

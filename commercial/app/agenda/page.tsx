@@ -8,18 +8,18 @@ export default function Agenda() {
   const { user, org, orgs, setOrg, status } = useProfessional(),
     current = orgs.find((o) => o.id === org);
   return (
-    <ProfessionalShell title="Agenda do estabelecimento">
+    <ProfessionalShell title="Agenda do estabelecimento" context={<OrganizationSelect
+          organizations={orgs}
+          value={org}
+          onChange={setOrg}
+        />}>
       <div className="heading">
         <div>
           <span className="eyebrow">ORGANIZAÇÃO DIÁRIA</span>
           <h1>Agenda</h1>
           <p>Sessões, avaliações e revisões num só lugar.</p>
         </div>
-        <OrganizationSelect
-          organizations={orgs}
-          value={org}
-          onChange={setOrg}
-        />
+
       </div>
       {!user && (
         <a href="/" className="outline link">

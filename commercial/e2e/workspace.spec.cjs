@@ -39,10 +39,10 @@ test('white tenant colour uses readable black text in the preview',async({page})
  await expect(page.locator('.brandmark')).toHaveCSS('color','rgb(0, 0, 0)');await expect(page.locator('.brandmark')).toHaveCSS('background-color','rgb(255, 255, 255)');
 });
 
-test('directory and six item navigation fit a small mobile viewport',async({page})=>{
+test('directory and grouped navigation fit a small mobile viewport',async({page})=>{
  await page.setViewportSize({width:375,height:812});await fixture(page);await page.goto('/alunos');await expect(page.getByRole('link',{name:'Abrir ficha',exact:true})).toBeVisible();
  const size=await page.evaluate(()=>({width:document.documentElement.scrollWidth,viewport:innerWidth}));expect(size.width).toBeLessThanOrEqual(size.viewport+2);
- await expect(page.getByRole('navigation',{name:'Navegação principal'}).getByRole('link')).toHaveCount(6);
+ await page.locator('.aura-nav-disclosure>summary').click();await expect(page.getByRole('navigation',{name:'Navegação principal'}).getByRole('link')).toHaveCount(8);
 });
 
 test('signed-out professional routes never show records or privileged actions',async({page})=>{

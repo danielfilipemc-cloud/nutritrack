@@ -1,7 +1,7 @@
 const { test, expect } = require("@playwright/test");
 const { fixture, A, B, C, today } = require("./fixtures.cjs");
 async function profile(page) {
-  await page.goto(`/alunos/${C}?org=${A}`);
+  await page.goto(`/alunos/${C}?org=${A}&section=care`);
   await expect(page.getByLabel("Objetivo do acompanhamento")).toBeEnabled();
 }
 
@@ -78,7 +78,7 @@ test("archived overview disables follow-up and hides appointment creation", asyn
   page,
 }) => {
   await fixture(page, { archived: true });
-  await page.goto(`/alunos/${C}?org=${A}`);
+  await page.goto(`/alunos/${C}?org=${A}&section=care`);
   await expect(page.getByLabel("Objetivo do acompanhamento")).toBeDisabled();
   await page.getByRole("button", { name: "Agenda do aluno" }).click();
   await expect(

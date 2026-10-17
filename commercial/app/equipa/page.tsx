@@ -27,8 +27,8 @@ export default function Team(){
  const result=data[0];setLink(`${window.location.origin}/convite#${result.token}`);setEmail("");setStatus("Convite criado. Copia o link e partilha-o com o destinatário; não foi enviado email.");await refresh();
  }catch{if(isCurrent())setStatus("Não foi possível criar o convite.");}finally{if(isCurrent())setBusy(false);}}
  const allowed=(m:Member)=>m.role!=="owner"&&(current?.role==="owner"||m.role==="coach");
- return <ProfessionalShell title="Equipa do estabelecimento">
- <div className="heading"><div><span className="eyebrow">PROFISSIONAIS</span><h1>A tua equipa, organizada.</h1><p>Gere acessos e convites para cada estabelecimento.</p></div><OrganizationSelect organizations={orgs} value={org} disabled={busy} onChange={id=>{scope.current.invalidate();writes.current.invalidate();setReady(false);setMembers([]);setInvites([]);setLink("");setRole("coach");setOrg(id);}}/></div>
+ return <ProfessionalShell title="Equipa do estabelecimento" context={<OrganizationSelect organizations={orgs} value={org} disabled={busy} onChange={id=>{scope.current.invalidate();writes.current.invalidate();setReady(false);setMembers([]);setInvites([]);setLink("");setRole("coach");setOrg(id);}}/>}>
+ <div className="heading"><div><span className="eyebrow">PROFISSIONAIS</span><h1>A tua equipa, organizada.</h1><p>Gere acessos e convites para cada estabelecimento.</p></div></div>
  {user&&org&&<TenantBrand key={`${user.id}:${org}`} org={org} name={current?.name||"AURA"} subtitle="Equipa do estabelecimento"/>}
  {!user&&<a className="outline link" href="/">Iniciar sessão</a>}
  {user&&org&&!canManage&&<section className="panel"><h2>Acesso reservado</h2><p>A gestão da equipa está disponível para responsáveis e administradores.</p></section>}
