@@ -5,7 +5,9 @@ import {RequestScope} from '../lib/request-scope';
 import {businessToday} from '../lib/care';
 import {foundationError} from '../lib/foundations';
 import {parseNutritrackBackup,selectNutritrackWindow,previewNutritrack,syntheticNutritrackBackup,type ImportContext,type ImportRecord} from '../lib/nutritrack-import';
-export default function NutritrackBridge({org,clientId,userId,archived,writable,onDirtyChange}:{org:string;clientId:string;userId:string;archived:boolean;writable:boolean;onDirtyChange?:(dirty:boolean)=>void}){
+type Props={org:string;clientId:string;userId:string;archived:boolean;writable:boolean;onDirtyChange?:(dirty:boolean)=>void};
+export default function NutritrackBridge(props:Props){return <BridgeWorkspace key={`${props.org}:${props.clientId}:${props.userId}:${props.archived}:${props.writable}`} {...props}/>;}
+function BridgeWorkspace({org,clientId,userId,archived,writable,onDirtyChange}:Props){
  const scope=useRef(new RequestScope()),pending=useRef(false);
  const [context,setContext]=useState<ImportContext|null>(null),[subject,setSubject]=useState(''),[records,setRecords]=useState<ImportRecord[]>([]),[confirmed,setConfirmed]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[uncertain,setUncertain]=useState(false),[report,setReport]=useState<{status:string}[]|null>(null);
  const preview=context?previewNutritrack(records,context):[],blocked=preview.some(row=>row.status==='blocked');

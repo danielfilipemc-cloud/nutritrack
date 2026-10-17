@@ -20,7 +20,7 @@ test('upgraded catalog exposes no privileged RPC, anonymous private function or 
   for(const fn of privateFunctions.rows){
    assert.equal(fn.anonymous,false,fn.name);
    if(fn.definer)assert.ok(fn.config?.includes('search_path=""'),fn.name+' must fix an empty search_path');
-   if(/_(foundation|objectives)_base$/.test(fn.name))assert.equal(fn.authenticated,false,fn.name);
+   if(/_(foundation|objectives|sensitive|session)_base$/.test(fn.name))assert.equal(fn.authenticated,false,fn.name);
   }
   const unprotected=await db.query(`select c.relname from pg_class c join pg_namespace n on n.oid=c.relnamespace
    where n.nspname in ('public','app_private') and c.relkind='r' and not c.relrowsecurity`);

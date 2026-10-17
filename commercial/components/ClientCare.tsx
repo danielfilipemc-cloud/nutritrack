@@ -94,7 +94,7 @@ export default function ClientCare({
       setDraft(value);
       setProfessionals(p.data || []);
       setReady(true);
-    });
+    }).catch(() => {if(valid()){setLoading(false);setMessage('Não foi possível carregar o acompanhamento. Atualiza para tentar novamente.');}});
     return () => scope.current.invalidate();
   }, [org, userId, client.id, reload]);
   useEffect(() => {
@@ -103,12 +103,12 @@ export default function ClientCare({
     setEvents([]);
     setHistoryLoading(true);
     setHistoryError("");
-    void db
+    void Promise.resolve(db
       .rpc("aura_care_history", {
         p_org: org,
         p_client: client.id,
         p_offset: page * 25,
-      })
+      }))
       .then(({ data, error }) => {
         if (!valid()) return;
         setHistoryLoading(false);
@@ -117,7 +117,7 @@ export default function ClientCare({
           return;
         }
         setEvents(data || []);
-      });
+      }).catch(() => {if(valid()){setHistoryLoading(false);setHistoryError('Não foi possível carregar o histórico.');}});
     return () => historyScope.current.invalidate();
   }, [org, userId, client.id, page, reload]);
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);

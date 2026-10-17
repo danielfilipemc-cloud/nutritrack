@@ -21,6 +21,8 @@
     "test:deploy:staging": "tsx scripts/staging-smoke.ts",
     "test:demo:staging:prepare": "tsx scripts/staging-demo.ts",
     "test:e2e:staging": "playwright test --config playwright.staging.config.cjs",
+    "test:audit:staging": "tsx scripts/audit-security-integration.ts",
+    "test:auth:staging:readiness": "tsx scripts/staging-auth-readiness.ts",
     "test:team:api": "tsx scripts/team-integration.ts",
     "test:clients:api": "tsx scripts/clients-integration.ts",
     "test:e2e": "playwright test",

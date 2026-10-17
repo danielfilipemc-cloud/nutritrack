@@ -4,6 +4,23 @@ import {parseNutritrackBackup,selectNutritrackWindow,previewNutritrack,synthetic
 import {foundationFixture,id} from './foundation-fixture';
 const org=id(10),pupil=id(100);
 const record={source_record_id:'day:2026-10-15',observed_on:'2026-10-15',weight_kg:80,height_cm:null,waist_cm:90,expected_revision:0};
+
+test('three manual batches resume idempotently after lost acknowledgement; concurrent source revisions and revoked access stay protected',async()=>{
+ const f=await foundationFixture();try{
+  await f.grant(1,100);await f.grant(2,100);await f.asUser(1);
+  const link=(await f.db.query<{id:string}>(`select aura_nutritrack_link_save('${org}','${pupil}','synthetic-multibatch',true) id`)).rows[0].id;
+  const rows=Array.from({length:120},(_,i)=>{const date=new Date(Date.UTC(2026,0,i+1)).toISOString().slice(0,10);return {...record,source_record_id:'day:'+date,observed_on:date};});
+  const send=(r:unknown[])=>f.db.query<{x:any}>(`select aura_nutritrack_import('${org}','${pupil}',$1,$2) x`,[link,JSON.stringify(r)]);
+  await f.asUser(2);await send(rows.slice(0,50)); // Simulates commit whose HTTP acknowledgement was lost.
+  assert.ok((await send(rows.slice(0,50))).rows[0].x.every((r:any)=>r.status==='duplicate'));
+  await send(rows.slice(50,100));await f.asUser(1);await f.db.query(`select aura_assignment_save('${org}','${pupil}','${id(2)}',false)`);
+  await f.asUser(2);await assert.rejects(send(rows.slice(100)),(e:any)=>e.code==='42501');
+  await f.grant(2,100);await f.asUser(2);await send(rows.slice(100));assert.equal((await f.db.query('select * from assessments')).rows.length,120);
+  const attempts=await Promise.allSettled([send([{...rows[0],weight_kg:79,expected_revision:1}]),send([{...rows[0],weight_kg:78,expected_revision:1}])]);
+  assert.equal(attempts.filter(a=>a.status==='fulfilled').length,1);assert.equal((attempts.find(a=>a.status==='rejected') as PromiseRejectedResult).reason.code,'PT409');
+  assert.equal((await f.db.query('select * from assessments')).rows.length,121);
+ }finally{await f.db.close();}
+});
 test('actual NutriTrack v2 backup adapter merges measurements and drops profile/nutrition while refusing conflicts',()=>{
  const rows=parseNutritrackBackup(JSON.stringify({...syntheticNutritrackBackup,data:{...syntheticNutritrackBackup.data,secret:'discard me'}}),'2026-10-16');assert.deepEqual(rows,[record]);assert.ok(!JSON.stringify(rows).includes('discard'));
  for(const raw of [{}, {...syntheticNutritrackBackup,version:3},{...syntheticNutritrackBackup,data:{weightLog:[{date:'2026-10-17',weight:80}]}},{...syntheticNutritrackBackup,data:{weightLog:[{date:'2026-10-15',weight:81}],bodyMeasurements:syntheticNutritrackBackup.data.bodyMeasurements}}])assert.throws(()=>parseNutritrackBackup(JSON.stringify(raw),'2026-10-16'));
