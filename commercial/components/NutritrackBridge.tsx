@@ -5,14 +5,14 @@ import {RequestScope} from '../lib/request-scope';
 import {businessToday} from '../lib/care';
 import {foundationError} from '../lib/foundations';
 import {parseNutritrackBackup,selectNutritrackWindow,previewNutritrack,syntheticNutritrackBackup,type ImportContext,type ImportRecord} from '../lib/nutritrack-import';
-type Props={org:string;clientId:string;userId:string;archived:boolean;writable:boolean;onDirtyChange?:(dirty:boolean)=>void};
+type Props={org:string;clientId:string;userId:string;archived:boolean;writable:boolean;onDirtyChange?:(dirty:boolean,pending?:boolean)=>void};
 export default function NutritrackBridge(props:Props){return <BridgeWorkspace key={`${props.org}:${props.clientId}:${props.userId}:${props.archived}:${props.writable}`} {...props}/>;}
 function BridgeWorkspace({org,clientId,userId,archived,writable,onDirtyChange}:Props){
  const scope=useRef(new RequestScope()),pending=useRef(false);
  const [context,setContext]=useState<ImportContext|null>(null),[subject,setSubject]=useState(''),[records,setRecords]=useState<ImportRecord[]>([]),[confirmed,setConfirmed]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[uncertain,setUncertain]=useState(false),[report,setReport]=useState<{status:string}[]|null>(null);
  const preview=context?previewNutritrack(records,context):[],blocked=preview.some(row=>row.status==='blocked');
  const [sourceRows,setSourceRows]=useState<ImportRecord[]>([]),[from,setFrom]=useState(''),[to,setTo]=useState('');
- useEffect(()=>{const dirty=sourceRows.length>0||busy;onDirtyChange?.(dirty);const leave=(e:BeforeUnloadEvent)=>{if(dirty){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',leave);return()=>{onDirtyChange?.(false);window.removeEventListener('beforeunload',leave);};},[sourceRows.length,busy,onDirtyChange]);
+ useEffect(()=>{const dirty=sourceRows.length>0||subject!==(context?.link?.source_subject||'')||busy;onDirtyChange?.(dirty,busy);const leave=(e:BeforeUnloadEvent)=>{if(dirty){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',leave);return()=>{onDirtyChange?.(false);window.removeEventListener('beforeunload',leave);};},[sourceRows.length,subject,context?.link?.source_subject,busy,onDirtyChange]);
  async function refresh(keys:string[]=[],valid=()=>true){
   if(!db)throw Error();const r=await db.rpc('aura_nutritrack_context',{p_org:org,p_client:clientId,p_keys:keys});if(!valid())return null;if(r.error||!r.data)throw Error();const value=r.data as ImportContext;setContext(value);setSubject(value.link?.source_subject||'');return value;
  }

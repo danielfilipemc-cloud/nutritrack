@@ -3,7 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import {db} from '../lib/supabase';
 import {RequestScope} from '../lib/request-scope';
 import {downloadVisibleExport,foundationError} from '../lib/foundations';
-type Props={org:string;clientId:string;student?:boolean;onDirtyChange?:(dirty:boolean)=>void};
+type Props={org:string;clientId:string;student?:boolean;onDirtyChange?:(dirty:boolean,pending?:boolean)=>void};
 type Context={can_review:boolean;consents:{purpose:string;accepted:boolean;document_version:string}[];requests:{id:string;kind:string;status:string;revision:number}[]};
 type Review={status:string;reference:string;revision:number;created_at:string};
 const labels:Record<string,string>={requested:'Pedido registado',in_review:'Em análise',blocked:'Aguarda decisão',withdrawn:'Retirado'};
@@ -11,7 +11,7 @@ export default function PrivacyPanel(props:Props){return <PrivacyWorkspace key={
 function PrivacyWorkspace({org,clientId,student=false,onDirtyChange}:Props){
  const reads=useRef(new RequestScope()),writes=useRef(new RequestScope()),historyReads=useRef(new RequestScope()),pending=useRef(false);
  const [data,setData]=useState<Context|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[reload,setReload]=useState(0),[reference,setReference]=useState(''),[loading,setLoading]=useState(true),[uncertain,setUncertain]=useState(false),[history,setHistory]=useState<Review[]|null>(null),[historyBusy,setHistoryBusy]=useState(false);
- useEffect(()=>{const dirty=!!reference.trim()||busy;onDirtyChange?.(dirty);const leave=(e:BeforeUnloadEvent)=>{if(dirty){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',leave);return()=>{onDirtyChange?.(false);window.removeEventListener('beforeunload',leave);};},[reference,busy,onDirtyChange]);
+ useEffect(()=>{const dirty=!!reference.trim()||busy;onDirtyChange?.(dirty,busy);const leave=(e:BeforeUnloadEvent)=>{if(dirty){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',leave);return()=>{onDirtyChange?.(false);window.removeEventListener('beforeunload',leave);};},[reference,busy,onDirtyChange]);
  useEffect(()=>{const valid=reads.current.begin();setData(null);setLoading(true);setHistory(null);historyReads.current.invalidate();setHistoryBusy(false);
  void(async()=>{try{if(!db)throw Error();const r=await db.rpc('aura_privacy_context',{p_org:org,p_client:clientId});if(!valid())return;if(r.error||!r.data){setMessage(foundationError(r.error));return;}setData(r.data);setUncertain(false);}catch{if(valid())setMessage('Não foi possível carregar os pedidos. Tenta atualizar.');}finally{if(valid())setLoading(false);}})();
  return()=>{reads.current.invalidate();writes.current.invalidate();historyReads.current.invalidate();};},[org,clientId,reload]);

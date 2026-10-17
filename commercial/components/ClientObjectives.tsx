@@ -6,14 +6,14 @@ import {businessToday,careError} from '../lib/care';
 import {objectiveDraft,objectiveDeadline,objectiveTimestamp,objectiveStates,type Objective} from '../lib/objectives';
 type GoalEvent={id:string;objective_id:string;action:string;revision:number;from_state:string|null;to_state:string;created_at:string};
 const actionLabels:Record<string,string>={created:'Objetivo criado',updated:'Objetivo atualizado',completed:'Objetivo concluído',cancelled:'Objetivo cancelado',reopened:'Objetivo reaberto'};
-export default function ClientObjectives({org,userId,clientId,archived,writable,onDirtyChange}:{org:string;userId:string;clientId:string;archived:boolean;writable:boolean;onDirtyChange?:(dirty:boolean)=>void}){
+export default function ClientObjectives({org,userId,clientId,archived,writable,onDirtyChange}:{org:string;userId:string;clientId:string;archived:boolean;writable:boolean;onDirtyChange?:(dirty:boolean,pending?:boolean)=>void}){
  const reads=useRef(new RequestScope()),writes=useRef(new RequestScope()),historyReads=useRef(new RequestScope()),writing=useRef(false);
  const [goals,setGoals]=useState<Objective[]>([]),[total,setTotal]=useState(0),[page,setPage]=useState(0),[filter,setFilter]=useState('active'),[reload,setReload]=useState(0);
  const [loading,setLoading]=useState(true),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[loadError,setLoadError]=useState(''),[message,setMessage]=useState(''),[conflict,setConflict]=useState(false),[uncertain,setUncertain]=useState(false);
  const [editing,setEditing]=useState<Objective|null>(null),[title,setTitle]=useState(''),[due,setDue]=useState('');
  const [events,setEvents]=useState<GoalEvent[]>([]),[historyPage,setHistoryPage]=useState(0),[historyLoading,setHistoryLoading]=useState(true),[historyError,setHistoryError]=useState('');
  const dirty=title!==(editing?.title||'')||due!==(editing?.due_on||'');
- useEffect(()=>{onDirtyChange?.(dirty||busy);const leave=(e:BeforeUnloadEvent)=>{if(dirty||busy){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',leave);return()=>{onDirtyChange?.(false);window.removeEventListener('beforeunload',leave);};},[dirty,busy,onDirtyChange]);
+ useEffect(()=>{onDirtyChange?.(dirty||busy,busy);const leave=(e:BeforeUnloadEvent)=>{if(dirty||busy){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',leave);return()=>{onDirtyChange?.(false);window.removeEventListener('beforeunload',leave);};},[dirty,busy,onDirtyChange]);
  useEffect(()=>()=>{reads.current.invalidate();writes.current.invalidate();historyReads.current.invalidate();},[]);
  useEffect(()=>{
   if(!db)return;const valid=reads.current.begin();setReady(false);setLoading(true);setLoadError('');setGoals([]);

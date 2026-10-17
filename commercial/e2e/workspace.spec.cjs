@@ -19,7 +19,7 @@ test('late dashboard response cannot repopulate another establishment',async({pa
 
 test('foreign student lookup shows no assessment or personal data',async({page})=>{
  await fixture(page);await page.goto(`/alunos/00000000-0000-0000-0000-000000000999?org=${A}`);
- await expect(page.getByRole('status')).toContainText('Aluno indisponível');await expect(page.getByRole('button',{name:'Guardar avaliação'})).toHaveCount(0);
+ await expect(page.getByRole('status').filter({hasText:'Aluno indisponível'})).toBeVisible();await expect(page.getByRole('button',{name:'Guardar avaliação'})).toHaveCount(0);
  await expect(page.getByText('Aluno Fictício A',{exact:true})).toHaveCount(0);
 });
 
