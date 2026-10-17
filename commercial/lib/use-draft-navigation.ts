@@ -17,9 +17,11 @@ export function useDraftNavigation(state:()=>{dirty:boolean;pending:boolean},blo
    approved=true;event.stopImmediatePropagation();
   }
   function unload(event:BeforeUnloadEvent){if(approved){approved=false;event.stopImmediatePropagation();return;}const s=current.current();if(s.dirty||s.pending){event.preventDefault();event.returnValue='';}}
+  // Logout mutates Auth before navigating: authorize leaving before the session is revoked.
+  function logout(event:Event){if(!permit()){event.preventDefault();event.stopImmediatePropagation();}}
   const navigation=(window as unknown as {navigation?:EventTarget}).navigation;
   function traverse(raw:Event){const event=raw as Event&{navigationType?:string;hashChange?:boolean;destination?:{sameDocument:boolean}};if(event.navigationType!=='traverse'||event.hashChange||!event.cancelable)return;if(!permit())event.preventDefault();else approved=event.destination?.sameDocument===false;}
-  document.addEventListener('click',click,true);window.addEventListener('beforeunload',unload,true);navigation?.addEventListener('navigate',traverse);
-  return()=>{document.removeEventListener('click',click,true);window.removeEventListener('beforeunload',unload,true);navigation?.removeEventListener('navigate',traverse);};
+  document.addEventListener('click',click,true);window.addEventListener('beforeunload',unload,true);window.addEventListener('aura:before-logout',logout);navigation?.addEventListener('navigate',traverse);
+  return()=>{document.removeEventListener('click',click,true);window.removeEventListener('beforeunload',unload,true);window.removeEventListener('aura:before-logout',logout);navigation?.removeEventListener('navigate',traverse);};
  },[]);
 }

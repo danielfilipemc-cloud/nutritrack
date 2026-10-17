@@ -11,7 +11,9 @@ export default function SessionActions(){
   return()=>{alive.current=false;data.subscription.unsubscribe();};
  },[]);
  async function logout(){
-  if(!db||busy)return;setBusy(true);setError('');
+  if(!db||busy)return;
+  if(!window.dispatchEvent(new Event('aura:before-logout',{cancelable:true})))return;
+  setBusy(true);setError('');
   try{
    // Revoke refresh sessions globally; already-issued JWTs retain their normal TTL.
    const result=await db.auth.signOut({scope:'global'});
