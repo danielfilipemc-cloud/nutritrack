@@ -4,10 +4,12 @@ import {db} from '../lib/supabase';
 import {measurement,validDate} from '../lib/validation';
 import {foundationError} from '../lib/foundations';
 export type EditableAssessment={id:string;assessed_on:string;weight_kg:number|null;height_cm:number|null;waist_cm:number|null;revision:number;student_visible:boolean;superseded_at:string|null};
-export default function AssessmentActions({org,assessment:a,onSaved}:{org:string;assessment:EditableAssessment;onSaved:()=>void}){
+export default function AssessmentActions({org,assessment:a,onSaved,onDirtyChange}:{org:string;assessment:EditableAssessment;onSaved:()=>void;onDirtyChange?:(dirty:boolean,pending:boolean)=>void}){
  const alive=useRef(true);useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[conflict,setConflict]=useState(false),[reason,setReason]=useState('');
  const [date,setDate]=useState(a.assessed_on),[weight,setWeight]=useState(String(a.weight_kg??'')),[height,setHeight]=useState(String(a.height_cm??'')),[waist,setWaist]=useState(String(a.waist_cm??''));
+ const dirty=!!reason||date!==a.assessed_on||weight!==String(a.weight_kg??'')||height!==String(a.height_cm??'')||waist!==String(a.waist_cm??'');
+ useEffect(()=>{onDirtyChange?.(dirty,busy);return()=>onDirtyChange?.(false,false);},[dirty,busy,onDirtyChange]);
  async function run(params:Record<string,unknown>,correct=false){if(!db||busy||conflict)return;setBusy(true);setMessage('');try{
  const r=await db.rpc(correct?'aura_assessment_correct':'aura_assessment_share',params);if(!alive.current)return;
  if(r.error){setMessage(foundationError(r.error));setConflict(r.error.code==='PT409');return;}onSaved();
