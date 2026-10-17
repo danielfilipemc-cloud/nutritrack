@@ -46,7 +46,7 @@ export default function ClientCare({
   client: SelectedClient;
   manager: boolean;
   writable?: boolean;
-  onDirtyChange?: (dirty: boolean) => void;
+  onDirtyChange?: (dirty: boolean,pending?:boolean) => void;
 }) {
   const scope = useRef(new RequestScope()),
     historyScope = useRef(new RequestScope());
@@ -122,9 +122,9 @@ export default function ClientCare({
   }, [org, userId, client.id, page, reload]);
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved);
   useEffect(() => {
-    onDirtyChange?.(dirty);
+    onDirtyChange?.(dirty,busy);
     const handler = (e: BeforeUnloadEvent) => {
-      if (dirty) {
+      if (dirty || busy) {
         e.preventDefault();
         e.returnValue = "";
       }
@@ -134,7 +134,7 @@ export default function ClientCare({
       onDirtyChange?.(false);
       window.removeEventListener("beforeunload", handler);
     };
-  }, [dirty, onDirtyChange]);
+  }, [dirty, busy, onDirtyChange]);
   function reloadData() {
     if (
       dirty &&
