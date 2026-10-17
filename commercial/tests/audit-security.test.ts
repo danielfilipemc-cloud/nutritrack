@@ -68,3 +68,39 @@ test('opt-in MFA protects raw pupil data reads, student projections and privacy;
   await denied(f.db.query(`select app_private.privacy_context_session_base('${org}','${pupil}')`));
  }finally{await f.db.close();}
 });
+
+test('all thirteen sensitive public wrappers reject AAL1; policy and factor changes take effect on the next read',async()=>{
+ const f=await foundationFixture();try{
+  await f.grant(2,100);
+  await f.db.exec(`reset role;create table auth.sessions(id uuid,user_id uuid,not_after timestamptz);create table auth.mfa_factors(user_id uuid,status text,factor_type text);
+   insert into auth.sessions values('${id(999)}','${id(1)}',null),('${id(998)}','${id(2)}',null);
+   insert into auth.mfa_factors values('${id(1)}','verified','totp'),('${id(2)}','verified','totp');`);
+  const claims=(extra:Record<string,unknown>={})=>f.db.query(`select set_config('request.jwt.claims',$1,false)`,[JSON.stringify({aal:'aal2',session_id:id(998),amr:[{method:'totp',timestamp:Math.floor(Date.now()/1000)}],...extra})]);
+  const save=(required:boolean,rev:number)=>f.db.query(`select aura_security_policy_save('${org}',$1,$2)`,[required,rev]);
+  const read=async()=>(await f.db.query(`select * from clients where id='${pupil}'`)).rows.length;
+  await f.asUser(2);assert.equal(await read(),1);
+  await f.asUser(1);await claims({session_id:id(999)});await save(true,0);await f.db.exec('reset role');
+  const calls=await f.db.query<{call:string}>(`select format('select public.%I(%s)','aura_'||replace(p.proname,'_sensitive_base',''),
+   (select string_agg(case when i=0 then '''${org}''::uuid' else 'null::'||format_type(p.proargtypes[i],null) end,',' order by i) from generate_series(0,p.pronargs-1) i)) call
+   from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='app_private' and right(p.proname,15)='_sensitive_base'`);
+  assert.equal(calls.rows.length,13);await f.asUser(2);await claims({aal:'aal1'});
+  for(const fn of calls.rows)await denied(f.db.query(fn.call),'PT403');assert.equal(await read(),0);
+  for(const extra of [{session_id:id(999)},{amr:[]},{amr:[{method:'totp',timestamp:Math.floor(Date.now()/1000)+120}]},{amr:[{method:'totp',timestamp:Math.floor(Date.now()/1000)-700}]}]){
+   await claims(extra);assert.equal(await read(),0);
+  }
+  await claims();assert.equal(await read(),1);
+  await f.db.exec(`reset role;update auth.mfa_factors set status='unverified' where user_id='${id(2)}'`);await f.asUser(2);assert.equal(await read(),0);
+  await f.asUser(1);await claims({session_id:id(999)});await save(false,1);await denied(save(true,1),'PT409');
+  await f.asUser(2);await claims({aal:'aal1'});assert.equal(await read(),1);
+  await f.asUser(1);await claims({session_id:id(999)});await save(true,2);
+  const context=(await f.db.query<{x:any}>(`select aura_security_context('${org}') x`)).rows[0].x;
+  assert.deepEqual(context,{required:true,revision:3,can_configure:true});
+  assert.deepEqual((await f.db.query<{x:any}>(`select aura_security_requirement('${org}') x`)).rows[0].x,{required:true,satisfied:true});
+  await f.asUser(2);await claims({aal:'aal1'});assert.equal(await read(),0);
+  assert.deepEqual((await f.db.query<{x:any}>(`select aura_security_requirement('${org}') x`)).rows[0].x,{required:true,satisfied:false});
+  await f.asUser(5);await denied(f.db.query(`select aura_security_requirement('${org}')`));await denied(f.db.query(`select aura_security_context('${org}')`));
+  await f.db.exec('reset role');
+  const events=await f.db.query<{action:string}>(`select action from app_private.foundation_events where organization_id='${org}' and action like 'sensitive_mfa_%' order by created_at`);
+  assert.deepEqual(events.rows.map(e=>e.action),['sensitive_mfa_enabled','sensitive_mfa_disabled','sensitive_mfa_enabled']);
+ }finally{await f.db.close();}
+});

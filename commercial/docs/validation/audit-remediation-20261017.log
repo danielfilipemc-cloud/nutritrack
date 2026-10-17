@@ -46,3 +46,21 @@ No claims of complete security, delivered recovery email, cloud operational rest
 PITR, real-data readiness, paid upgrade or production authorization.
 Runtime credentials, seeds, archives and detailed reports remain ignored/private.
 Follow-up 2026-10-17T12:19:29Z: owner corrected Site URL; synthetic recovery-link probe PASS, expected staging origin confirmed. Email delivery, allowlist and token consumption remain unverified.
+Supplement to reviewed SHA 93173ae, 2026-10-17:
+SecurityRequirement: explicit loading/error/blocked/clear; RPC errors, network rejection
+and malformed payload never mean no MFA obligation. Retry and stale-context guard.
+73/73 domain/PostgreSQL/guards PASS; TypeScript/build PASS; npm audit zero findings.
+Focused suite after event/revision assertion additions: 7/7 PASS.
+70/70 Chromium PASS, 37.8s; includes unknown/error retry, late org response,
+and failed revalidation after an MFA session event.
+Actual catalog-generated unauthorized calls: all public aura_* RPC as anon,
+all historical *_base implementations as authenticated -> SQLSTATE42501.
+All 13 sensitive public wrappers with AAL1 -> PT403.
+Policy enable/disable/re-enable revisions, private events, stale revision PT409,
+foreign tenant context, factor removal and wrong/stale/future session claims PASS.
+Tests use PGlite Auth emulation and local browser fixtures, not cloud Auth proof.
+No migration changes, new cloud tests, production publication or real data in supplement.
+Assisted MFA recovery and per-tenant activation acceptance documented; total-factor-loss
+recovery remains unvalidated, no administrative bypass delivered.
+First browser attempt: 68 pass / one test locator failure; corrected accessible-name
+matching and final full suite70 PASS. No product regression hidden by cleanup.

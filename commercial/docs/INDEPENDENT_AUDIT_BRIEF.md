@@ -1,6 +1,6 @@
 # AURA Business — pedido de auditoria independente
 
-Para a nova revisão, começar pela branch `fix/aura-security-audit` e pelo diff contra `18485825fe5683c4327e79674113c667a7c55d54` (base com PRs #8–#16). Consultar primeiro `AUDIT_REMEDIATION_20261017.md`, `AUTH_STAGING_CONFIGURATION.md`, `RECOVERY_OPERATIONS.md` e `validation/audit-remediation-20261017.log`. As três migrations incrementais já foram verificadas no staging; a publicação da interface é um passo separado e não deve ser presumida.
+Para a nova revisão, começar pela branch `fix/aura-security-audit` e pelo diff contra `18485825fe5683c4327e79674113c667a7c55d54` (base com PRs #8–#16). Consultar primeiro `AUDIT_REMEDIATION_20261017.md`, `AUTH_STAGING_CONFIGURATION.md`, `RECOVERY_OPERATIONS.md`, `MFA_ASSISTED_RECOVERY_AND_ACTIVATION.md` e `validation/audit-remediation-20261017.log`. As três migrations incrementais já foram verificadas no staging; a publicação da interface é um passo separado e não deve ser presumida.
 
 Os PRs #9–#14 explicam os blocos originais. Confirmar as revisões atuais no GitHub antes de concluir; não confundir código local, branches remotas, catálogo instalado e versão publicada.
 

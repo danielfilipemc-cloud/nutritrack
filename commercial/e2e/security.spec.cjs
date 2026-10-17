@@ -22,3 +22,27 @@ test('interrupted TOTP enrollment can cancel only the pending factor before star
  await securityFixture(page,{pending:true});await page.goto('/seguranca?org='+A);await expect(page.getByRole('button',{name:'Configurar aplicação autenticadora'})).toHaveCount(0);
  await page.getByRole('button',{name:'Cancelar configuração pendente',exact:true}).click();await expect(page.getByRole('button',{name:'Configurar aplicação autenticadora',exact:true})).toBeVisible();
 });
+
+for(const failure of ['network','forbidden','malformed'])test('MFA requirement '+failure+' remains unknown until explicit successful retry',async({page})=>{
+ await fixture(page);let fail=true;
+ await page.route('**/rpc/aura_security_requirement',r=>!fail?reply(r,{required:true,satisfied:false}):failure==='network'?r.abort('failed'):reply(r,failure==='forbidden'?{code:'42501'}:{},failure==='forbidden'?403:200));
+ await page.goto('/alunos');await expect(page.getByText('Não foi possível verificar a obrigação de segundo fator.',{exact:false})).toBeVisible();
+ fail=false;await page.getByRole('button',{name:'Tentar verificar novamente'}).click();await expect(page.getByRole('link',{name:'Confirmar em Segurança'})).toBeVisible();
+});
+
+test('late successful MFA response for old organization cannot clear new organization error',async({page})=>{
+ const {B}=require('./fixtures.cjs');await fixture(page);let release;const pending=new Promise(r=>release=r);let started=false,settled=false;
+ await page.route('**/rpc/aura_security_requirement',async r=>{if(r.request().postDataJSON().p_org===A){started=true;await pending;try{return await reply(r,{required:false,satisfied:true});}finally{settled=true;}}return reply(r,{code:'42501'},403);});
+ await page.goto('/alunos');await expect.poll(()=>started).toBe(true);await page.getByRole('combobox',{name:/^Estabelecimento/}).selectOption(B);
+ await expect(page.getByRole('button',{name:'Tentar verificar novamente'})).toBeVisible();release();await expect.poll(()=>settled).toBe(true);
+ await expect(page.getByRole('button',{name:'Tentar verificar novamente'})).toBeVisible();
+});
+
+test('MFA session change rechecks the requirement and a failed recheck never clears it',async({page})=>{
+ await securityFixture(page);let phase='blocked';
+ await page.route('**/rpc/aura_security_requirement',r=>phase==='error'?reply(r,{code:'503'},503):reply(r,{required:true,satisfied:phase==='clear'}));
+ await page.goto('/seguranca?org='+A);await expect(page.getByRole('link',{name:'Confirmar em Segurança'})).toBeVisible();
+ await page.getByRole('button',{name:'Configurar aplicação autenticadora',exact:true}).click();await page.getByLabel('Código da aplicação autenticadora',{exact:true}).fill('123456');phase='error';
+ await page.getByRole('button',{name:'Confirmar segundo fator',exact:true}).click();await expect(page.getByRole('button',{name:'Tentar verificar novamente'})).toBeVisible();
+ phase='clear';await page.getByRole('button',{name:'Tentar verificar novamente'}).click();await expect(page.getByRole('button',{name:'Tentar verificar novamente'})).toHaveCount(0);await expect(page.getByRole('link',{name:'Confirmar em Segurança'})).toHaveCount(0);
+});

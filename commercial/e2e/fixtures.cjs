@@ -211,6 +211,7 @@ async function fixture(
       return respond({as_of:today,total,items,more,next:last?{before:last.occurred_at,key:last.event_key}:null});
     }
     if(path.endsWith('/rpc/aura_client_permissions'))return respond({assessments_read:!restricted,assessments_write:!restricted&&!readOnly,followup_read:!restricted,followup_write:!restricted&&!readOnly,schedule_read:true,schedule_write:!readOnly});
+    if(path.endsWith('/rpc/aura_security_requirement'))return respond({required:false,satisfied:true});
     if(path.endsWith('/rpc/aura_privacy_context'))return respond({can_review:['owner','admin'].includes(role),consents:[],requests:[]});
     if(path.endsWith('/staff_capabilities')||path.endsWith('/client_assignments')||path.endsWith('/client_users'))return respond([]);
     if(path.endsWith('/rpc/aura_assessment_create')){const p=request.postDataJSON();assessments.unshift({id:'new-synthetic-measurement',assessed_on:p.p_date,weight_kg:p.p_weight,height_cm:p.p_height,waist_cm:p.p_waist,revision:1,student_visible:false,superseded_at:null});return respond('new-synthetic-measurement');}
