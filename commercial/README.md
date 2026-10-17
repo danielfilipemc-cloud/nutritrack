@@ -1,5 +1,7 @@
 # AURA Business
 
+**MVP em revisão — três ciclos:** dashboard diário resiliente e atalhos com contexto, ficha360 com rascunhos/retry/proveniência e demonstração White Label/teclado consolidadas. [Auditoria, decisões e resultados](docs/MVP_CONSOLIDATION.md). PRs incrementais #18–#20; não publicados. Os bloqueios altos de segurança e conformidade permanecem abertos.
+
 **Remediação de segurança — 17/10:** projeções de privacidade corrigidas, revisões auditáveis e política MFA/AAL2 por organização no servidor e na interface. Migrations 15–17 aplicadas apenas local/staging. [Resultados, achados abertos e critérios para piloto](docs/AUDIT_REMEDIATION_20261017.md), [configuração Auth pendente](docs/AUTH_STAGING_CONFIGURATION.md) e [procedimento de recuperação operacional](docs/RECOVERY_OPERATIONS.md). Produção não foi alterada. Os testes aprovados não fecham os gates de configuração, recuperação cloud e privacidade; **o projeto não está declarado pronto para dados reais**. Os checkpoints seguintes são históricos; confirmar publicação do candidato no PR/Render.
 
 **Integração consolidada:** PRs #9–#14 integrados em `saas-foundation`. [Staging online separado](https://aura-business-staging.onrender.com) com [Aluno 360º sem conta](https://aura-business-staging.onrender.com/demo/aluno-360), Supabase exclusivo e contas fictícias. Três percursos Chromium com login cloud real e dez rotas/20 assets validados. Produção permanece no baseline #8, com auto-deploy desligado. Ver [operação e limites](docs/ONLINE_STAGING.md), [estado efetivo](docs/INTEGRATION_STATUS.md) e [pedido de auditoria independente](docs/INDEPENDENT_AUDIT_BRIEF.md). Os checkpoints seguintes são históricos.
@@ -40,7 +42,7 @@ npm run test:e2e
 No Windows, definir `NEXT_TELEMETRY_DISABLED=1` evita escrita de telemetria fora do projeto.
 
 Copiar `.env.example` para `.env.local` e preencher URL e chave publishable de um
-Supabase **isolado com as dez migrations**. O projeto `vfplbkfxipfictuwkkoe` é produção protegida, ainda no baseline anterior: não o usar para testar este frontend. Nunca usar chaves secret/service_role
+Supabase **isolado com o bundle canónico atual (17 registos verificados)**. O projeto `vfplbkfxipfictuwkkoe` é produção protegida, ainda no baseline anterior: não o usar para testar este frontend. Nunca usar chaves secret/service_role
 no frontend nem ligar bases NutriTrack, Sentinel ou GPS. Ficheiros `.env*`, fixtures,
 traces e resultados locais estão fora do Git.
 

@@ -1,0 +1,24 @@
+AURA MVP consolidation — 2026-10-17 Europe/Lisbon.
+Base reviewed merge: 6a925c3d342a4f167e818e5c7f3c9b112b6601ce.
+Cycle1: 73 domain/PostgreSQL tests PASS, TypeScript/build PASS, npm audit0,
+15 daily/workspace Chromium PASS15.2s. PR18 CI run39044167932 success.
+Cycle2: TypeScript/build PASS, complete Chromium79/79 PASS46.6s.
+PR19 CI run39044726529 success; all domain checks repeated there.
+Final cycle: 73/73 domain/PostgreSQL tests PASS, TypeScript/build PASS,
+latest build repeated successfully after UI/hydration changes; npm audit0.
+Final complete Chromium85/85 PASS46.3s.
+Experience6 cases repeated three times: 18/18 PASS15.9s.
+Local synthetic screenshots inspected: desktop dashboard and mobile360.
+Fixed real visual bug: desktop label width inherited icon width24px.
+Fixed early-hydration interaction loss; delayed-JS case reproducible in E2E.
+Earlier runs retained privately: sandbox EPERM build retried with adequate
+permissions; ambiguous test selectors fixed; GET read retry bound/cancellation
+added after first profile-network test; 83/84 run exposed hydration race.
+Only commercial/ changed; no dependencies/package-lock/SQL source changed.
+No new cloud accounts, Auth/PostgREST tests, migrations or recovery operations.
+No production/staging deploy, new resources, costs, real data or safety bypass.
+Mocks/PGlite tests are not evidence of cloud Auth configuration or certification.
+High operational/legal/security gates from PR17 remain open.
+Reproduce from commercial/: npm run check; npm audit --audit-level=moderate;
+npm run test:e2e -- --workers=2. NEXT_TELEMETRY_DISABLED=1 on Windows.
+Focused replay: npm run test:e2e -- e2e/experience-mvp.spec.cjs --repeat-each=3 --workers=2.
