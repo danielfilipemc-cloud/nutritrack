@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const {fixture,A,C,today}=require('./fixtures.cjs');
 async function open(page){
- await page.goto(`/alunos/${C}?org=${A}`);await page.getByRole('button',{name:'Objetivos',exact:true}).click();
+ await page.goto(`/alunos/${C}?org=${A}`);if(page.viewportSize().width<=900)await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption('objectives');else await page.getByRole('button',{name:'Objetivos',exact:true}).click();
  const region=page.getByRole('region',{name:'Objetivos de acompanhamento',exact:true});
  await expect(region.getByText(/^\d+ objetivos neste filtro\.$/)).toBeVisible();return region;
 }

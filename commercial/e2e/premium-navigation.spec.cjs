@@ -22,3 +22,18 @@ test('coach settings and restricted profile never advertise privileged tools',as
  await fixture(page,{role:'coach',restricted:true});await page.goto('/definicoes');await expect(page.getByRole('link',{name:'Gerir competências',exact:true})).toHaveCount(0);await expect(page.getByRole('link',{name:'Gerir segurança',exact:true})).toBeVisible();
  await page.goto(`/alunos/${C}?org=${A}&section=privacy`);await expect(page.getByRole('button',{name:'Privacidade',exact:true})).toHaveCount(0);await expect(page.getByRole('heading',{name:'Privacidade e dados'})).toHaveCount(0);
 });
+test('today schedule uses its own authorized filter and does not change with priority filters',async({page})=>{
+ await fixture(page,{seedAppointments:2,seedObjectives:2});const schedule=page.getByRole('region',{name:'Agenda de hoje',exact:true});
+ await expect(schedule.getByRole('link',{name:'Ver agenda completa',exact:true})).toHaveAttribute('href','/agenda?org='+A);
+ await expect(schedule.locator('.aura-priority-list>li')).toHaveCount(2);const count=2;const priorities=page.getByRole('region',{name:'Prioridades do profissional',exact:true});
+ await priorities.getByLabel('Tipo de prioridade').selectOption('objective');await expect(priorities.locator('.aura-priority-list>li')).toHaveCount(2);await expect(schedule.locator('.aura-priority-list>li')).toHaveCount(count);
+});
+test('new student disclosure retains its draft when collapsed and remains keyboard operable',async({page})=>{
+ await fixture(page);await page.goto('/alunos');const disclosure=page.locator('.aura-create-client');await expect(disclosure.getByLabel('Nome',{exact:true})).toBeHidden();const toggle=disclosure.locator('summary');await toggle.focus();await page.keyboard.press('Enter');const input=disclosure.getByLabel('Nome',{exact:true});await input.fill('Aluno exclusivamente fictício');await toggle.click();await expect(input).toBeHidden();await toggle.click();await expect(input).toHaveValue('Aluno exclusivamente fictício');
+});
+test('mobile profile area selector exposes all authorized areas and preserves cancelled drafts',async({page})=>{
+ await page.setViewportSize({width:375,height:812});await fixture(page);await page.goto(`/alunos/${C}?org=${A}&section=care`);
+ const areas=page.getByRole('combobox',{name:'Área da ficha',exact:true});await expect(areas).toHaveValue('care');await expect(areas.getByRole('option')).toHaveCount(9);
+ const draft=page.getByRole('textbox',{name:'Objetivo do acompanhamento',exact:true});await draft.fill('Rascunho fictício mobile');page.once('dialog',d=>d.dismiss());await areas.selectOption('privacy');await expect(areas).toHaveValue('care');await expect(draft).toHaveValue('Rascunho fictício mobile');
+ page.once('dialog',d=>d.accept());await areas.selectOption('privacy');await expect(page.getByRole('heading',{name:'Privacidade e dados',exact:true})).toBeVisible();
+});
