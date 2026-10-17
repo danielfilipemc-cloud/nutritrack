@@ -45,3 +45,4 @@ Priorities failure fixture now remains failed until the expected alert is observ
 No claims of complete security, delivered recovery email, cloud operational restore,
 PITR, real-data readiness, paid upgrade or production authorization.
 Runtime credentials, seeds, archives and detailed reports remain ignored/private.
+Follow-up 2026-10-17T12:19:29Z: owner corrected Site URL; synthetic recovery-link probe PASS, expected staging origin confirmed. Email delivery, allowlist and token consumption remain unverified.

@@ -6,9 +6,9 @@ Destino exclusivo: `vgbwmamntjmhzrpvhxzb`. Nunca executar estes passos no projet
 
 `scripts/staging-auth-readiness.ts` consulta apenas settings públicos, com chave publicável: signup ativo, confirmação de email ativa, email provider ativo, anonymous users desativado. Settings públicos **não** demonstram Site URL, allowlist, força de password, refresh rotation, JWT expiry ou sessão. Os testes Auth reais observaram JWT de 3600s na cloud e 900s localmente. O advisor reporta passwords comprometidas desativadas.
 
-O probe `staging-recovery-link-probe.ts` gera um link **sem enviar email**, exclusivamente para uma conta de auditoria fictícia sem atribuição, e extrai apenas a origem de redirect. O valor observado foi `http://localhost:3000`, diferente de `https://aura-business-staging.onrender.com`. Não guarda/imprime o link ou token, não o consome e não muda password. Uma repetição gera um novo token para a mesma conta fictícia; não é uma consulta totalmente sem efeitos.
+O probe `staging-recovery-link-probe.ts` gera um link **sem enviar email**, exclusivamente para uma conta de auditoria fictícia sem atribuição, e extrai apenas a origem de redirect. O primeiro valor observado foi `http://localhost:3000`. Após correção pelo responsável, o probe de 2026-10-17 às 12:19 UTC confirmou `https://aura-business-staging.onrender.com` (PASS). Não guarda/imprime o link ou token, não o consome e não muda password. Uma repetição gera um novo token para a mesma conta fictícia; não é uma consulta totalmente sem efeitos.
 
-O conector não disponibiliza alteração da configuração Auth. A tentativa de ligação ao painel pelo Browser falhou no arranque da integração; não se pediram nem expuseram credenciais administrativas. A correção do Site URL foi pedida ao responsável enquanto o desenvolvimento prossegue.
+O conector não disponibiliza alteração da configuração Auth. A tentativa de ligação ao painel pelo Browser falhou no arranque da integração; não se pediram nem expuseram credenciais administrativas. O responsável corrigiu o Site URL e a origem foi novamente verificada; allowlist e entrega/consumo de email continuam pendentes.
 
 ## Alterações a verificar no painel, sem novas credenciais
 
