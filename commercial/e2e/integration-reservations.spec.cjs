@@ -46,3 +46,11 @@ test('same-document browser back cancellation preserves the objective draft',asy
 test('explicit discard permits navigation with only one confirmation',async({page})=>{
  await prepare(page,cases[2]);let prompts=0;page.on('dialog',async d=>{prompts++;await d.accept();});await page.getByRole('navigation',{name:'Navegação principal'}).getByRole('link',{name:'Agenda',exact:true}).click();await expect(page).toHaveURL(/\/agenda$/);expect(prompts).toBe(1);
 });
+
+test('partial assessment revocation preserves a still-authorized followup draft',async({page})=>{
+ await fixture(page);let revoked=false,release,started=false;const gate=new Promise(r=>release=r);
+ await page.route('**/rpc/aura_client_permissions',r=>revoked?r.fulfill({contentType:'application/json',body:JSON.stringify({assessments_read:false,assessments_write:false,followup_read:true,followup_write:true,schedule_read:true,schedule_write:true})}):r.fallback());
+ await page.route('**/rest/v1/assessments?*',async r=>{started=true;await gate;await r.fallback();});await page.goto(url('overview'));await expect.poll(()=>started).toBe(true);
+ const draft=page.getByRole('textbox',{name:'Objetivo do acompanhamento',exact:true});await draft.fill('Synthetic still-authorized followup');revoked=true;release();
+ await expect(page.getByRole('status').filter({hasText:'As permissões mudaram'})).toBeVisible();await expect(draft).toHaveValue('Synthetic still-authorized followup');await expect(page.getByRole('button',{name:'Guardar acompanhamento',exact:true})).toBeEnabled();await expect(page.getByRole('button',{name:'Avaliações',exact:true})).toHaveCount(0);
+});

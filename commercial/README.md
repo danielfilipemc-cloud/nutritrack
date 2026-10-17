@@ -1,6 +1,6 @@
 # AURA Business
 
-**MVP em revisão — três ciclos:** dashboard diário resiliente e atalhos com contexto, ficha360 com rascunhos/retry/proveniência e demonstração White Label/teclado consolidadas. [Auditoria, decisões e resultados](docs/MVP_CONSOLIDATION.md). PRs incrementais #18–#20; não publicados. Os bloqueios altos de segurança e conformidade permanecem abertos.
+**MVP consolidado — três ciclos:** dashboard diário resiliente e atalhos com contexto, ficha360 com rascunhos/retry/proveniência e demonstração White Label/teclado consolidadas. [Auditoria, decisões e resultados](docs/MVP_CONSOLIDATION.md). Consultar os PRs #18–#20 e respetivos complementos para a revisão integrada, resultados e estado efetivo do staging. Os checkpoints seguintes conservam o histórico das entregas. Os bloqueios altos de segurança e conformidade permanecem abertos.
 
 **Remediação de segurança — 17/10:** projeções de privacidade corrigidas, revisões auditáveis e política MFA/AAL2 por organização no servidor e na interface. Migrations 15–17 aplicadas apenas local/staging. [Resultados, achados abertos e critérios para piloto](docs/AUDIT_REMEDIATION_20261017.md), [configuração Auth pendente](docs/AUTH_STAGING_CONFIGURATION.md) e [procedimento de recuperação operacional](docs/RECOVERY_OPERATIONS.md). Produção não foi alterada. Os testes aprovados não fecham os gates de configuração, recuperação cloud e privacidade; **o projeto não está declarado pronto para dados reais**. Os checkpoints seguintes são históricos; confirmar publicação do candidato no PR/Render.
 
