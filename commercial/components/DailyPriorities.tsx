@@ -4,25 +4,25 @@ import {db} from '../lib/supabase';
 import {RequestScope} from '../lib/request-scope';
 import {formatAppointment} from '../lib/care';
 import {priorityLabels,prioritySection,profileSectionUrl,type DailyQueue} from '../lib/daily';
-export default function DailyPriorities({org,userId}:{org:string;userId:string}){
+export default function DailyPriorities({org,userId,mode="priorities"}:{org:string;userId:string;mode?:"priorities"|"schedule"}){
  const scope=useRef(new RequestScope());
- const [kind,setKind]=useState<keyof typeof priorityLabels>('all'),[draft,setDraft]=useState(''),[search,setSearch]=useState(''),[page,setPage]=useState(0),[reload,setReload]=useState(0);
+ const [kind,setKind]=useState<keyof typeof priorityLabels>(mode==='schedule'?'session':'all'),[draft,setDraft]=useState(''),[search,setSearch]=useState(''),[page,setPage]=useState(0),[reload,setReload]=useState(0);
  const [data,setData]=useState<DailyQueue|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(true);
  useEffect(()=>{const valid=scope.current.begin();setData(null);setError('');setLoading(true);
   void(async()=>{try{if(!db)throw Error();const r=await db.rpc('aura_daily_priorities',{p_org:org,p_kind:kind,p_search:search,p_offset:page*25});if(!valid())return;if(r.error||!r.data)throw Error();setData(r.data as DailyQueue);}catch{if(valid())setError('Não foi possível carregar as prioridades.');}finally{if(valid())setLoading(false);}})();
   return()=>scope.current.invalidate();
  },[org,userId,kind,search,page,reload]);
  function find(e:FormEvent){e.preventDefault();setSearch(draft.trim());setPage(0);setReload(n=>n+1);}
- return <section className="panel" aria-label="Prioridades do profissional" aria-busy={loading}>
-  <div className="aura-section-title"><h2>Prioridades de hoje</h2><button className="outline" disabled={loading} onClick={()=>setReload(n=>n+1)}>Atualizar prioridades</button></div>
-  <p>Marcações de hoje, revisões e objetivos até hoje, e avaliações em falta ou há mais de 30 dias. Apenas alunos ativos e dados autorizados. Horários em Europe/Lisbon.</p>
+ return <section className="panel" aria-label={mode==='schedule'?"Agenda de hoje":"Prioridades do profissional"} aria-busy={loading}>
+  <div className="aura-section-title"><h2>{mode==='schedule'?"Agenda de hoje":"Prioridades de hoje"}</h2><button className="outline" disabled={loading} onClick={()=>setReload(n=>n+1)}>{mode==='schedule'?"Atualizar agenda":"Atualizar prioridades"}</button></div>
+  {mode==='priorities'&&<><p>Marcações de hoje, revisões e objetivos até hoje, e avaliações em falta ou há mais de 30 dias. Apenas alunos ativos e dados autorizados. Horários em Europe/Lisbon.</p>
   <form onSubmit={find} className="aura-priority-filters"><label>Pesquisar aluno nas prioridades<input maxLength={100} value={draft} onChange={e=>setDraft(e.target.value)}/></label><button className="outline">Pesquisar prioridades</button></form>
-  <label>Tipo de prioridade<select value={kind} onChange={e=>{setKind(e.target.value as keyof typeof priorityLabels);setPage(0);}}>{Object.entries(priorityLabels).map(([value,label])=><option key={value} value={value}>{label}{value!=='all'&&data?` (${data.counts[value as keyof DailyQueue['counts']]})`:''}</option>)}</select></label>
+  <label>Tipo de prioridade<select value={kind} onChange={e=>{setKind(e.target.value as keyof typeof priorityLabels);setPage(0);}}>{Object.entries(priorityLabels).map(([value,label])=><option key={value} value={value}>{label}{value!=='all'&&data?` (${data.counts[value as keyof DailyQueue['counts']]})`:''}</option>)}</select></label></>}
   {loading?<p role="status">A carregar prioridades...</p>:error?<p role="alert">{error}</p>:data&&<>
-   <p role="status">{data.total} prioridades encontradas · {data.as_of}. Os totais respeitam a pesquisa e as tuas permissões.</p>
-   <nav className="aura-quick-actions" aria-label="Resumo das prioridades">{Object.entries(data.counts).map(([value,count])=><button key={value} className="outline" aria-pressed={kind===value} onClick={()=>{setKind(value as keyof typeof priorityLabels);setPage(0);}}>{priorityLabels[value as keyof typeof priorityLabels]}: {count}</button>)}</nav>
-   {!data.items.length?<div className="aura-empty-state"><strong>Sem prioridades neste filtro</strong><p>Altera o filtro ou pesquisa outro aluno.</p></div>:<ul className="aura-priority-list">{data.items.map(item=><li key={`${item.kind}:${item.id}`}><div><span className="eyebrow">{priorityLabels[item.kind]}</span><h3>{item.full_name}</h3><p>{item.label} · {item.starts_at?formatAppointment(item.starts_at):item.due_on||'Sem avaliação registada'}</p></div><a className="outline link" href={profileSectionUrl(org,item.client_id,prioritySection(item.kind))}>{item.kind==='session'?'Abrir agenda':item.kind==='objective'?'Ver objetivos':item.kind==='review'?'Registar acompanhamento':'Registar avaliação'}<span className="sr-only"> de {item.full_name}</span></a></li>)}</ul>}
-   <nav className="aura-quick-actions" aria-label="Paginação das prioridades"><button className="outline" disabled={page===0} onClick={()=>setPage(n=>n-1)}>Anteriores</button><span>Página {page+1} de {Math.max(1,Math.ceil(data.total/25))}</span><button className="outline" disabled={(page+1)*25>=data.total} onClick={()=>setPage(n=>n+1)}>Seguintes</button></nav>
-  </>}
+   {mode==='priorities'&&<><p role="status">{data.total} prioridades encontradas · {data.as_of}. Os totais respeitam a pesquisa e as tuas permissões.</p>
+   <nav className="aura-quick-actions" aria-label="Resumo das prioridades">{Object.entries(data.counts).map(([value,count])=><button key={value} className="outline" aria-pressed={kind===value} onClick={()=>{setKind(value as keyof typeof priorityLabels);setPage(0);}}>{priorityLabels[value as keyof typeof priorityLabels]}: {count}</button>)}</nav></>}
+   {!data.items.length?<div className="aura-empty-state"><strong>{mode==='schedule'?"Sem marcações para hoje":"Sem prioridades neste filtro"}</strong><p>{mode==='schedule'?"As marcações autorizadas de hoje surgem aqui.":"Altera o filtro ou pesquisa outro aluno."}</p></div>:<ul className="aura-priority-list">{data.items.map(item=><li key={`${item.kind}:${item.id}`}><div><span className="eyebrow">{priorityLabels[item.kind]}</span><h3>{item.full_name}</h3><p>{item.label} · {item.starts_at?formatAppointment(item.starts_at):item.due_on||'Sem avaliação registada'}</p></div><a className="outline link" href={profileSectionUrl(org,item.client_id,prioritySection(item.kind))}>{item.kind==='session'?'Abrir agenda':item.kind==='objective'?'Ver objetivos':item.kind==='review'?'Registar acompanhamento':'Registar avaliação'}<span className="sr-only"> de {item.full_name}</span></a></li>)}</ul>}
+   <nav className="aura-quick-actions" aria-label={mode==='schedule'?"Paginação da agenda de hoje":"Paginação das prioridades"}><button className="outline" disabled={page===0} onClick={()=>setPage(n=>n-1)}>Anteriores</button><span>Página {page+1} de {Math.max(1,Math.ceil(data.total/25))}</span><button className="outline" disabled={(page+1)*25>=data.total} onClick={()=>setPage(n=>n+1)}>Seguintes</button></nav>
+  </>}{mode==='schedule'&&<a className="outline link" href={`/agenda?org=${encodeURIComponent(org)}`}>Ver agenda completa</a>}
  </section>;
 }

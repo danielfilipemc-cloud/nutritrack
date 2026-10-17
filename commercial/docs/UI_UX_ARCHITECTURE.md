@@ -41,6 +41,8 @@ Mobile até 900 px: sidebar transforma-se em disclosure nativo no fluxo da pági
 1. Shell, oito módulos, selector único, separação das áreas da ficha, listas do dashboard em grelha.
 2. Refinamento da hierarquia operacional, formulários/listas e revisão visual com fixtures desktop/mobile.
 
+O segundo incremento coloca indicadores antes das ações, apresenta Agenda de hoje numa coluna própria e usa duas instâncias do mesmo componente autorizado de prioridades (consulta independente com filtro `session`). A pesquisa nas prioridades não altera a agenda. O diretório passa a recolher o formulário de criação num disclosure nativo, preservando o conteúdo ao fechar/reabrir. `ProfileNavigation` apresenta botões com todas as áreas visíveis no desktop e um seletor nativo no mobile, usando o mesmo `changeView` e as mesmas confirmações de rascunhos.
+
 Cada entrega deve preservar testes negativos de permissões, rascunhos, concorrência e proveniência. Testes de interface com fixtures não substituem Auth/PostgREST real. Uma captura revista não certifica acessibilidade ou qualidade comercial: manter explícitas limitações de leitores de ecrã, uso real e dispositivos não ensaiados.
 
 Os bloqueios altos de passwords comprometidas, sessões/JWT, recuperação cloud e de conta/MFA, e requisitos jurídicos continuam abertos nos documentos operacionais. Este redesenho não autoriza piloto com dados reais.

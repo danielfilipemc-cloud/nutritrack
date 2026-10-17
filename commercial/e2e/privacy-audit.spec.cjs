@@ -20,7 +20,7 @@ test('privacy review history is minimal and a pending draft prevents silent sect
  await page.setViewportSize({width:375,height:812});await fixture(page);await page.route('**/rpc/aura_privacy_context',r=>reply(r,{can_review:true,consents:[],requests:[request]}));
  await page.route('**/rpc/aura_privacy_review_history',r=>reply(r,[{revision:2,status:'in_review',reference:'Synthetic audit reference'}]));
  const panel=await open(page);await panel.getByRole('button',{name:'Histórico de revisão',exact:true}).click();await expect(panel.getByText(/Synthetic audit reference/)).toBeVisible();
- await panel.getByLabel('Referência da revisão (sem dados sensíveis)').fill('Pending synthetic draft');page.once('dialog',d=>d.dismiss());await page.getByRole('button',{name:'Evolução',exact:true}).click();await expect(panel).toBeVisible();
+ await panel.getByLabel('Referência da revisão (sem dados sensíveis)').fill('Pending synthetic draft');page.once('dialog',d=>d.dismiss());await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption('evolution');await expect(panel).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
 });
 test('student switching accompaniment discards late private context without locking the new panel',async({page})=>{

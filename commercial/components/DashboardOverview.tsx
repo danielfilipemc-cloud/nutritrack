@@ -13,7 +13,7 @@ export default function DashboardOverview({org,userId,role}:{org:string;userId:s
  const data=loaded?.org===org&&loaded.userId===userId?loaded.data:null;
  const target=(path:string)=>`${path}?org=${encodeURIComponent(org)}`;
  return <>
- <section className="panel"><h2>Operações frequentes</h2><nav className="aura-quick-actions" aria-label="Operações frequentes"><a className="outline link" href={target('/alunos')}>Registar ou gerir aluno</a><a className="outline link" href={target('/avaliacoes')}>Registar avaliação</a><a className="outline link" href={target('/agenda')}>Abrir agenda</a>{role!=='coach'&&<><a className="outline link" href={target('/equipa')}>Gerir equipa</a><a className="outline link" href={target('/marca')}>Personalizar marca</a></>}</nav></section>
+
  {error?<section className="panel" role="alert"><p>{error}</p><button onClick={()=>setRevision(v=>v+1)}>Tentar novamente</button></section>:!data?<section className="panel" aria-busy="true"><p role="status">A carregar indicadores...</p></section>:<>
  <div className="stat" aria-label="Indicadores do estabelecimento">
  <div><span>Alunos ativos</span><strong>{data.active_clients}</strong><small>{data.archived_clients} arquivados</small></div>
@@ -21,7 +21,8 @@ export default function DashboardOverview({org,userId,role}:{org:string;userId:s
  <div><span>Alunos a acompanhar</span><strong>{data.pending_clients}</strong><small>Sem avaliação ou última há mais de 30 dias</small></div>
  </div>
  </>}
- <DailyPriorities key={`${userId}:${org}`} org={org} userId={userId}/>
+ <section className="panel aura-shortcuts-panel"><h2>Operações frequentes</h2><nav className="aura-quick-actions" aria-label="Operações frequentes"><a className="outline link" href={target('/alunos')}>Registar ou gerir aluno</a><a className="outline link" href={target('/avaliacoes')}>Registar avaliação</a><a className="outline link" href={target('/agenda')}>Abrir agenda</a>{role!=='coach'&&<><a className="outline link" href={target('/equipa')}>Gerir equipa</a><a className="outline link" href={target('/marca')}>Personalizar marca</a></>}</nav></section>
+ <div className="aura-dashboard-main"><DailyPriorities key={`${userId}:${org}`} org={org} userId={userId}/><DailyPriorities key={`schedule:${userId}:${org}`} org={org} userId={userId} mode="schedule"/></div>
  {data&&<div className="aura-dashboard-columns">
  <section className="panel"><h2>Acompanhamento pendente</h2><p>Indicador baseado nas avaliações registadas, sem interpretação clínica. Mostra até 10 alunos ativos, começando pelos que nunca foram avaliados.</p>
  {!data.pending.length?<div className="aura-empty-state"><strong>Sem acompanhamento pendente</strong><p>Os alunos ativos têm avaliações recentes, ou ainda não existem alunos.</p></div>:<div className="tablewrap"><table><thead><tr><th>Aluno</th><th>Última avaliação</th><th>Ação</th></tr></thead><tbody>{data.pending.map(c=><tr key={c.id}><td>{c.full_name}</td><td>{c.assessed_on||"Sem avaliação"}</td><td><a href={clientProfileUrl(org,c.id)}>Abrir ficha de {c.full_name}</a></td></tr>)}</tbody></table></div>}</section>

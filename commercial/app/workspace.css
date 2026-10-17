@@ -23,7 +23,7 @@
 .aura-breadcrumbs [aria-current]{color:var(--aura-ink);}
 .aura-workspace-header .aura-quick-actions{gap:8px;}
 .aura-workspace-header button,.aura-workspace-header .link{font-size:12px;padding:10px;}
-.aura-workspace-context{display:flex;align-items:start;flex-wrap:wrap;gap:16px;justify-content:flex-end;margin-bottom:24px;}
+.aura-workspace-context{display:flex;align-items:flex-start;flex-wrap:wrap;gap:16px;justify-content:flex-end;margin:0 0 0 auto;}
 .aura-workspace-context>label{margin:0;min-width:240px;max-width:100%;font-size:12px;}
 .aura-workspace-context select{margin-top:6px;padding:10px 12px;}
 .aura-workspace .heading{margin:24px 0;}
@@ -34,25 +34,59 @@
 .aura-workspace .brandhead p{font-size:12px;margin:4px 0 0;}
 .aura-workspace .panel{margin:0 0 24px;padding:24px;border-radius:12px;box-shadow:none;}
 .aura-workspace h2{font-size:19px;letter-spacing:-.3px;}
+.aura-workspace button,.aura-workspace .link{min-height:44px;}
 .aura-workspace .stat{gap:16px;margin:0 0 24px;}
 .aura-workspace .stat>div{border-radius:12px;padding:24px;position:relative;overflow:hidden;}
 .aura-workspace .stat>div:before{content:'';position:absolute;left:0;top:24px;bottom:24px;width:3px;background:var(--aura-primary);}
 .aura-workspace .stat strong{font-size:36px;line-height:1.3;margin:12px 0;}
 .aura-module-grid,.aura-dashboard-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start;}
 .aura-dashboard-columns .panel{min-width:0;}
-.aura-profile-tabs{border-bottom:1px solid var(--aura-line);padding-bottom:16px;gap:8px;}
-.aura-profile-tabs button{font-size:13px;}
+.aura-workspace .aura-profile-tabs{border-bottom:1px solid var(--aura-line);padding-bottom:16px;gap:8px;}
+.aura-workspace .aura-profile-tabs button{font-size:13px;}
+.aura-workspace a:not([class]){color:var(--aura-accent-text);text-underline-offset:3px;}
+.aura-workspace .aura-breadcrumbs a{color:var(--aura-muted);text-decoration:none;}
+.aura-workspace .aura-breadcrumbs a:hover{text-decoration:underline;}
+.aura-workspace .aura-shortcuts-panel{display:flex;align-items:center;gap:24px;padding:16px 20px;}
+.aura-shortcuts-panel h2{font-size:13px;margin:0;flex-shrink:0;}
+.aura-shortcuts-panel .link{padding:9px 12px;font-size:12px;}
+.aura-dashboard-main{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:24px;align-items:start;}
+.aura-dashboard-main>.panel{min-width:0;}
+.aura-dashboard-main .aura-section-title{align-items:center;gap:12px;}
+.aura-dashboard-main .aura-section-title h2{margin:0;}
+.aura-dashboard-main .aura-section-title button{padding:10px;font-size:12px;}
+.aura-dashboard-main .aura-priority-list>li{border-radius:8px;gap:8px;padding:14px;}
+.aura-dashboard-main .aura-priority-list h3{font-size:15px;}
+.aura-dashboard-main .aura-priority-list .link{font-size:12px;}
+.aura-dashboard-main .aura-priority-list p{font-size:12px;margin:6px 0;}
+.aura-dashboard-main .aura-quick-actions{gap:8px;align-items:center;}
+.aura-dashboard-main .aura-quick-actions button{padding:9px 10px;font-size:11px;}
+.aura-dashboard-main .aura-quick-actions span{font-size:12px;}
+.aura-dashboard-main .aura-empty-state{padding:24px 12px;}
+.aura-create-client{margin:0 0 24px;border:1px solid var(--aura-line);border-radius:12px;background:var(--aura-surface);}
+.aura-create-client>summary{padding:16px 20px;cursor:pointer;min-height:52px;font-size:14px;font-weight:650;color:var(--aura-accent-text);}
+.aura-create-client>summary:focus-visible{outline:2px solid var(--aura-focus);outline-offset:3px;}
+.aura-create-client .panel{border:0;margin:0;padding-top:8px;}
+.aura-client-directory>form{display:flex;align-items:flex-end;gap:12px;margin-bottom:24px;}
+.aura-client-directory>form>.columns{flex:1;grid-template-columns:minmax(0,2fr) minmax(140px,1fr);gap:12px;}
+.aura-client-directory>form label{margin:0;}
+.aura-client-directory>form button{margin:0;}
+.aura-workspace .aura-profile-tabs{flex-wrap:wrap;overflow:visible;padding-bottom:12px;}
+.aura-profile-area{display:none;}
+.aura-workspace .aura-profile-tabs button{flex:none;white-space:nowrap;min-height:44px;}
 .aura-workspace th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--aura-muted);}
 .aura-workspace td,.aura-workspace th{padding:16px 12px;}
-@media(max-width:1100px){.aura-workspace{grid-template-columns:220px minmax(0,1fr);}.aura-workspace>.shell{padding-left:24px;padding-right:24px;}.aura-dashboard-columns{grid-template-columns:1fr;}}
+@media(max-width:1200px){.aura-dashboard-main{grid-template-columns:1fr;}.aura-workspace .aura-shortcuts-panel{display:block;}.aura-shortcuts-panel h2{margin-bottom:12px;}}
+@media(max-width:1100px){.aura-workspace{grid-template-columns:220px minmax(0,1fr);}.aura-workspace>.shell{padding-left:24px;padding-right:24px;}.aura-dashboard-columns{grid-template-columns:1fr;}.aura-workspace-header{flex-wrap:wrap;}.aura-workspace-header>.aura-quick-actions{margin-left:auto;}}
 @media(max-width:900px){
  .aura-workspace{display:block;padding-bottom:0;}.aura-sidebar{position:static;height:auto;padding:16px 20px;gap:16px;border-right:0;border-bottom:1px solid var(--aura-line);}
  .aura-nav-disclosure>summary{display:flex;align-items:center;min-height:44px;padding:10px 12px;background:#1D2626;border:1px solid var(--aura-line);border-radius:8px;cursor:pointer;font-size:14px;}
  .aura-nav-disclosure>summary:after{content:'+';margin-left:auto;font-size:20px;}.aura-nav-disclosure[open]>summary:after{content:'−';}
  .aura-nav-disclosure>summary:focus-visible{outline:2px solid var(--aura-focus);outline-offset:3px;}
  .aura-sidebar .aura-app-nav__foot{display:none;}.aura-nav-group{margin:20px 0 0;}.aura-sidebar .aura-app-nav__links a{overflow:visible;}
- .aura-workspace .aura-workspace-header{align-items:start;flex-direction:column;gap:12px;padding:20px 0;}
- .aura-workspace-context{justify-content:stretch;}.aura-workspace-context>label{width:100%;min-width:0;}
+ .aura-workspace .aura-workspace-header{align-items:flex-start;flex-direction:column;gap:12px;padding:20px 0;}
+ .aura-workspace-context{justify-content:stretch;width:100%;margin:0;}.aura-workspace-context>label{width:100%;min-width:0;}
  .aura-workspace>.shell{padding:0 20px 24px;}.aura-workspace h1{font-size:28px;}.aura-workspace .panel{padding:20px;}
  .aura-module-grid{grid-template-columns:1fr;gap:0;}.aura-workspace .stat{grid-template-columns:1fr;}.aura-workspace-header .aura-quick-actions{width:100%;}
+ .aura-workspace .aura-profile-tabs{display:none;}.aura-profile-area{display:block;margin:16px 0 0;}
+ .aura-client-directory>form{display:block;}.aura-client-directory>form>.columns{grid-template-columns:1fr;}.aura-client-directory>form button{margin-top:12px;}.aura-workspace .aura-profile-tabs button{flex:none;}
 }

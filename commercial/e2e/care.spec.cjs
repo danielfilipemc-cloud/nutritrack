@@ -173,7 +173,7 @@ test("agenda rejects Lisbon repeated hour and remains usable on mobile", async (
   await page.setViewportSize({ width: 375, height: 812 });
   await fixture(page);
   await profile(page);
-  await page.getByRole("button", { name: "Agenda do aluno" }).click();
+  await page.getByRole("combobox", { name: "Área da ficha", exact:true }).selectOption("agenda");
   await page
     .getByLabel("Data e hora (Lisboa)", { exact: true })
     .fill("2026-10-25T01:30");
