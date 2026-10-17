@@ -22,3 +22,31 @@ A ficha atual passa a confirmar o descarte, proteger saída/reload com rascunho 
 O histórico lê source_system/source_revision existentes e apresenta origem e versão de avaliação, sem mostrar o identificador pessoal de origem. Preserva as revisões passadas às correções, originais substituídos, partilha explícita e o contrato manual NutriTrack. Não acrescenta sincronização automática ou nutrição.
 
 Novos E2E: cancelamento/aceitação do descarte nas secções e estabelecimentos, cancelamento no seletor, secção/integrações preservadas no reload, erro/retry de lookup, erro/retry de permissões sem edição e proveniência/revisão no histórico. Os dados utilizados são exclusivamente fixtures. Nenhuma migration foi modificada nem aplicada.
+
+Validação Ciclo 2: TypeScript/build aprovados; regressão Chromium completa 79/79 PASS em 46.6s. Primeira execução 76/79: duas ambiguidades de seletores (anunciador Next/status MFA) corrigidas sem enfraquecer as asserções, e leitura de rede prolongada corrigida por abort/timeout de oito segundos. Retry de lookup aprovado em 8.8s. CI do PR #19 repete a suite integral.
+
+## Ciclo 3 — experiência, White Label e acessibilidade
+
+Auditoria: Dark Premium, navegação responsiva e tabela alternativa dos gráficos já existiam. Mantidos os tokens, o tema e a estrutura. Não se reimplementaram gráficos, agenda ou um novo portal.
+
+A personalização fictícia é consolidada num único DemoBrandControls, usado nas duas demonstrações existentes. Três identidades de exemplo e controlos de nome/cor reutilizam BrandHeader e a escolha automática de texto preto/branco por contraste. O Aluno360 mostra a identidade escolhida também no cabeçalho da ficha. Tudo é em memória e recarregar repõe os exemplos; nenhuma configuração real ou credencial é persistida. Upload de logótipo não foi acrescentado.
+
+O atalho Saltar para o conteúdo é o primeiro elemento de teclado e aponta para main focável em todas as páginas. Tabelas alternativas dos gráficos recebem legenda e cabeçalhos de coluna. Estados de erro da marca têm fallback identificado pelo estabelecimento atual, cancelamento/timeout e retry, sem reter identidade de outro tenant.
+
+Novos E2E: presets/contraste preto em fundo branco, nome comprido sem overflow mobile e reposição sem chamadas externas nas duas demonstrações; Tab/Enter até main em demo e área profissional; tabela do gráfico com Enter; erro/retry da marca e troca de estabelecimento. Os screenshots de dados fictícios ficam fora do Git para inspeção local. Estes ensaios não substituem auditoria WCAG ou teste manual com tecnologias de apoio.
+
+## Revisão independente e limites que permanecem
+
+Rever a cadeia de PRs #18 → #19 → #20, cada um contra a base indicada, e confirmar os SHAs atuais e CI. A integração/publicação é um passo posterior; nenhuma demonstração online deve ser presumida atualizada. Exercitar dashboard → prioridade → ficha → avaliação/objetivo/agenda → evolução/cronologia, com papéis limitados, timeout, revogação e MFA em ambiente isolado antes de publicar o candidato de staging.
+
+Prioridades de auditoria: preservação de drafts e estado de pedidos em cada transição; links com org e section; leitura mínima de proveniência/revisão; fallback de identidade e carregamento; teclado/mobile e contraste de cores personalizadas. Confirmar também casos ainda não cobertos por interação assistiva manual ou carga. Não inferir segurança cloud a partir de mocks.
+
+Continuam ALTOS: proteção contra passwords comprometidas/decisão de plano; JWT cloud3600s e política de sessões; ensaio operacional cloud→cloud Auth/DB/MFA/configuração; recuperação completa de conta/email/segundo fator; decisões jurídicas, retenção e aceitação MFA por cada organização do piloto. Nenhuma proteção foi desligada para estes ciclos. Não há autorização para dados reais, produção, piloto ou certificação de segurança.
+
+A inspeção visual de desktop/mobile confirmou o Dark Premium e identificou um erro de CSS na navegação: a largura de24px dos ícones também afetava os rótulos. Foi restringida aos ícones; a regressão exige rótulos desktop numa linha. Links com aspeto de botão e ações de sessão receberam espaçamento consistente. Um ensaio revelou ainda seleção de marca antes da hidratação; os novos controlos aguardam explicitamente readiness e um teste atrasa todos os chunks JS para confirmar que não há interação perdida. Os seis testes de experiência repetidos três vezes passaram18/18 (15.9s). A inspeção é limitada aos ecrãs sintéticos, não constitui auditoria visual exaustiva.
+
+## Reproduzir a validação
+
+Com Node22 e dependências fixadas, em commercial/: npm run check; npm audit --audit-level=moderate; npm run test:e2e -- --workers=2. No Windows definir NEXT_TELEMETRY_DISABLED=1. Para o caso intermitente: npm run test:e2e -- e2e/experience-mvp.spec.cjs --repeat-each=3 --workers=2. Playwright utiliza o servidor local127.0.0.1:3187 e fixtures, sem executar runners históricos ou criar contas cloud. Não reutilizar ficheiros de credenciais reais.
+
+Resultado final local: 73/73 testes domínio/PostgreSQL aprovados; TypeScript e build aprovados (build repetido após o último ajuste de UI); npm audit sem vulnerabilidades reportadas. Suite completa final Chromium85/85 PASS em46.3s, mais18/18 nas repetições focadas. Não foram criadas migrations adicionais: o conjunto canónico permanece nos17 registos da base, sem alterações. Não foram executados novos testes Auth/PostgREST cloud nem ensaios de recuperação nesta entrega.
