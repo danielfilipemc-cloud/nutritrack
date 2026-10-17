@@ -27,5 +27,5 @@ export default function SessionActions(){
   finally{if(alive.current)setBusy(false);}
  }
  if(!active)return null;
- return <div><button className="outline" disabled={busy} onClick={()=>void logout()}>{busy?'A terminar sessão...':'Terminar sessão'}</button>{error&&<p role="alert">{error}</p>}</div>;
+ return <div><a className="outline link" href="/seguranca">Segurança</a><button className="outline" disabled={busy} onClick={()=>void logout()}>{busy?'A terminar sessão...':'Terminar sessão'}</button>{error&&<p role="alert">{error}</p>}</div>;
 }

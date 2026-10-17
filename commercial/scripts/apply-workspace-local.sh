@@ -3,7 +3,7 @@
 set -euo pipefail
 umask 077
 expected=${1:?expected registry count};target=${2:?target registry count}
-case "$expected:$target" in 11:12|12:13|13:14) ;; *) exit 1;; esac
+case "$expected:$target" in 11:12|12:13|13:14|14:16|16:17) ;; *) exit 1;; esac
 grep -qx AURA-Dev /etc/aura-development-runtime
 test "${DOCKER_HOST:-unix:///var/run/docker.sock}" = unix:///var/run/docker.sock
 test "$(docker context inspect --format '{{.Endpoints.docker.Host}}')" = unix:///var/run/docker.sock

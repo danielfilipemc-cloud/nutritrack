@@ -13,8 +13,8 @@ test('daily queue discards late tenant responses and hides unauthorized followup
 });
 test('daily queue retries failures and remains usable on mobile',async({page})=>{
  await page.setViewportSize({width:375,height:812});await fixture(page,{restricted:true,seedObjectives:3});let fail=true;
- await page.route('**/rpc/aura_daily_priorities',route=>{if(fail){fail=false;return route.fulfill({status:500,contentType:'application/json',body:'{}'});}return route.fallback();});
- await page.goto('/');const queue=page.getByRole('region',{name:'Prioridades do profissional'});await expect(queue.getByRole('alert')).toBeVisible();await queue.getByRole('button',{name:'Atualizar prioridades'}).click();await expect(queue.getByText('Sem prioridades neste filtro')).toBeVisible();
+ await page.route('**/rpc/aura_daily_priorities',route=>{if(fail)return route.fulfill({status:500,contentType:'application/json',body:'{}'});return route.fallback();});
+ await page.goto('/');const queue=page.getByRole('region',{name:'Prioridades do profissional'});await expect(queue.getByRole('alert')).toBeVisible();fail=false;await queue.getByRole('button',{name:'Atualizar prioridades'}).click();await expect(queue.getByText('Sem prioridades neste filtro')).toBeVisible();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
  await page.goto(`/alunos/${C}?org=${A}&section=objectives`);await expect(page.getByRole('heading',{name:'Objetivos de acompanhamento'})).toHaveCount(0);
 });

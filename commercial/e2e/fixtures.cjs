@@ -21,7 +21,7 @@ async function fixture(
     readOnly = false,
     seedObjectives = 0,
     objectiveConflict = false,
-    seedTimeline = 0,
+    seedTimeline = 0, bridgeDropAck = false,
   } = {},
 ) {
   let failures = dashboardError ? 1 : 0,
@@ -195,7 +195,7 @@ async function fixture(
     }
     if(path.endsWith('/rpc/aura_nutritrack_context')){const p=request.postDataJSON();if(restricted||p.p_org!==A||p.p_client!==C)return respond({code:'42501'},403);return respond({link:bridgeLink,can_manage:!readOnly&&['owner','admin'].includes(role),records:(p.p_keys||[]).map(key=>bridgeRecords.get(key)).filter(Boolean)});}
     if(path.endsWith('/rpc/aura_nutritrack_link_save')){const p=request.postDataJSON();if(readOnly||restricted||!['owner','admin'].includes(role))return respond({code:'42501'},403);bridgeLink={id:'00000000-0000-0000-0000-000000000900',source_subject:p.p_subject,active:p.p_active};return respond(bridgeLink.id);}
-    if(path.endsWith('/rpc/aura_nutritrack_import')){const p=request.postDataJSON();if(restricted||readOnly||!bridgeLink?.active||p.p_link!==bridgeLink.id)return respond({code:'42501'},403);const result=[];for(const row of p.p_records){const content={observed_on:row.observed_on,weight_kg:row.weight_kg,height_cm:row.height_cm,waist_cm:row.waist_cm},old=bridgeRecords.get(row.source_record_id);if(old&&JSON.stringify(old.content)===JSON.stringify(content)){result.push({status:'duplicate'});continue;}if(row.expected_revision!==(old?.revision||0))return respond({code:'PT409'},409);const revision=(old?.revision||0)+1;if(old){const assessment=assessments.find(a=>a.id===old.assessment_id);if(assessment)assessment.superseded_at=today;}const id='bridge-assessment-'+assessments.length;assessments.unshift({id,assessed_on:row.observed_on,weight_kg:row.weight_kg,height_cm:row.height_cm,waist_cm:row.waist_cm,revision:1,student_visible:false,superseded_at:null,source_system:'nutritrack',source_revision:revision});bridgeRecords.set(row.source_record_id,{source_record_id:row.source_record_id,revision,content,assessment_id:id,superseded:false});result.push({status:old?'updated':'created'});}return respond(result);}
+    if(path.endsWith('/rpc/aura_nutritrack_import')){const p=request.postDataJSON();if(restricted||readOnly||!bridgeLink?.active||p.p_link!==bridgeLink.id)return respond({code:'42501'},403);const result=[];for(const row of p.p_records){const content={observed_on:row.observed_on,weight_kg:row.weight_kg,height_cm:row.height_cm,waist_cm:row.waist_cm},old=bridgeRecords.get(row.source_record_id);if(old&&JSON.stringify(old.content)===JSON.stringify(content)){result.push({status:'duplicate'});continue;}if(row.expected_revision!==(old?.revision||0))return respond({code:'PT409'},409);const revision=(old?.revision||0)+1;if(old){const assessment=assessments.find(a=>a.id===old.assessment_id);if(assessment)assessment.superseded_at=today;}const id='bridge-assessment-'+assessments.length;assessments.unshift({id,assessed_on:row.observed_on,weight_kg:row.weight_kg,height_cm:row.height_cm,waist_cm:row.waist_cm,revision:1,student_visible:false,superseded_at:null,source_system:'nutritrack',source_revision:revision});bridgeRecords.set(row.source_record_id,{source_record_id:row.source_record_id,revision,content,assessment_id:id,superseded:false});result.push({status:old?'updated':'created'});}if(bridgeDropAck){bridgeDropAck=false;return route.abort('failed');}return respond(result);}
     if(path.endsWith('/rpc/aura_client_timeline')){
       const p=request.postDataJSON();let rows=[];
       if(p.p_org===A&&p.p_client===C){
@@ -211,7 +211,8 @@ async function fixture(
       return respond({as_of:today,total,items,more,next:last?{before:last.occurred_at,key:last.event_key}:null});
     }
     if(path.endsWith('/rpc/aura_client_permissions'))return respond({assessments_read:!restricted,assessments_write:!restricted&&!readOnly,followup_read:!restricted,followup_write:!restricted&&!readOnly,schedule_read:true,schedule_write:!readOnly});
-    if(path.endsWith('/rpc/aura_privacy_context'))return respond({consents:[],requests:[]});
+    if(path.endsWith('/rpc/aura_security_requirement'))return respond({required:false,satisfied:true});
+    if(path.endsWith('/rpc/aura_privacy_context'))return respond({can_review:['owner','admin'].includes(role),consents:[],requests:[]});
     if(path.endsWith('/staff_capabilities')||path.endsWith('/client_assignments')||path.endsWith('/client_users'))return respond([]);
     if(path.endsWith('/rpc/aura_assessment_create')){const p=request.postDataJSON();assessments.unshift({id:'new-synthetic-measurement',assessed_on:p.p_date,weight_kg:p.p_weight,height_cm:p.p_height,waist_cm:p.p_waist,revision:1,student_visible:false,superseded_at:null});return respond('new-synthetic-measurement');}
     if(path.endsWith('/rpc/aura_assessment_share')){const input=request.postDataJSON();const a=assessments.find(a=>a.id===input.p_assessment);a.student_visible=input.p_visible;a.revision++;return respond(a.revision);}

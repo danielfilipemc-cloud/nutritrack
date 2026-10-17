@@ -1,5 +1,13 @@
 # Estado de integração — 16/10/2026
 
+## Remediação — 17/10/2026
+
+Código candidato em `fix/aura-security-audit`, sobre `1848582` (PRs #8–#16 integrados na referência). Migrations incrementais 15–17 instaladas no sandbox principal e no staging, sem editar as catorze anteriores ou alterar produção. Corrigem projeções de privacidade, acrescentam revisão auditável e exigência MFA/AAL2 por organização para leituras dos alunos e comandos sensíveis. Ver [remediação e critérios de piloto](AUDIT_REMEDIATION_20261017.md), [Auth ainda pendente](AUTH_STAGING_CONFIGURATION.md) e [recuperação operacional](RECOVERY_OPERATIONS.md).
+
+71 testes, TypeScript/build, 65 Chromium por contrato, três Chromium com Auth local real e oito grupos Auth/PostgREST/MFA em cada ambiente aprovados. O catálogo instalado com 17 migrations não tem tabelas sem RLS, RPC públicas privilegiadas/anon, aliases históricos executáveis por authenticated ou grants diretos privados. Continuam abertos: leaked passwords, JWT cloud 3600s, allowlist e fluxo completo de recuperação e ensaio operacional cloud. **Sem autorização para piloto com dados reais.**
+
+Este é o checkpoint de validação anterior à publicação do candidato de frontend. Não deduzir publicação a partir desta branch ou da contagem SQL; confirmar SHA/estado do PR e do deploy Render. Os checkpoints abaixo são históricos.
+
 ## Estado efetivo após consolidação
 
 PRs #9–#14 integrados, pela ordem das dependências, em `saas-foundation` (`deea349103ddf7462d254efc35b26d9e87c5967f`). O diff dessa revisão contra `78dd98b` é vazio: os merges preservaram exatamente a árvore validada. `main` não foi alterada. Os checkpoints abaixo descrevem o estado anterior à integração.

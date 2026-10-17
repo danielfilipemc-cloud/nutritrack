@@ -5,6 +5,7 @@ export function parsePermissions(value:unknown):ClientPermissions{
  return Object.fromEntries(Object.keys(noPermissions).map(key=>[key,object[key]===true])) as ClientPermissions;
 }
 export function foundationError(error:{code?:string}|null){
+ if(error?.code==='PT403')return 'Confirma o segundo fator em Segurança e volta a tentar. A confirmação é válida durante 10 minutos.';
  if(error?.code==='PT409')return 'O registo mudou ou já existe um pedido aberto. Atualiza antes de continuar.';
  if(error?.code==='42501')return 'Não tens autorização para esta operação.';
  if(error?.code==='23514'||error?.code==='22023')return 'Confirma os dados e os limites indicados.';

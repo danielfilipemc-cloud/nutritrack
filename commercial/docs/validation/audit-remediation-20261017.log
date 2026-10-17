@@ -1,0 +1,66 @@
+AURA Business — independent audit remediation, 2026-10-17 Europe/Lisbon.
+Baseline saas-foundation/integration: 18485825fe5683c4327e79674113c667a7c55d54.
+GitHub PR8 through PR14 verified merged; PR15/16 included in baseline.
+Work branch fix/aura-security-audit. Only commercial/ changed.
+Official Supabase CLI 2.120.0 created three new migrations.
+Historical 14 applied migrations unchanged; canonical registry hashes preserved.
+Local upgrade 14->16: backup retained, all prior rows/registry unchanged PASS.
+Cloud upgrade 14->16: 24 existing application-table fingerprints unchanged PASS.
+Local upgrade 16->17: backup retained, all prior rows/registry unchanged PASS.
+Cloud upgrade 16->17: 26 application-table fingerprints unchanged PASS.
+Installed cloud catalog17: tables_without_rls=0, unsafe_public_rpc=0,
+unsafe_private_rpc=0, private_table_grants=0, storage_buckets=0, storage_objects=0.
+Advisor: 15 INFO private RLS tables deliberately without direct access policies;
+one WARN auth_leaked_password_protection remains disabled.
+Final npm run check: 71/71 tests PASS, TypeScript PASS, production build PASS.
+Full Chromium fixture regression: 65/65 PASS, 44.4s.
+Real local Chromium: 3/3 PASS, 10.2s (objective, NutriTrack, TOTP/policy).
+Local real Auth/PostgREST audit: 8/8 PASS, 5967b034-5e28-4861-a49e-b57a5f5d8ca8.
+Cloud real Auth/PostgREST audit: 8/8 PASS, 3ee649a9-8fee-42d8-a4f9-9c9466b6cdad.
+Cloud foundation regression with schema16: 16/16 PASS,
+b63357b3-e292-4ee4-b975-c00e9b808ad7. New audit suite verifies added schema17 gates.
+Observed JWT TTL: local900/cloud3600 seconds, AAL2 claims issued by real Auth.
+Roles: owner/admin/coach/student/unassigned/revoked/foreign; original foundation
+matrix additionally checks anonymous, forged JWT and pupil revocation.
+120 measurement rows in manual 50/50/20 batches, repeat50 idempotent,
+assignment revocation between batches denied without refresh, concurrent revisions
+one accepted/one HTTP409. Original versions retained. No nutrition or auto-sync.
+Confirmed historical privacy disclosure reproduced before and after incremental fix.
+Pupil gets own requests/preferences, manager minimal queue, coach/foreign denied.
+Privacy review references remain internal and versioned; stale revision HTTP409.
+MFA policy only opt-in organizations; AAL1 raw reads denied, AAL2 allowed,
+same signed AAL2 JWT after global logout denies reads and sensitive command.
+Public Auth settings: signup enabled, email confirmation enabled,
+email provider enabled, anonymous provider disabled.
+Synthetic recovery-link probe: default redirect http://localhost:3000, FAIL gate.
+Expected https://aura-business-staging.onrender.com. No email sent/token consumed.
+Recovery token generated only for isolated synthetic unassigned audit identity;
+link/token never logged or stored. Responsible asked to correct Site URL.
+npm audit --audit-level=moderate: zero vulnerabilities reported.
+Initial local Auth browser attempt failed with WSL API unavailable; API200 after
+resuming existing runtime, no reset/data cleanup. Loopback bindings rechecked.
+One previous E2E locator was ambiguous after an additional day of imports;
+now asserts exactly one matching-origin entry for the imported day.
+Priorities failure fixture now remains failed until the expected alert is observed.
+No claims of complete security, delivered recovery email, cloud operational restore,
+PITR, real-data readiness, paid upgrade or production authorization.
+Runtime credentials, seeds, archives and detailed reports remain ignored/private.
+Follow-up 2026-10-17T12:19:29Z: owner corrected Site URL; synthetic recovery-link probe PASS, expected staging origin confirmed. Email delivery, allowlist and token consumption remain unverified.
+Supplement to reviewed SHA 93173ae, 2026-10-17:
+SecurityRequirement: explicit loading/error/blocked/clear; RPC errors, network rejection
+and malformed payload never mean no MFA obligation. Retry and stale-context guard.
+73/73 domain/PostgreSQL/guards PASS; TypeScript/build PASS; npm audit zero findings.
+Focused suite after event/revision assertion additions: 7/7 PASS.
+70/70 Chromium PASS, 37.8s; includes unknown/error retry, late org response,
+and failed revalidation after an MFA session event.
+Actual catalog-generated unauthorized calls: all public aura_* RPC as anon,
+all historical *_base implementations as authenticated -> SQLSTATE42501.
+All 13 sensitive public wrappers with AAL1 -> PT403.
+Policy enable/disable/re-enable revisions, private events, stale revision PT409,
+foreign tenant context, factor removal and wrong/stale/future session claims PASS.
+Tests use PGlite Auth emulation and local browser fixtures, not cloud Auth proof.
+No migration changes, new cloud tests, production publication or real data in supplement.
+Assisted MFA recovery and per-tenant activation acceptance documented; total-factor-loss
+recovery remains unvalidated, no administrative bypass delivered.
+First browser attempt: 68 pass / one test locator failure; corrected accessible-name
+matching and final full suite70 PASS. No product regression hidden by cleanup.
