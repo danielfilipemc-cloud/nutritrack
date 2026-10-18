@@ -86,3 +86,16 @@ test('nutrition mutation and receipt fail closed when MFA policy or live session
   await f.db.exec(`reset role;update auth.sessions set not_after=now()-interval '1 second'`);await f.asUser(2);await deny(save(f,command(809)),'PT403');await deny(receipt(f,value.requestId),'PT403');
  }finally{await f.db.close();}
 });
+test('fully authorized professionals in A and B cannot cross tenant or pupil boundaries, even with guessed meal/request UUIDs',async()=>{
+ const f=await foundationFixture();try{
+  await nutritionAccess(f);const value=command(),a=await save(f,value);
+  await deny(f.db.query(`insert into nutrition_meals(id,organization_id,client_id,current_revision,created_by) values('${id(799)}','${org}','${pupil}',1,'${id(5)}')`));
+  await f.asUser(1);await f.db.query(`select aura_assignment_save('${org}','${id(101)}','${id(2)}',true)`);await f.asUser(2);
+  await deny(save(f,value,id(101)),'PT409');await deny(save(f,{...command(810),mealId:a.mealId,expectedRevision:1},id(101)));
+  await deny(f.db.query('select aura_nutrition_history($1,$2,$3)',[org,id(101),a.mealId]));
+  assert.equal((await f.db.query<{x:unknown}>('select aura_nutrition_request_status($1,$2,$3) x',[org,id(101),value.requestId])).rows[0].x,null);
+  await f.asUser(5);await f.db.query(`select aura_nutrition_capability_save('${id(20)}','${id(5)}',true,true)`);await f.db.query(`select aura_assignment_save('${id(20)}','${id(200)}','${id(5)}',true)`);
+  const b=await save(f,command(811),id(200),id(20));assert.deepEqual((await f.db.query<{id:string}>('select id from nutrition_meals')).rows.map(row=>row.id),[b.mealId]);await deny(history(f,a.mealId));
+  await f.asUser(2);assert.deepEqual((await f.db.query<{id:string}>('select id from nutrition_meals')).rows.map(row=>row.id),[a.mealId]);await deny(f.db.query('select aura_nutrition_history($1,$2,$3)',[id(20),id(200),b.mealId]));
+ }finally{await f.db.close();}
+});
