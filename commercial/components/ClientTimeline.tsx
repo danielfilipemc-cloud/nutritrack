@@ -24,19 +24,19 @@ export default function ClientTimeline({org,clientId,userId,period,onPeriodChang
  useEffect(()=>{void load(null);return()=>scope.current.invalidate();},[org,clientId,userId,days,kind,reload,today]);
  return <section className="panel" aria-label="Cronologia integrada do aluno" aria-busy={loading}>
   <div className="aura-section-title"><h2>Cronologia integrada</h2><button className="outline" disabled={loading} onClick={()=>setReload(n=>n+1)}>Atualizar cronologia</button></div>
-  <p>Avaliações atuais, alterações de acompanhamento, objetivos e marcações até hoje, conforme as tuas permissões. As marcações mostram o estado atual; uma sessão agendada não é uma sessão realizada.</p>
+  <p className="aura-caption">Avaliações, acompanhamento, objetivos e marcações autorizados. Uma sessão agendada não é uma sessão realizada.</p>
   <div className="columns"><label>Período da cronologia<select value={days} onChange={e=>(onPeriodChange||setDays)(Number(e.target.value))}><option value={30}>30 dias</option><option value={90}>90 dias</option><option value={365}>365 dias</option><option value={0}>Todo o histórico</option></select></label><label>Tipo de registo<select value={kind} onChange={e=>setKind(e.target.value as keyof typeof timelineLabels)}>{Object.entries(timelineLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label></div>
   {error&&<p role="alert">{error} {items.length>0?'Os registos anteriores continuam visíveis; a lista está incompleta.':''}</p>}
   {loading&&<p role="status">A carregar cronologia...</p>}
   {!loading&&!error&&!items.length&&<div className="aura-empty-state"><strong>Sem registos neste período</strong><p>Seleciona outro período ou tipo de registo.</p></div>}
-  {items.length>0&&<><p>{items.length} de {total} registos autorizados carregados. {more?'Existem mais registos.':'Fim dos registos deste filtro.'}</p><ol className="aura-timeline">{items.map(event=><li key={event.event_key}>
+  {items.length>0&&<><p>{items.length} de {total} registos autorizados carregados. {more?'Existem mais registos.':'Fim dos registos deste filtro.'}</p><div className="aura-timeline-viewport" role="region" aria-label="Registos da cronologia; desloca para consultar todo o histórico carregado" tabIndex={0}><ol className="aura-timeline">{items.map(event=><li key={event.event_key}>
    <span className="eyebrow">{timelineLabels[event.kind]}</span><h3>{timelineTitle(event)}</h3><p><time dateTime={event.kind==='assessment'?event.occurred_on:event.occurred_at}>{event.kind==='assessment'?event.occurred_on:objectiveTimestamp(event.occurred_at)}</time>{timelineState(event)?` · ${timelineState(event)}`:''}</p>
    {event.kind==='assessment'&&<><dl className="aura-measurement-values">{Object.entries(measurementFields).map(([key,definition])=>{const value=event.details[key];return typeof value==='number'&&Number.isFinite(value)?<div key={key}><dt>{definition.label}</dt><dd>{value} {definition.unit}</dd></div>:null;})}</dl><p>Origem: {event.details.source==='nutritrack'?'NutriTrack':'AURA'} · avaliação {event.record_id.slice(0,8)}. Data da medição; versões substituídas não entram na evolução.</p></>}
    {event.kind==='objective'&&<p>Objetivo #{event.record_id.slice(0,8)} · versão {String(event.details.revision||'—')}. O histórico não copia o texto anterior.</p>}
    <a href={profileSectionUrl(org,clientId,event.kind==='assessment'?'assessments':event.kind==='appointment'?'agenda':event.kind==='objective'?'objectives':'overview')}>Abrir {event.kind==='assessment'?'avaliações':event.kind==='appointment'?'agenda':event.kind==='objective'?'objetivos':'acompanhamento'}</a>
-  </li>)}</ol></>}
+  </li>)}</ol></div></>}
   {more&&items.length<500&&<button className="outline" disabled={loading} onClick={()=>void load(next)}>Carregar mais registos</button>}
   {more&&items.length>=500&&<p>Limite de 500 registos carregados. Escolhe um período menor.</p>}
-  <p>Horários em Europe/Lisbon. Sem interpretação clínica. Medições NutriTrack entram apenas por importação assistida e confirmada; não existe sincronização automática.</p>
+  <p className="aura-caption">Desloca a lista para consultar os registos carregados. Horários em Europe/Lisbon. Sem interpretação clínica. Medições NutriTrack entram apenas por importação assistida e confirmada; não existe sincronização automática.</p>
  </section>;
 }
