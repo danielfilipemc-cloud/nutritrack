@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "state": "proposed-unbound-not-authorized",
+  "runLabel": "FICTICIO-NUTRITION-ACTIVATION-REVIEW-v1",
+  "projectRef": "vgbwmamntjmhzrpvhxzb",
+  "codeSha": "f2a5e90cb8592043f839de2281c0a9c5cdf0ff0a",
+  "privateBindingRequired": true,
+  "privateBindingSha256": null,
+  "remoteExecutionAuthorized": false,
+  "provisionAuthAccountsAuthorized": false,
+  "realDataAllowed": false,
+  "physicalCleanupAuthorized": false,
+  "actors": [
+    {"alias":"owner_a","role":"owner","nutritionInitially":false,"existingVerifiedTotpRequired":true},
+    {"alias":"admin_a","role":"admin","nutritionInitially":false},
+    {"alias":"coach_a","role":"coach","profile":true,"nutrition":"write","assignedClients":["a1"]},
+    {"alias":"reader_a","role":"coach","profile":true,"nutrition":"read","assignedClients":["a1"]},
+    {"alias":"revoked_a","role":"coach","profile":true,"nutrition":"write-then-revoked","assignedClients":["a1"]},
+    {"alias":"unassigned_a","role":"coach","profile":true,"nutrition":"write","assignedClients":[]},
+    {"alias":"student_a","role":"linked-student","linkedClient":"a1","nutrition":false},
+    {"alias":"unaffiliated","role":"none","nutrition":false},
+    {"alias":"owner_b","role":"owner","nutritionInitially":false,"existingVerifiedTotpRequired":true},
+    {"alias":"coach_b","role":"coach","profile":true,"nutrition":"write","assignedClients":["b1"]}
+  ],
+  "proposedEntities": {
+    "organizationA":"a1800033-0000-4000-8000-000000000010",
+    "organizationB":"a1800033-0000-4000-8000-000000000020",
+    "a1":"a1800033-0000-4000-8000-000000000100",
+    "a2":"a1800033-0000-4000-8000-000000000101",
+    "b1":"a1800033-0000-4000-8000-000000000200"
+  },
+  "inventory": {
+    "organizations":2,
+    "clients":3,
+    "minimumMealsA":22,
+    "minimumMealsB":2,
+    "minimumRevisionsOfOneMeal":22,
+    "maximumItemsPerTestMeal":3,
+    "foodLabels":["FICTICIO cereal","FICTICIO fruta","FICTICIO composicao parcial"],
+    "quantitiesGrams":[50,100,125.5],
+    "unknownNutrients":"explicit null",
+    "knownZero":"fat: 0",
+    "source":"manual",
+    "mealIdsAndRequestReceipts":"bind only from successful RPC responses in the private run manifest"
+  },
+  "collisionPolicy":"STOP unless a separately reviewed private manifest proves the same run owns every reused entity; never overwrite or adopt by name",
+  "sessionPolicy":"fresh test sessions only; capture JWT in memory; no account resets, MFA removal or global Auth changes",
+  "evidencePolicy":"counts, SQLSTATE, request aliases and hashes only; no passwords, tokens, TOTP seeds, food payloads or raw Auth rows"
+}
