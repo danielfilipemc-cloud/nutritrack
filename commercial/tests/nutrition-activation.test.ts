@@ -8,8 +8,8 @@ import {nutritionActivationArtifacts} from '../scripts/nutrition-activation-arti
 test('offline activation artifacts are reproducible, read only and distinguish baseline 17 from candidate 19',async()=>{
  const artifacts=await nutritionActivationArtifacts(),folder=new URL('../docs/review/nutrition-activation/',import.meta.url);
  assert.deepEqual(JSON.parse(await readFile(new URL('migration-manifest.json',folder),'utf8')),artifacts.manifest);
- assert.equal(await readFile(new URL('preflight.readonly.sql',folder),'utf8'),artifacts.preflight);
- assert.equal(await readFile(new URL('postflight.readonly.sql',folder),'utf8'),artifacts.postflight);
+ assert.equal((await readFile(new URL('preflight.readonly.sql',folder),'utf8')).replace(/\r\n/g,'\n'),artifacts.preflight);
+ assert.equal((await readFile(new URL('postflight.readonly.sql',folder),'utf8')).replace(/\r\n/g,'\n'),artifacts.postflight);
  assert.equal(artifacts.manifest.remoteExecutionAuthorized,false);assert.equal(artifacts.manifest.migrations.length,19);
  const fixtures=JSON.parse(await readFile(new URL('synthetic-fixtures.proposed.json',folder),'utf8'));
  assert.equal(fixtures.projectRef,artifacts.manifest.projectRef);assert.equal(fixtures.codeSha,artifacts.manifest.codeSha);assert.equal(fixtures.privateBindingRequired,true);assert.equal(fixtures.privateBindingSha256,null);assert.equal(fixtures.remoteExecutionAuthorized,false);assert.equal(fixtures.realDataAllowed,false);assert.equal(fixtures.physicalCleanupAuthorized,false);
