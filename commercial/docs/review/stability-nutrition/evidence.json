@@ -1,0 +1,50 @@
+{
+  "base_sha": "6823fe0b9d35db9f5edaa4939ed45a022ab01888",
+  "personal_source_readonly": true,
+  "source_sha256": {
+    "index.html": "48a56f82434f7ee07d8285473595dc4f82cc9ea60027e1b29324488468d3dfef",
+    "sw.js": "2a66bb0e2eb93fa7d4acd92460e3f85dd640b987585cc943bd07af580de2ec13",
+    "supabase-setup.sql": "5703b71c2125368f1099fa9d396392bd54df163a648b160cf34429eb2c9f791e"
+  },
+  "original_incident_cause": "undetermined",
+  "fixture_regressions": {
+    "passed": 5,
+    "scope": "intercepted Chromium; deadline tested with virtual clock"
+  },
+  "readonly_staging_probe": {
+    "attempts": 13,
+    "profile_lookups": 10,
+    "status_200": 10,
+    "min_response_ms": 84,
+    "max_response_ms": 520,
+    "failures": 0,
+    "retries": 0,
+    "blocked_mutations": 0,
+    "scope": "existing synthetic manifest only; normal Auth login and read allowlist"
+  },
+  "isolated_synthetic_legacy_findings": {
+    "scope": "isolated-functions-synthetic-memory-only",
+    "personalStorageOrNetwork": false,
+    "rounding": {
+      "initial": {
+        "quantity": 100,
+        "calories": 101,
+        "protein": 1
+      },
+      "after100to50to100": {
+        "quantity": 100,
+        "calories": 102,
+        "protein": 2,
+        "carbs": 2,
+        "fat": 2
+      }
+    },
+    "negativePortion": {
+      "quantity": -20,
+      "calories": -20
+    },
+    "normalization": "pao agua"
+  },
+  "native_zoom_screenreaders_safari_firefox": "not tested",
+  "nutrition_migrations_or_implementation": false
+}
