@@ -33,7 +33,8 @@ test('new student disclosure retains its draft when collapsed and remains keyboa
 });
 test('mobile profile area selector exposes all authorized areas and preserves cancelled drafts',async({page})=>{
  await page.setViewportSize({width:375,height:812});await fixture(page);await page.goto(`/alunos/${C}?org=${A}&section=care`);
- const areas=page.getByRole('combobox',{name:'Área da ficha',exact:true});await expect(areas).toHaveValue('care');await expect(areas.getByRole('option')).toHaveCount(9);
+ const areas=page.getByRole('combobox',{name:'Área da ficha',exact:true});await expect(areas).toHaveValue('care');await expect(areas.getByRole('option')).toHaveCount(10);await expect(areas.getByRole('option',{name:'Nutrição · demonstração',exact:true})).toHaveAttribute('value','nutrition');
  const draft=page.getByRole('textbox',{name:'Objetivo do acompanhamento',exact:true});await draft.fill('Rascunho fictício mobile');page.once('dialog',d=>d.dismiss());await areas.selectOption('privacy');await expect(areas).toHaveValue('care');await expect(draft).toHaveValue('Rascunho fictício mobile');
  page.once('dialog',d=>d.accept());await areas.selectOption('privacy');await expect(page.getByRole('heading',{name:'Privacidade e dados',exact:true})).toBeVisible();
+ await areas.selectOption('nutrition');await expect(page.getByRole('region',{name:'Nutrição de demonstração'})).toBeVisible();
 });
