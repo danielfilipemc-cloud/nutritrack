@@ -23,17 +23,36 @@ RLS SELECT exige simultaneamente identidade autenticada, membership vigente, ace
 
 Somente owner pode conceder/revogar competência através de RPC auditável, respeitando a política MFA existente. Sem backfill. Gestores podem consultar metadados de competências, como no modelo atual; isso não concede acesso às refeições. Tabelas não têm INSERT/UPDATE/DELETE para authenticated/anon. A UI continua exclusivamente na demonstração P2.
 
-## P4 — limite transacional proposto
+## P4 — implementação transacional candidata
 
-PR dependente de P3: comandos versionados de registo/correção/anulação lógica, recibos idempotentes e auditoria mínima. Snapshots manuais somente, sem catálogo partilhado, fornecedor ou importação alimentar. As funções públicas serão invoker, implementações privilegiadas em app_private com search_path vazio e grants explícitos. Helpers sem necessidade pública ficam sem grants.
+PR dependente de P3, migration incremental `20261018204504_nutrition_transactions.sql`: comandos versionados de registo/correção/anulação lógica, recibos idempotentes e auditoria mínima. Snapshots manuais somente, sem catálogo partilhado, fornecedor ou importação alimentar. As funções públicas são invoker, implementações privilegiadas em app_private com search_path vazio e grants explícitos. Helpers de validação/projeção ficam sem grants.
+
+| RPC | Contrato e limites |
+|---|---|
+| aura_nutrition_meal_save(org, client, command) | Cria/corrige/anula; competência de escrita, atribuição e cliente ativo. Comando V1 estrito, até 50 itens; ator derivado |
+| aura_nutrition_request_status(org, client, request) | Recibo somente do ator atual, após revalidar escrita e MFA; null quando não existe |
+| aura_nutrition_diary(org, client, date, after) | 20 refeições atuais por página, ordenadas por UUID, nextCursor explícito; inclui estado voided |
+| aura_nutrition_history(org, client, meal, before) | 20 revisões por página, descendentes; snapshots e nextCursor explícitos |
+
+`lib/nutrition-command.ts` valida o mesmo comando fora da UI: contractVersion, requestId, mealId, expectedRevision, consumedOn, mealKind, operation e items. Cada item tem label, quantity, composition V1 e source=manual. Organização/aluno são argumentos RPC separados e não substituem autorização. Não se aceitam actor/source externo, totais calculados pelo cliente ou campos adicionais. Parser SQL normaliza UUIDs, ordem JSON e escala numérica antes do SHA-256; sem cópia de payload nos recibos/auditoria.
+
+Anulação é uma nova revisão voided que copia os snapshots anteriores; não apaga dados e não permite alterar dia/tipo ou restaurar implicitamente uma refeição anulada. A decisão de autorizar este fluxo profissional ainda exige revisão antes de ativação. Recibos de retries devolvem a revisão original, mesmo depois de uma correção posterior; o consumidor deve recarregar a versão atual. Falta de recibo não prova falha de um pedido ainda em execução. Após arquivar, novas escritas/replays são recusados; consulta autorizada do histórico permanece possível.
+
+Paginação não constitui snapshot entre pedidos: novas refeições ou correções podem mudar o conjunto entre páginas. O futuro consumidor deve tratar refresh e contexto, não declarar totais diários completos se nextCursor existir. P1 agrega até 1000 porções por chamada; um relatório maior precisa de contrato próprio, não somar totais já arredondados.
 
 Todas as mutações devem adquirir o lock da organização usado pelas operações existentes de acesso/MFA, revalidar competência/atribuição e cliente ativo antes de consultar recibos. Uma repetição depois da revogação não deve revelar sequer o resultado antigo. request_id é único por organização/ator, com hash canónico do comando e contexto; conteúdo divergente dá conflito. expectedRevision impede correções perdidas; autor é auth.uid(), nunca entrada do cliente. Uma falha em qualquer item reverte o comando inteiro. Paginação explícita evita apresentar histórico truncado como completo.
 
-Revogação significa ausência de autorização em novos statements após commit da revogação; não revoga retroativamente dados já entregues nem elimina limitações MVCC. Ensaios locais não demonstram cancelamento de respostas de rede ou garantias de concorrência em múltiplas sessões.
+Revogação significa ausência de autorização em novos statements após commit da revogação; não revoga retroativamente dados já entregues nem elimina limitações MVCC. O ensaio PostgreSQL nativo abaixo verifica um escritor bloqueado pelo lock enquanto a revogação está pendente. Não demonstra cancelamento de respostas de rede nem todos os escalonamentos possíveis de concorrência.
 
 ## Validação e reversibilidade
 
 Harness PGlite usa PostgreSQL WASM descartável, auth.uid simulado e dados inventados. Testa instalação limpa, upgrade de baseline povoada com 17 entradas, preservação de checksums/timestamps/dados, replay e autorização negativa. Não é Supabase Auth/PostgREST real nem restauro operacional cloud. O teste histórico de replay passou a comparar o registo completo antes/depois, preservando a verificação das 17 fundações sem congelar o total futuro em 17.
+
+Ensaio adicional: `scripts/nutrition-postgres-local.ts`, ativado exclusivamente com AURA_NUTRITION_LOCAL_POSTGRES=1, Node 22 e `node --import tsx scripts/nutrition-postgres-local.ts`. Usa imagem já instalada public.ecr.aws/supabase/postgres:17.11.0.002, --pull=never, Docker local npipe/unix, rede none, sem portas ou bind mounts; dados em tmpfs. Recusa DOCKER_HOST e fixa o contexto local inspecionado em cada operação, evitando seguir uma mudança global de contexto durante o ensaio. O teste negativo com override foi recusado antes de executar Docker. Cria e remove apenas o seu contentor identificado por label. Não usa URLs, chaves, ligações pessoais nem bases de outros projetos. Trust auth é exclusivo do socket interno desse contentor sem rede, não de serviços existentes.
+
+Resultado PostgreSQL 17.11: upgrade/replay 17→19 preservando registo/dados; dois writers em sessões independentes resultam num sucesso e PT409; dois creates com mesmo request dão uma refeição, um replay e um evento; escritor iniciado enquanto owner mantém o lock de revogação aguarda e falha com 42501 após commit; recibo revogado e RPC anónimo negados. Auth aqui continua simulado, sem GoTrue/PostgREST. Imagem local verificada: sha256:0450166354dc9c1d25f0322ac8b580774d4fb0184d2b087f6e4fe9499c66cf53. Não equivale a recuperação cloud.
+
+P3: PR #31, 83 testes domínio/PostgreSQL; CI 39164729484 e 39164723072 aprovados. P4: PR #32, 91 testes domínio/PostgreSQL e 178 Chromium locais aprovados, lint/TypeScript/build aprovados e auditoria npm com zero vulnerabilidades. O teste de duas empresas dá competências/atribuições válidas aos dois profissionais antes de verificar isolamento; inclui ainda UUIDs conhecidos de outro aluno e recibos do mesmo request noutro contexto. A mudança da política MFA e a expiração de sessão são casos negativos próprios. O CI sobre o head de revisão deve ser confirmado no PR, sem inferir aprovação de uma revisão posterior.
 
 Não regenerar/aplicar bundles remotos para ativar este candidato. Nenhuma migration executada em staging/produção. A reversão de código deixa o esquema aditivo sem UI consumidora; numa futura ativação, desativar a feature e retirar grants de escrita mediante procedimento revisto. Não apagar tabelas/histórico nem executar down migration automática.
 

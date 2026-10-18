@@ -1,7 +1,8 @@
 import {foundationFixture,id} from './foundation-fixture';
 import assert from 'node:assert/strict';
+import type {CompositionV1} from '../lib/nutrition-contract';
 export const baseline17='20261016233912_sensitive_reads_aal2.sql';
-export const composition={contractVersion:1,basis:{amount:100,unit:'g'},nutrients:{calories:101,protein:1,carbs:null,fat:0}};
+export const composition:CompositionV1={contractVersion:1,basis:{amount:100,unit:'g'},nutrients:{calories:101,protein:1,carbs:null,fat:0}};
 export const deny=(promise:Promise<unknown>,code='42501')=>assert.rejects(promise,(error:unknown)=>(error as {code:string}).code===code);
 export async function nutritionAccess(f:Awaited<ReturnType<typeof foundationFixture>>,write=true){
  await f.grant(2,100,['profile']);await f.asUser(1);await f.db.query(`select aura_nutrition_capability_save('${id(10)}','${id(2)}',true,$1)`,[write]);await f.asUser(2);
