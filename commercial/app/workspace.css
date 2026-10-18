@@ -146,3 +146,26 @@
 
 /* The responsive professional chart may be narrower than the legacy demo minimum. */
 .aura-workspace .chartbox svg{min-width:0;}
+
+/* Nutrition demonstration: professional workspace only, no public demo overrides. */
+.aura-workspace .aura-nutrition {display:grid;gap:20px;min-width:0}
+.aura-workspace .aura-nutrition-header {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}
+.aura-workspace .aura-nutrition-notice {flex-basis:100%;margin:0;padding:12px 16px;border-left:3px solid #137F79;background:#1D2626;border-radius:6px;line-height:1.6}
+.aura-workspace .aura-nutrition-tabs {display:flex;flex-wrap:wrap;gap:8px}
+.aura-workspace .aura-nutrition button {min-height:44px}
+.aura-workspace .aura-nutrition [aria-pressed=true] {border-color:var(--aura-focus);background:#1D2626}
+.aura-workspace .aura-nutrition-toolbar {display:flex;gap:20px;align-items:end;justify-content:space-between;flex-wrap:wrap}
+.aura-workspace .aura-nutrition-toolbar p {color:var(--aura-muted);font-size:.85rem}
+.aura-workspace .aura-nutrition-metrics {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.aura-workspace .aura-nutrition-metric {background:#161D1D;border:1px solid var(--aura-line);border-radius:12px;padding:18px;min-width:0}
+.aura-workspace .aura-nutrition-metric>span {font-size:.8rem;color:var(--aura-muted)}
+.aura-workspace .aura-nutrition-metric strong {display:block;font-size:1.7rem;line-height:1.5;color:#F2F7F6;font-variant-numeric:tabular-nums}
+.aura-workspace .aura-nutrition-metric small {font-size:.8rem;font-weight:400;color:var(--aura-muted)}
+.aura-workspace .aura-nutrition-metric p {font-size:.75rem;color:var(--aura-muted);margin:4px 0 0;overflow-wrap:anywhere}
+.aura-workspace .aura-nutrition-layout {display:grid;grid-template-columns:minmax(220px,.7fr) minmax(0,1.6fr);gap:20px;align-items:start}
+.aura-workspace .aura-nutrition-layout .aura-nutrition-metrics {grid-template-columns:repeat(2,minmax(0,1fr));margin:16px 0}
+.aura-workspace .aura-nutrition-meal {display:flex;width:100%;justify-content:space-between;align-items:center;text-align:left;gap:12px;margin-top:12px;padding:14px 16px}
+.aura-workspace .aura-nutrition-meal small {display:block;margin-top:5px;color:var(--aura-muted);font-weight:400}
+.aura-workspace .aura-nutrition details {border-top:1px solid var(--aura-line);padding-top:16px;margin-top:20px}
+.aura-workspace .aura-nutrition summary {cursor:pointer;min-height:44px;display:list-item;padding:10px 0;color:#F2F7F6}
+@media(max-width:800px){.aura-workspace .aura-nutrition-layout{grid-template-columns:minmax(0,1fr)}.aura-workspace .aura-nutrition-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.aura-workspace .aura-nutrition-metric{padding:12px}.aura-workspace .aura-nutrition-metric strong{font-size:1.35rem}.aura-workspace .aura-nutrition-toolbar{gap:8px}}
