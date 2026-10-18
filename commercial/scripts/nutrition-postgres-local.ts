@@ -8,17 +8,21 @@ import {composition,baseline17} from '../tests/nutrition-db-fixture';
 import {businessToday} from '../lib/care';
 
 const image='public.ecr.aws/supabase/postgres:17.11.0.002';
+let verifiedContext:string|undefined;
 function docker(args:string[],stdin=''){
  return new Promise<string>((resolve,reject)=>{
-  const child=spawn('docker',args,{stdio:['pipe','pipe','pipe'],windowsHide:true});let stdout='',stderr='';
+  const child=spawn('docker',verifiedContext?['--context',verifiedContext,...args]:args,{stdio:['pipe','pipe','pipe'],windowsHide:true});let stdout='',stderr='';
   child.stdout.on('data',chunk=>stdout+=chunk);child.stderr.on('data',chunk=>stderr+=chunk);child.on('error',reject);
   child.on('close',code=>code===0?resolve(stdout.trim()):reject(new Error(stderr.trim()||`Docker exit ${code}`)));child.stdin.on('error',()=>{});child.stdin.end(stdin);
  });
 }
 async function main(){
  if(process.env.AURA_NUTRITION_LOCAL_POSTGRES!=='1')throw Error('Explicit local-only opt-in AURA_NUTRITION_LOCAL_POSTGRES=1 required');
- const endpoint=JSON.parse(await docker(['context','inspect','--format','{{json .Endpoints.docker.Host}}'])) as string;
+ if(process.env.DOCKER_HOST)throw Error('DOCKER_HOST overrides forbidden; use a verified local Docker context');
+ const context=await docker(['context','show']);
+ const endpoint=JSON.parse(await docker(['context','inspect',context,'--format','{{json .Endpoints.docker.Host}}'])) as string;
  if(!endpoint.startsWith('npipe:')&&!endpoint.startsWith('unix:'))throw Error('Remote Docker endpoints forbidden');
+ verifiedContext=context; // Pin every subsequent operation; do not follow later global context changes.
  const imageId=await docker(['image','inspect',image,'--format','{{.Id}}']); // Existing image only: never pull.
  const container=await docker(['run','--pull=never','--detach','--rm','--network','none','--label','aura.local-test=nutrition-p4','--name','aura-nutrition-local-'+randomUUID(),'--user','postgres','--tmpfs','/tmp:rw,nosuid,size=256m','--entrypoint','/bin/sh',image,'-c','exec sleep 900']);
  const sql=(text:string)=>docker(['exec','-i',container,'psql','-h','/tmp','-U','postgres','-d','postgres','-X','-q','-A','-t','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose'],text);
