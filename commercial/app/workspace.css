@@ -143,3 +143,6 @@
 
 .aura-workspace .aura-measurement-form>label{max-width:220px;}.aura-workspace .aura-measurement-form>.columns{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
 @media(max-width:650px){.aura-workspace .aura-measurement-form>.columns{grid-template-columns:1fr;}.aura-workspace .aura-measurement-form>label{max-width:none;}}
+
+/* The responsive professional chart may be narrower than the legacy demo minimum. */
+.aura-workspace .chartbox svg{min-width:0;}
