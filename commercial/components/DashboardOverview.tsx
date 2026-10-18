@@ -12,7 +12,7 @@ export default function DashboardOverview({org,userId,role}:{org:string;userId:s
  }catch{if(active)setError("Não foi possível carregar o painel. Tenta novamente.");}})();return()=>{active=false;};},[org,userId,revision]);
  const data=loaded?.org===org&&loaded.userId===userId?loaded.data:null;
  const target=(path:string)=>`${path}?org=${encodeURIComponent(org)}`;
- return <>
+ return <div className="aura-dashboard">
 
  {error?<section className="panel" role="alert"><p>{error}</p><button onClick={()=>setRevision(v=>v+1)}>Tentar novamente</button></section>:!data?<section className="panel" aria-busy="true"><p role="status">A carregar indicadores...</p></section>:<>
  <div className="stat" aria-label="Indicadores do estabelecimento">
@@ -21,13 +21,13 @@ export default function DashboardOverview({org,userId,role}:{org:string;userId:s
  <div><span>Alunos a acompanhar</span><strong>{data.pending_clients}</strong><small>Sem avaliação ou última há mais de 30 dias</small></div>
  </div>
  </>}
- <section className="panel aura-shortcuts-panel"><h2>Operações frequentes</h2><nav className="aura-quick-actions" aria-label="Operações frequentes"><a className="outline link" href={target('/alunos')}>Registar ou gerir aluno</a><a className="outline link" href={target('/avaliacoes')}>Registar avaliação</a><a className="outline link" href={target('/agenda')}>Abrir agenda</a>{role!=='coach'&&<><a className="outline link" href={target('/equipa')}>Gerir equipa</a><a className="outline link" href={target('/marca')}>Personalizar marca</a></>}</nav></section>
+ <nav className="aura-quick-actions aura-dashboard-actions" aria-label="Operações frequentes"><span>Acesso rápido</span><a href={target('/alunos')}>Registar ou gerir aluno</a><a href={target('/avaliacoes')}>Registar avaliação</a><a href={target('/agenda')}>Abrir agenda</a>{role!=='coach'&&<><a href={target('/equipa')}>Gerir equipa</a><a href={target('/marca')}>Personalizar marca</a></>}</nav>
  <div className="aura-dashboard-main"><DailyPriorities key={`${userId}:${org}`} org={org} userId={userId}/><DailyPriorities key={`schedule:${userId}:${org}`} org={org} userId={userId} mode="schedule"/></div>
  {data&&<div className="aura-dashboard-columns">
- <section className="panel"><h2>Acompanhamento pendente</h2><p>Indicador baseado nas avaliações registadas, sem interpretação clínica. Mostra até 10 alunos ativos, começando pelos que nunca foram avaliados.</p>
- {!data.pending.length?<div className="aura-empty-state"><strong>Sem acompanhamento pendente</strong><p>Os alunos ativos têm avaliações recentes, ou ainda não existem alunos.</p></div>:<div className="tablewrap"><table><thead><tr><th>Aluno</th><th>Última avaliação</th><th>Ação</th></tr></thead><tbody>{data.pending.map(c=><tr key={c.id}><td>{c.full_name}</td><td>{c.assessed_on||"Sem avaliação"}</td><td><a href={clientProfileUrl(org,c.id)}>Abrir ficha de {c.full_name}</a></td></tr>)}</tbody></table></div>}</section>
- <section className="panel"><h2>Avaliações recentes</h2><p>Até 10 avaliações realizadas nos últimos 30 dias.</p>
- {!data.recent.length?<div className="aura-empty-state"><strong>Sem avaliações recentes</strong><p>Regista uma avaliação para acompanhar a evolução dos teus alunos.</p></div>:<div className="tablewrap"><table><thead><tr><th>Aluno</th><th>Data</th><th>Estado</th></tr></thead><tbody>{data.recent.map(a=><tr key={a.id}><td><a href={clientProfileUrl(org,a.client_id)}>{a.full_name}</a></td><td>{a.assessed_on}</td><td>{a.archived_at?"Arquivado":"Ativo"}</td></tr>)}</tbody></table></div>}</section>
+ <details className="panel aura-dashboard-secondary aura-disclosure-panel"><summary><h2>Acompanhamento pendente</h2><span className="aura-caption">Até 10 alunos</span></summary><p className="aura-caption">Sem avaliação recente. Sem interpretação clínica.</p>
+ {!data.pending.length?<div className="aura-empty-state"><strong>Sem acompanhamento pendente</strong><p>Os alunos ativos têm avaliações recentes, ou ainda não existem alunos.</p></div>:<div className="tablewrap"><table><thead><tr><th>Aluno</th><th>Última avaliação</th><th>Ação</th></tr></thead><tbody>{data.pending.map(c=><tr key={c.id}><td>{c.full_name}</td><td>{c.assessed_on||"Sem avaliação"}</td><td><a href={clientProfileUrl(org,c.id)}>Abrir ficha de {c.full_name}</a></td></tr>)}</tbody></table></div>}</details>
+ <details className="panel aura-dashboard-secondary aura-disclosure-panel"><summary><h2>Avaliações recentes</h2><span className="aura-caption">Últimos 30 dias · até 10</span></summary>
+ {!data.recent.length?<div className="aura-empty-state"><strong>Sem avaliações recentes</strong><p>Regista uma avaliação para acompanhar a evolução dos teus alunos.</p></div>:<div className="tablewrap"><table><thead><tr><th>Aluno</th><th>Data</th><th>Estado</th></tr></thead><tbody>{data.recent.map(a=><tr key={a.id}><td><a href={clientProfileUrl(org,a.client_id)}>{a.full_name}</a></td><td>{a.assessed_on}</td><td>{a.archived_at?"Arquivado":"Ativo"}</td></tr>)}</tbody></table></div>}</details>
  </div>}
- </>;
+ </div>;
 }
