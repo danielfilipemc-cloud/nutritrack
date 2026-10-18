@@ -16,7 +16,7 @@ Auto-deploy Render de staging/produção confirmado desligado antes dos merges. 
 - `tests/nutrition-activation.test.ts`: grants/RLS e privilégios efetivamente instalados; cinco RPCs invoker, 12 funções privadas com whitelist explícita de EXECUTE/definer/search_path; tabelas sem DML de clientes e nenhum acesso anon. Artefactos offline reproduzíveis; preflight/postflight read-only discriminam baseline/candidato/drift sem alterar o registo.
 - `scripts/nutrition-postgres-local.ts`: extensão do ensaio nativo com leitor e escritor em sessões independentes. Leitura durante transação não confirmada vê a versão anterior completa; depois de COMMIT vê o conjunto atual. Inserção antes do cursor só entra no refresh. Retoma com cursor após revogação é negada.
 
-As cinco provas adicionais passaram isoladamente; a suite completa ampliada e CI são registados no PR da documentação/testes. Não confundir esses testes adicionais com o total de 91 executado no SHA integrado.
+As cinco provas adicionais passaram isoladamente; a suite ampliada passou 96/96 domínio/PostgreSQL, lint e TypeScript locais. O CI completo é registado no PR da documentação/testes. Não confundir esse total com os 91 testes executados no SHA integrado; o código da aplicação e as 19 migrations são os mesmos.
 
 ## Limitações e severidade
 

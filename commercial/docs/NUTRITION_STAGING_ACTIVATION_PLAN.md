@@ -56,9 +56,13 @@ Escopo futuro de mutações deve incluir explicitamente: criar apenas as entidad
 
 Desligar persistência de sessão/auto-refresh só no cliente de ensaio com JWT antigo, não como alteração de proteção da aplicação. É controlo de medição, não bypass. GoTrue/PostgREST, network failure e MFA reais ainda **não foram ensaiados nesta fase**. Não executar a auditoria cloud mutável completa nem redirecionar runners antigos para este alvo. O runner futuro deve implementar fail-closed para projeto, SHA, hashes, manifesto privado e confirmação de operações; não existe autorização embutida nos ficheiros desta entrega.
 
+Para isolar frescura TOTP de expiração JWT, medir as janelas com JWT ainda válido e TOTP realmente anterior à janela, sem modificar claims ou relógio do servidor. Se o JWT expirar antes, a negação não prova isoladamente a regra de frescura: marcar esse caso inconclusivo. Não alterar expiração/configuração Auth para obter um PASS. Registar somente timestamps/aal/SQLSTATE necessários, sem token ou segredo.
+
 ## Falhas, recuperação e reversão sem apagar histórico
 
 Antes da janela: coordenar pausa dos escritores de teste, provar que todos os dados abrangidos são fictícios, aprovar cópia privada criptografada e validar a sua integridade/possibilidade de restauro. Não exportar bases nem Auth secrets nesta fase. Registar capacidades/grants originais, configurações relevantes não secretas, checksums e inventário de Auth/Storage. Nenhum objeto Storage é criado por 18/19; um backup de DB não equivale a cópia dos ficheiros Storage. Não assumir disponibilidade de PITR/backup pago no plano atual ou contratar planos.
+
+Se houver inscrições ou dados sem atestado sintético, bloquear a cópia da base completa; uma exportação restrita ao manifesto precisa de revisão/autorização própria. Não presumir que o nome staging garante ausência de dados pessoais, nem alterar signups/Auth global para contornar este gate.
 
 Objetivos propostos para revisão: RPO de ativação zero para os dados sintéticos confirmados antes de uma janela com escrita suspensa e cópia comprovada; contenção de acesso em até 15 minutos; alvo de ensaio de restauro operacional até 4 horas. **Não medidos nem garantidos**, dependem de aprovação e prova de recuperação cloud, que continua bloqueio alto. Não apresentar estes alvos como SLA.
 
