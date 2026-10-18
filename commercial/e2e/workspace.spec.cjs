@@ -3,7 +3,7 @@ const {fixture,A,B,C,U,today}=require('./fixtures.cjs');
 test('dashboard retries errors and opens a student profile with preserved history',async({page})=>{
  await fixture(page,{dashboardError:true});await expect(page.getByRole('alert').filter({hasText:'Não foi possível carregar'})).toContainText('Não foi possível carregar');await page.getByRole('button',{name:'Tentar novamente'}).click();
  await expect(page.getByLabel('Indicadores do estabelecimento')).toContainText('7');
- await page.getByRole('link',{name:'Abrir ficha de Aluno Fictício A'}).click();
+ await page.locator('.aura-dashboard-secondary>summary').first().click();await page.getByRole('link',{name:'Abrir ficha de Aluno Fictício A'}).click();
  await expect(page.getByRole('heading',{name:'Ficha do aluno',exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'Aluno Fictício A'})).toBeVisible();
  await page.getByRole('button',{name:'Avaliações',exact:true}).click();await expect(page.getByRole('heading',{name:'Histórico (1)'})).toBeVisible();await expect(page.getByRole('img',{name:/Evolução/})).toBeVisible();
  await page.getByLabel('Peso (kg)',{exact:true}).fill('79.5');await page.getByRole('button',{name:'Guardar avaliação'}).click();
@@ -12,7 +12,7 @@ test('dashboard retries errors and opens a student profile with preserved histor
 
 test('late dashboard response cannot repopulate another establishment',async({page})=>{
  await fixture(page,{slowA:true});await page.getByRole('combobox',{name:/^Estabelecimento/}).selectOption(B);
- await expect(page.getByRole('link',{name:'Abrir ficha de Aluno Fictício B'})).toBeVisible();await page.waitForTimeout(900);
+ await page.locator('.aura-dashboard-secondary>summary').first().click();await expect(page.getByRole('link',{name:'Abrir ficha de Aluno Fictício B'})).toBeVisible();await page.waitForTimeout(900);
  await expect(page.getByText('Aluno Fictício A',{exact:true})).toHaveCount(0);
  await expect(page.locator('.brandhead')).toContainText('Marca B');
 });
