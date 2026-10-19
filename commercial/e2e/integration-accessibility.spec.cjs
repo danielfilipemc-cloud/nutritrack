@@ -33,7 +33,7 @@ test('mobile timeline permits keyboard scrolling loading more and exit',async({p
 });
 test('dashboard and directory disclosures are discoverable and operable without a pointer',async({page})=>{
  await page.setViewportSize({width:375,height:812});await fixture(page);const summary=page.locator('.aura-dashboard-secondary>summary').first();
- await expect(summary).toBeVisible();await summary.focus();await page.keyboard.press('Enter');await expect(page.getByRole('link',{name:'Abrir ficha de Aluno Fictício A',exact:true})).toBeVisible();await page.keyboard.press('Space');await expect(page.getByRole('link',{name:'Abrir ficha de Aluno Fictício A',exact:true})).toBeHidden();
+ await expect(summary).toBeVisible();await summary.focus();await page.keyboard.press('Enter');await expect(page.getByText('Sem avaliações recentes',{exact:true})).toBeVisible();await page.keyboard.press('Space');await expect(page.getByText('Sem avaliações recentes',{exact:true})).toBeHidden();await expect(page.getByRole('link',{name:'Abrir ficha de Aluno Fictício A',exact:true})).toBeVisible();
  await page.goto('/alunos');const menu=page.getByLabel('Mais ações de Aluno Fictício A',{exact:true});await expect(menu).toBeVisible();await menu.focus();await page.keyboard.press('Enter');await page.keyboard.press('Tab');await expect(page.getByRole('button',{name:'Editar',exact:true})).toBeFocused();
 });
 

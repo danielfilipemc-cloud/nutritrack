@@ -1,3 +1,4 @@
+const {openPriorities}=require("./dashboard-helpers.cjs");
 const { test, expect } = require("@playwright/test");
 const { fixture, A, B, C, today } = require("./fixtures.cjs");
 async function profile(page) {
@@ -23,6 +24,7 @@ test("profile saves goal, responsible and review, then shows them on the dashboa
   ).toBeVisible();
   expect(state.followup().responsible_id).toBe(state.second);
   await page.goto("/");
+  await openPriorities(page);
   await expect(
     page.getByRole("heading", { name: "Prioridades de hoje" }),
   ).toBeVisible();

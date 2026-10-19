@@ -392,6 +392,9 @@ async function fixture(
   await expect(
     page.getByRole("combobox", { name: /^Estabelecimento/ }),
   ).toHaveValue(A);
+  // Let the normal dashboard preview settle before tests install unrelated read
+  // failures. Keep slowA intentionally pending for cross-organization race tests.
+  if(!slowA&&!dashboardError)await expect(page.getByRole('region',{name:'Evolução individual na dashboard',exact:true})).toHaveAttribute('aria-busy','false');
   return {
     calls: () => calls,
     revocations: () => revocations,

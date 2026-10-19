@@ -1,3 +1,4 @@
+const {openPriorities}=require('./dashboard-helpers.cjs');
 const {test,expect}=require('@playwright/test');
 const {fixture,A,C}=require('./fixtures.cjs');
 test('desktop navigation exposes eight modules and a single establishment selector',async({page})=>{
@@ -25,7 +26,7 @@ test('coach settings and restricted profile never advertise privileged tools',as
 test('today schedule uses its own authorized filter and does not change with priority filters',async({page})=>{
  await fixture(page,{seedAppointments:2,seedObjectives:2});const schedule=page.getByRole('region',{name:'Agenda de hoje',exact:true});
  await expect(schedule.getByRole('link',{name:'Ver agenda completa',exact:true})).toHaveAttribute('href','/agenda?org='+A);
- await expect(schedule.locator('.aura-priority-list>li')).toHaveCount(2);const count=2;const priorities=page.getByRole('region',{name:'Prioridades do profissional',exact:true});
+ await expect(schedule.locator('.aura-priority-list>li')).toHaveCount(2);const count=2;const priorities=await openPriorities(page);
  await priorities.getByLabel('Tipo de prioridade').selectOption('objective');await expect(priorities.locator('.aura-priority-list>li')).toHaveCount(2);await expect(schedule.locator('.aura-priority-list>li')).toHaveCount(count);
 });
 test('new student disclosure retains its draft when collapsed and remains keyboard operable',async({page})=>{
