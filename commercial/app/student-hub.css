@@ -1,0 +1,53 @@
+/* Student workspace only: no change to login, dashboard, public demo or data contracts. */
+.aura-student-hub{display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px;align-items:start;}
+.aura-student-hub>*{min-width:0;}
+.aura-student-hub>.aura-profile-identity{grid-column:1/-1;}
+.aura-student-hub>.aura-student-navigation{grid-column:1;grid-row:2;}
+.aura-student-body{grid-column:2;grid-row:2;display:grid;gap:20px;align-content:start;min-width:0;}
+.aura-student-body>.panel{margin:0;}
+.aura-student-hub>:not(.aura-profile-identity):not(.aura-student-navigation){grid-column:2;margin:0;}
+.aura-workspace .aura-student-hub .panel{border-color:#2A494A;background:linear-gradient(130deg,#14272A,#111D21);}
+.aura-student-hub :is(input,select,textarea,button){font-family:inherit;}
+.aura-workspace .aura-student-hub>.aura-profile-identity{background:radial-gradient(ellipse at 80% 20%,#137F7924,transparent 65%),linear-gradient(120deg,#172D2F,#111D21);margin:0;padding:24px;}
+.aura-student-hub .aura-profile-identity .aura-section-title{margin-bottom:0;}
+.aura-student-hub .aura-profile-identity h2{font-size:28px;}
+.aura-student-context{border-top:1px solid #355252;margin-top:20px;padding-top:14px;}
+.aura-student-context dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0 0 12px;}
+.aura-student-context dt{font-size:12px;color:#BDCEC8;margin-bottom:5px;}
+.aura-student-context dd{margin:0;color:#E4F2EC;font-size:15px;font-weight:550;overflow-wrap:anywhere;}
+.aura-workspace .aura-student-context>button{min-height:44px;font-size:12px;padding:9px 12px;}
+.aura-student-context>summary{min-height:44px;cursor:pointer;color:#C9EAE0;font-size:13px;padding:12px 0;}
+.aura-student-navigation{position:sticky;top:16px;align-self:start;border:1px solid #2A494A;border-radius:14px;background:#111F22;padding:16px;max-height:calc(100svh - 32px);overflow-y:auto;}
+.aura-workspace .aura-student-navigation .aura-profile-tabs{display:flex;flex-direction:column;border:0;background:none;padding:0;margin:0;gap:20px;}
+.aura-student-navigation .aura-profile-nav-group{width:100%;}
+.aura-workspace .aura-student-navigation .aura-profile-nav-group>span{font-size:12px;padding:0 8px 8px;color:#BBD7CC;letter-spacing:.03em;}
+.aura-workspace .aura-student-navigation .aura-profile-nav-group>div{display:grid;gap:4px;}
+.aura-workspace .aura-student-navigation .aura-profile-tabs button{width:100%;min-height:44px;text-align:left;padding:10px;font-size:13px;}
+.aura-student-overview{display:grid;gap:20px;min-width:0;}
+.aura-workspace .aura-student-overview>.panel{margin:0;padding:20px;}
+.aura-student-overview .aura-summary-grid{gap:12px;}
+.aura-workspace .aura-student-overview .aura-summary-grid>div{padding:16px;background:#142A2C;}
+.aura-student-overview .aura-summary-grid span{font-size:13px;color:#C8DDD5;}
+.aura-workspace .aura-student-overview .aura-summary-grid strong{font-size:28px;}
+.aura-student-overview .aura-summary-grid p{font-size:12px;color:#C5DDD3;}
+.aura-student-overview .aura-summary-grid+p{font-size:12px;color:#BDCEC8;}
+.aura-student-chart .aura-section-title{align-items:center;gap:12px;}
+.aura-student-chart .aura-section-title h2{margin:6px 0;}
+.aura-student-chart .eyebrow{font-size:10px;letter-spacing:.12em;color:#8EDACB;}
+.aura-student-chart>label{display:block;max-width:240px;margin-bottom:16px;}
+.aura-student-chart-foot{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:12px;}
+.aura-student-chart-foot p{font-size:12px;color:#BDCEC8;max-width:60ch;margin:0;}
+.aura-student-chart-foot button{flex-shrink:0;min-height:44px;}
+.aura-student-hub .aura-timeline{background:#101E21;border-radius:12px;}
+.aura-student-hub .aura-appointment-list>li{border:1px solid #2B4A4B;border-radius:12px;padding:16px;margin-top:12px;background:#102125;}
+@media(min-width:901px){.aura-student-context>summary{display:none;}}
+@media(max-width:1200px){.aura-student-hub{grid-template-columns:180px minmax(0,1fr);gap:16px;}.aura-student-chart-foot{flex-wrap:wrap;}.aura-workspace .aura-student-navigation .aura-profile-nav-group{display:block;}}
+@media(max-width:900px){
+ .aura-student-hub{display:block;}.aura-workspace .aura-student-hub>.aura-profile-identity{padding:18px;margin-bottom:12px;}.aura-student-hub .aura-profile-identity h2{font-size:23px;}
+ .aura-student-navigation{position:static;padding:14px;margin-bottom:16px;max-height:none;overflow:visible;}.aura-workspace .aura-student-navigation .aura-profile-tabs{display:none;}.aura-student-navigation .aura-profile-area{margin:0;}
+ .aura-student-context{margin-top:12px;padding-top:0;}.aura-student-context dl{grid-template-columns:1fr;gap:12px;}.aura-student-context dd{font-size:14px;}
+ .aura-student-overview{gap:16px;}.aura-workspace .aura-student-overview>.panel{padding:16px;}.aura-student-hub>:not(.aura-profile-identity):not(.aura-student-navigation){margin-bottom:16px;}
+ .aura-student-body{gap:16px;}
+ .aura-student-chart .aura-section-title{align-items:flex-start;flex-wrap:wrap;}.aura-student-chart-foot{display:block;}.aura-student-chart-foot button{margin-top:12px;}.aura-student-chart>label{max-width:none;}
+ .aura-student-hub .aura-appointment-list>li{padding:12px;}
+}

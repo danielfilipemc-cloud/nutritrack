@@ -40,6 +40,7 @@ export default function ClientCare({
   manager,
   writable=true,
   onDirtyChange,
+  onSaved,
 }: {
   org: string;
   userId: string;
@@ -47,6 +48,7 @@ export default function ClientCare({
   manager: boolean;
   writable?: boolean;
   onDirtyChange?: (dirty: boolean,pending?:boolean) => void;
+  onSaved?:()=>void;
 }) {
   const scope = useRef(new RequestScope()),
     historyScope = useRef(new RequestScope());
@@ -186,6 +188,7 @@ export default function ClientCare({
       setPage(0);
       setReload((v) => v + 1);
       setMessage("Acompanhamento guardado.");
+      onSaved?.();
     } catch {
       if (valid()) setMessage("Falha de ligação ao guardar acompanhamento.");
     } finally {
