@@ -3,6 +3,8 @@ import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {useEffect,useRef} from "react";
 import AuraBrand from './AuraBrand';
+import AuraIcon,{type AuraIconName} from './AuraIcon';
+const icons:Record<string,AuraIconName>={'/':'overview','/alunos':'students','/agenda':'calendar','/avaliacoes':'assessment','/evolucao':'evolution','/equipa':'team','/marca':'brand','/definicoes':'settings'};
 const groups = [
  {name:"Operação",links:[["/","Visão geral"],["/alunos","Alunos"],["/agenda","Agenda"]]},
  {name:"Acompanhamento",links:[["/avaliacoes","Avaliações"],["/evolucao","Evolução"]]},
@@ -16,7 +18,7 @@ export default function AppNavigation(){
  <details ref={disclosure} className="aura-nav-disclosure"><summary>Menu principal</summary><nav className="aura-app-nav" aria-label="Navegação principal"><div className="aura-app-nav__links">
  {groups.map(group=><div className="aura-nav-group" key={group.name}><p>{group.name}</p>{group.links.map(([href,label])=>{
  const active=path===href||(href!=="/"&&path.startsWith(href+"/"));
- return <Link key={href} href={href} aria-current={active?"page":undefined} className={active?"is-active":undefined}><span className="aura-nav-indicator" aria-hidden="true"/><span className="aura-nav-label-desktop">{label}</span></Link>;
+ return <Link key={href} href={href} aria-current={active?"page":undefined} className={active?"is-active":undefined}><AuraIcon name={icons[href]} className="aura-nav-icon"/><span className="aura-nav-label-desktop">{label}</span></Link>;
  })}</div>)}
  </div></nav></details><div className="aura-app-nav__foot">O teu negócio.<br/>Mais próximo dos teus alunos.<small>Ambiente de demonstração</small></div></aside>;
 }

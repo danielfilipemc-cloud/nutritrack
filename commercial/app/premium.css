@@ -1,0 +1,264 @@
+/* AURA Premium experience. Presentation scope only; tenant --brand-* stays owned
+   by BrandHeader. This layer names surfaces/spacing instead of changing data UI. */
+:root{--premium-edge:#2a3b3b;--premium-muted:#A8BFBA;--premium-accent:#8EDACB;--premium-depth:0 12px 36px #0000001f;--premium-panel-start:#182323;--premium-panel-end:#161D1D;--premium-field:#101A1A;--premium-radius:16px;}
+.aura-entry,.aura-workspace{font-family:Inter,"Segoe UI Variable",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;}
+
+/* A two-column desktop composition; mobile has its own hierarchy below. */
+.aura-entry{min-height:100svh;max-width:1600px;margin:auto;padding:28px clamp(28px,5vw,88px) 22px;display:flex;flex-direction:column;isolation:isolate;position:relative;color:#F2F7F6;background:radial-gradient(ellipse at 12% 48%,#137F7914,transparent 54%);}
+.aura-entry:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(140deg,transparent 26%,#137F7914 26.2%,transparent 28%),radial-gradient(ellipse at 90% 12%,#137F790d,transparent 40%);}
+.aura-entry-environment{position:absolute;inset:0 25% 0 0;z-index:-2;overflow:hidden;pointer-events:none;mask-image:linear-gradient(90deg,#000 60%,transparent),linear-gradient(0deg,transparent,#000 28%,#000 88%,transparent);mask-composite:intersect;}
+.aura-entry-environment img{width:100%;height:100%;object-fit:cover;object-position:68% center;opacity:.78;}
+.aura-entry-environment:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#071111eb 0%,#071111c9 40%,#07111124 72%,#07111144);}
+.aura-entry-header{display:flex;justify-content:space-between;align-items:center;border:0;padding:0;gap:24px;}
+.aura-entry-header .aura-institutional-logo{width:280px;}
+.aura-entry-context{font-size:11px;color:var(--premium-muted);letter-spacing:.06em;}
+.aura-entry-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(350px,.95fr);gap:clamp(36px,4vw,64px);width:100%;max-width:1400px;margin:auto;align-items:center;padding:36px 0;flex:1;}
+.aura-entry-story{min-width:0;position:relative;}
+.aura-entry-story h1{font-size:clamp(34px,3.4vw,52px);line-height:1.18;letter-spacing:-.035em;font-weight:600;margin:0 0 24px;max-width:510px;text-wrap:balance;}
+.aura-entry-story h1 em{font-style:normal;color:#53C9C3;}
+.aura-entry-lead{font-size:17px;line-height:1.65;max-width:38ch;color:var(--premium-muted);margin:0;}
+.aura-entry-features{display:grid;gap:18px;list-style:none;padding:0;margin:32px 0 0;}
+.aura-entry-features li{display:flex;align-items:center;gap:16px;color:#B5CAC4;font-size:12px;}
+.aura-entry-features svg{color:#62D7CE;width:46px;height:46px;padding:11px;border:1px solid #276362;border-radius:12px;background:#092020b3;flex-shrink:0;}
+.aura-entry-features strong{display:block;font-size:14px;color:#F2F7F6;font-weight:600;}
+.aura-entry-features small{display:block;margin-top:4px;font-size:12px;color:#B9CDCA;}
+.aura-entry-access{width:100%;max-width:520px;justify-self:end;min-width:0;}
+.aura-entry-form-card{padding:30px 36px;border:1px solid #305050;border-radius:20px;background:linear-gradient(145deg,#0e1c20f5,#0d181bee);box-shadow:0 24px 64px #00000030,inset 0 1px #D4FFF109;}
+.aura-entry-form-heading{display:flex;flex-direction:column;gap:16px;align-items:center;margin:0 0 12px;}
+.aura-entry-form-heading .aura-login-icon{width:68px;height:68px;margin:0;}
+.aura-entry-form-heading .eyebrow{font-size:11px;letter-spacing:.27em;color:#74DCD4;}
+.aura-entry-form-card h2{font-size:34px;line-height:1.23;font-weight:600;letter-spacing:-.035em;margin:0 0 16px;text-align:center;}
+.aura-entry-form-card h2 em{font-style:normal;color:#64D8D0;}
+.aura-entry-form-card>p{font-size:15px;line-height:1.65;color:#B7CDCE;margin:0;text-align:center;}
+.aura-entry form{margin-top:24px;}
+.aura-entry form label{font-size:12px;color:#D9E7E1;font-weight:550;margin:0 0 17px;}
+.aura-entry input{height:48px;min-height:48px;border:1px solid #344545;background:#101818;border-radius:10px;margin-top:8px;padding:12px 14px;font-size:16px;line-height:1.4;box-shadow:inset 0 1px 3px #00000012;}
+.aura-entry input:hover{border-color:#527674;}
+.aura-entry input:focus-visible{border-color:#8EDACB;outline:2px solid #8EDACB;outline-offset:3px;}
+.aura-entry form button{width:100%;min-height:48px;margin-top:4px;border:1px solid #238b89;background:linear-gradient(110deg,#137F79,#106E68);color:#FFF;border-radius:10px;font-weight:600;font-size:14px;}
+.aura-entry form button:hover:not(:disabled){background:#106E68;border-color:#4B9E92;}
+.aura-entry form[aria-busy=true]{cursor:wait;}
+.aura-entry .aura-entry-status{font-size:12px;min-height:20px;line-height:1.6;margin:14px 0 0;color:#BDD2CB;overflow-wrap:anywhere;}
+.aura-entry-divider{display:flex;align-items:center;gap:12px;font-size:10px;color:#A6BDB5;margin:20px 0 16px;}
+.aura-entry-divider:before,.aura-entry-divider:after{content:"";height:1px;flex:1;background:#304141;}
+.aura-entry-demo-link{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:46px;padding:11px 14px;border-color:#3b5151;background:transparent;color:#DDEAE4;font-size:12px;font-weight:500;}
+.aura-entry-demo-link:hover{background:#243535;color:#F2F7F6;}
+.aura-entry-demo-link svg{width:16px;height:16px;color:#8EDACB;}
+.aura-entry-form-card .aura-entry-student-link{font-size:12px;text-align:center;margin:20px 0 0;}
+.aura-entry-student-link a{color:#A8E4D4;text-underline-offset:4px;margin-left:4px;display:inline-flex;align-items:center;min-height:44px;}
+.aura-entry-access-note{text-align:center;font-size:11px;line-height:1.65;color:#A4BAB3;margin:20px 0 0;}
+.aura-entry-footer{margin:0;padding:0;border:0;display:flex;justify-content:space-between;gap:16px;color:#A4BAB3;font-size:10px;letter-spacing:.03em;}
+
+/* Workspace surfaces shared by all eight modules and the existing pupil areas. */
+.aura-workspace{grid-template-columns:256px minmax(0,1fr);--workspace-gap:20px;--workspace-radius:var(--premium-radius);--workspace-control:46px;--workspace-secondary:#172222;--aura-muted:#ABC0B9;--aura-line:#2a3b3b;--aura-chart-grid:#2c4141;--aura-chart-label:#B4CCC2;}
+.aura-workspace>.shell{padding:0 clamp(24px,3vw,48px) 28px;background:radial-gradient(ellipse at 100% 0,#137F790b,transparent 50%);}
+.aura-workspace .aura-sidebar{padding:26px 18px 24px;background:linear-gradient(175deg,#101818,#0d1414);border-right-color:#263a3a;gap:26px;}
+.aura-workspace .aura-sidebar .aura-app-nav__brand{padding:4px 10px 24px;border-bottom:1px solid #253838;}
+.aura-workspace .aura-sidebar .aura-institutional-logo--compact{width:184px;}
+.aura-workspace .aura-nav-group{margin-bottom:28px;}
+.aura-workspace .aura-nav-group>p{font-size:10px;font-weight:600;letter-spacing:.18em;padding:0 14px;margin-bottom:12px;color:#9DB8AC;}
+.aura-workspace .aura-sidebar .aura-app-nav__links a{min-height:46px;padding:11px 14px;gap:13px;margin:5px 0;border:1px solid transparent;border-radius:11px;color:#A9C0B5;font-weight:500;}
+.aura-workspace .aura-sidebar .aura-app-nav__links a:hover{background:#192929;color:#E4F5EA;border-color:#2c4444;}
+.aura-workspace .aura-sidebar .aura-app-nav__links a.is-active{background:linear-gradient(100deg,#143c3c,#172b2b);border-color:#2b5858;color:#B6EBDC;box-shadow:inset 3px 0 #64BDA7;}
+.aura-workspace .aura-nav-icon{flex-shrink:0;width:18px;height:18px;color:#85B5A3;}
+.aura-workspace .is-active .aura-nav-icon{color:#9BDCC9;}
+.aura-workspace .aura-sidebar .aura-nav-label-desktop{font-size:13px;letter-spacing:0;}
+.aura-workspace .aura-sidebar .aura-app-nav__foot{font-size:12px;padding:20px 12px 0;border-top:1px solid #253838;color:#A3BAAE;}
+.aura-workspace .aura-app-nav__foot small{font-size:9px;letter-spacing:.1em;}
+.aura-workspace .aura-workspace-header{min-height:92px;margin-bottom:28px;padding:16px 0;border-bottom-color:#293d3d;gap:18px;}
+.aura-workspace .aura-breadcrumbs{font-size:11px;gap:10px;color:#B6C9BD;}
+.aura-workspace .aura-workspace-context>label{min-width:210px;font-size:10px;color:#B5C6BB;}
+.aura-workspace .aura-workspace-context select{margin-top:5px;padding:9px 12px;min-height:44px;}
+.aura-workspace-header .aura-quick-actions button{background:#172323;border-color:#334b4b;color:#C9DDD0;min-height:44px;padding:10px 13px;}
+.aura-workspace .heading{margin:0 0 24px;gap:20px;}
+.aura-workspace .heading .eyebrow{font-size:9px;letter-spacing:.18em;color:#8DC5B3;}
+.aura-workspace h1{font-size:clamp(28px,2.6vw,36px);font-weight:550;letter-spacing:-.04em;margin:10px 0;}
+.aura-workspace .heading p{font-size:13px;color:#ABC0B3;line-height:1.65;}
+.aura-workspace h2{font-size:18px;font-weight:600;letter-spacing:-.025em;line-height:1.4;}
+.aura-workspace h3{font-weight:600;letter-spacing:-.015em;}
+.aura-workspace p{line-height:1.65;}
+.aura-workspace .brandhead{border:0;border-left:2px solid var(--brand-accent,#137F79);background:#172222;border-radius:0 10px 10px 0;padding:11px 14px;margin:0 0 22px;}
+.aura-workspace .brandhead .brandmark{border-radius:8px;}
+.aura-workspace .brandhead strong{font-size:13px;font-weight:550;}
+.aura-workspace .brandhead p{font-size:10px;}
+.aura-workspace .brand-powered{font-size:10px;color:#AAC0B2;}
+.aura-workspace .panel{padding:24px;border:1px solid var(--premium-edge);border-radius:var(--workspace-radius);background:linear-gradient(135deg,var(--premium-panel-start),var(--premium-panel-end));box-shadow:var(--premium-depth);}
+.aura-workspace .panel .panel{background:#182525;box-shadow:none;}
+.aura-workspace button,.aura-workspace .link{border-radius:9px;font-weight:550;letter-spacing:0;}
+.aura-workspace button:not(.outline){background:linear-gradient(110deg,#137F79,#106E68);color:#FFF;}
+.aura-workspace button:not(.outline):hover:not(:disabled){background:#106E68;}
+.aura-workspace .outline{background:#192828;border-color:#385353;color:#D0E4D4;}
+.aura-workspace .outline:hover:not(:disabled){background:#243a3a;border-color:#527775;color:#F2F7F6;}
+.aura-workspace input,.aura-workspace select,.aura-workspace textarea{border:1px solid #3a5151;border-radius:9px;background:var(--premium-field);color:#EDF5ED;font-size:14px;box-shadow:inset 0 1px 2px #00000012;}
+.aura-workspace input:focus-visible,.aura-workspace select:focus-visible,.aura-workspace textarea:focus-visible{border-color:#8EDACB;outline:2px solid #8EDACB;outline-offset:3px;}
+.aura-workspace label{color:#C6D9C8;font-size:12px;font-weight:550;}
+.aura-workspace :is(button,a,input,select,textarea,summary):focus-visible{outline-color:#8EDACB;}
+.aura-workspace .stat{gap:16px;margin-bottom:18px;}
+.aura-workspace .stat>div{min-height:132px;padding:20px 24px;border:1px solid #2f4949;border-radius:16px;background:linear-gradient(120deg,#1a2a2a,#162020);box-shadow:0 5px 16px #00000012;}
+.aura-workspace .stat>div:before{top:24px;bottom:24px;width:2px;background:#4b908e;opacity:.7;}
+.aura-workspace .stat span{font-size:12px;color:#C0D4C4;max-width:calc(100% - 28px);line-height:1.5;}
+.aura-workspace .stat strong{font-size:38px;font-weight:550;letter-spacing:-.035em;margin:10px 0 7px;}
+.aura-workspace .stat small{font-size:10px;color:#A8C0AD;line-height:1.5;}
+.aura-workspace .aura-kpi-icon{position:absolute;right:20px;top:22px;width:20px;height:20px;color:#83B49E;}
+.aura-workspace .aura-dashboard-actions{gap:4px 20px;margin-bottom:22px;}
+.aura-workspace .aura-dashboard-actions>span{font-size:9px;letter-spacing:.14em;color:#A7BEAC;}
+.aura-workspace .aura-dashboard-actions a{font-size:12px;color:#B1DAC3;}
+.aura-workspace .aura-section-title{margin-bottom:18px;}
+.aura-workspace .aura-section-title h2{font-size:18px;}
+.aura-workspace .aura-dashboard-main .aura-section-title button{border-color:#334e4e;min-height:40px;font-size:11px;}
+.aura-workspace .aura-priority-filters{padding:14px;margin:0 0 12px;background:#101c1c;border:1px solid #2c4343;border-radius:12px;gap:10px;}
+.aura-workspace .aura-priority-filters label{font-size:10px;}
+.aura-workspace .aura-dashboard-main .aura-priority-list>li{padding:16px 0;border-color:#2d4343;gap:14px;}
+.aura-workspace .aura-dashboard-main .aura-priority-list h3{font-size:14px;font-weight:550;}
+.aura-workspace .aura-dashboard-main .aura-priority-list p{color:#A9C1AC;font-size:11px;}
+.aura-workspace .aura-dashboard-main .aura-priority-list .link{min-height:40px;border-color:#3c5a5a;}
+.aura-workspace .aura-disclosure-panel{padding:0 20px;background:#141e1e;box-shadow:none;}
+.aura-workspace .aura-disclosure-panel>summary{min-height:64px;}
+.aura-workspace .aura-disclosure-panel h2{font-size:14px;}
+.aura-workspace .aura-badge{border-radius:20px;padding:5px 10px;border-color:#3c5858;color:#C4DCC8;background:#1c2c2c;}
+.aura-workspace .aura-badge-active{background:#1d3b3b;color:#B7EACF;border-color:#3c6563;}
+.aura-workspace .aura-client-directory>form{padding:16px;background:#101b1b;border:1px solid #304646;border-radius:12px;}
+.aura-workspace .aura-create-client{border-color:#355151;border-radius:14px;background:#152222;}
+.aura-workspace .aura-create-client>summary{font-weight:550;color:#B9E1CA;}
+.aura-workspace table{font-size:13px;line-height:1.55;}
+.aura-workspace th{font-size:11px;letter-spacing:.1em;padding:14px;background:#111c1c;color:#AEC9B3;font-weight:600;}
+.aura-workspace td{padding:16px 14px;border-color:#2d4444;}
+.aura-workspace tr:hover td{background:#1b2d2d;}
+.aura-workspace .aura-client-name{font-weight:600;}
+.aura-workspace .aura-row-menu>summary{background:#152626;border-color:#385555;border-radius:9px;}
+.aura-workspace .aura-profile-identity{border-color:#3a5858;}
+.aura-workspace .aura-profile-identity h2{font-size:24px;font-weight:550;letter-spacing:-.03em;}
+.aura-workspace .aura-profile-tabs{padding:6px;background:#101b1b;border:1px solid #304949;border-radius:12px;gap:4px;margin-bottom:22px;}
+.aura-workspace .aura-profile-tabs button{background:transparent;border:1px solid transparent;color:#A9C3AF;padding:10px 14px;font-size:12px;}
+.aura-workspace .aura-profile-tabs button[aria-pressed=true]{background:#1d3c3c;border-color:#3d6765;color:#D4EFDE;}
+.aura-workspace .aura-summary-grid>div,.aura-workspace .aura-nutrition-metric{border-color:#345252;background:linear-gradient(125deg,#1c3030,#152020);border-radius:12px;padding:18px;}
+.aura-workspace .aura-summary-grid strong{font-weight:550;font-size:30px;letter-spacing:-.03em;}
+.aura-workspace .aura-summary-grid small,.aura-workspace .aura-caption{color:#AEC7B4;}
+.aura-workspace .aura-timeline>li{border-left-color:#436363;border-bottom-color:#2d4444;padding:16px 18px;}
+.aura-workspace .chartbox{border-radius:12px;background:#111d1d;padding:16px 12px 0;border:1px solid #2c4444;}
+.aura-workspace .chartbox svg{overflow:visible;}
+.aura-workspace .chartbox svg line{stroke-dasharray:3 5;}
+.aura-workspace .chartnote{font-size:11px;color:#B5CCBB;}
+.aura-workspace .chartbox details{padding:12px 0;border-color:#304c4c;}
+.aura-workspace section[aria-label="Objetivos de acompanhamento"]>form{background:#111f1f;border-color:#365757;border-radius:12px;}
+.aura-workspace .aura-objectives>li{padding:18px 0;border-color:#304c4c;}
+.aura-workspace .aura-empty-state{padding:28px 20px;background:#111d1d;border-color:#456967;}
+.aura-workspace .status:not(:empty){border-radius:12px;background:#193c3c;border-color:#3b716f;color:#D1F2DB;}
+.aura-workspace footer{margin-top:36px;padding-top:20px;color:#A6C2AC;font-size:10px;letter-spacing:.02em;}
+
+@media(max-width:1200px) and (min-width:901px){.aura-workspace{grid-template-columns:224px minmax(0,1fr);}.aura-workspace>.shell{padding-left:28px;padding-right:28px;}.aura-workspace .aura-workspace-header{flex-wrap:wrap;}.aura-workspace .aura-sidebar .aura-institutional-logo--compact{width:166px;}}
+@media(max-width:1000px) and (min-width:801px){.aura-entry-layout{grid-template-columns:minmax(0,1fr) minmax(330px,1fr);gap:32px;}.aura-entry-story h1{font-size:40px;}.aura-entry-form-card{padding:24px;}.aura-entry-art{height:190px;}.aura-entry-art>img{width:185px;}}
+@media(max-width:900px){
+ .aura-workspace{display:block;--workspace-gap:16px;--workspace-radius:14px;}
+ .aura-workspace .aura-sidebar{display:grid;grid-template-columns:140px minmax(0,1fr);align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #2d4444;}
+ .aura-workspace .aura-sidebar .aura-app-nav__brand{padding:0;border:0;}.aura-workspace .aura-sidebar .aura-institutional-logo--compact{width:140px;}
+ .aura-workspace .aura-nav-disclosure{overflow:visible;}.aura-workspace .aura-nav-disclosure[open]{grid-column:1/-1;}
+ .aura-workspace .aura-nav-disclosure>summary{justify-content:center;gap:8px;padding:9px 12px;background:#162424;border-color:#385555;font-size:12px;min-height:44px;}
+ .aura-workspace .aura-nav-disclosure>summary:after{margin-left:4px;font-size:16px;}.aura-workspace .aura-sidebar .aura-app-nav__links a{padding:12px;}
+ .aura-workspace .aura-nav-group{margin:18px 0 10px;}.aura-workspace>.shell{padding:0 16px 20px;}
+ .aura-workspace .aura-workspace-header{min-height:0;margin-bottom:24px;padding:16px 0;gap:12px;}.aura-workspace .aura-workspace-context>label{width:100%;min-width:0;}
+ .aura-workspace .aura-breadcrumbs{font-size:10px;}.aura-workspace-header .aura-quick-actions{gap:8px;}
+ .aura-workspace .heading{margin-bottom:20px;}.aura-workspace h1{font-size:28px;}
+ .aura-workspace .panel{padding:18px;}.aura-workspace .aura-disclosure-panel{padding:0 16px;}
+ .aura-workspace .aura-dashboard-main{grid-template-columns:minmax(0,1fr);}.aura-workspace .aura-dashboard-columns{grid-template-columns:1fr;gap:0;}
+ .aura-workspace .stat{gap:8px;}.aura-workspace .stat>div{padding:15px 11px;min-height:132px;border-radius:12px;}.aura-workspace .stat span{max-width:none;font-size:11px;}
+ .aura-workspace .stat strong{font-size:29px;margin:12px 0 7px;}.aura-workspace .stat small{font-size:10px;}.aura-workspace .aura-kpi-icon{display:none;}
+ .aura-workspace .brandhead{margin-bottom:16px;padding:10px 12px;}.aura-workspace .brand-powered{font-size:9px;}
+ .aura-workspace .aura-dashboard-actions{gap:0 16px;margin-bottom:18px;}.aura-workspace .aura-dashboard-actions a{font-size:11px;}
+ .aura-workspace .aura-priority-filters{padding:12px;}.aura-workspace .aura-summary-grid>div{padding:14px;}.aura-workspace .aura-summary-grid strong{font-size:25px;}
+ .aura-workspace .aura-profile-tabs{display:none;}.aura-workspace .aura-profile-area select{font-size:14px;}
+ .aura-workspace .aura-client-table td{padding:0;border:0;}.aura-workspace .aura-client-directory>form{padding:14px;}
+ .aura-workspace .aura-timeline>li{padding:14px;}.aura-workspace .chartbox{padding:12px 6px 0;}
+}
+@media(max-width:800px){
+ .aura-entry{padding:24px 22px 20px;background:radial-gradient(ellipse at 90% 5%,#137F7917,transparent 48%);}
+ .aura-entry-header .aura-institutional-logo{width:190px;}.aura-entry-context{display:none;}
+ .aura-entry-layout{display:block;padding:32px 0 28px;margin:0;}
+ .aura-entry-story>.eyebrow{font-size:9px;letter-spacing:.15em;}.aura-entry-story h1{font-size:32px;line-height:1.16;font-weight:550;max-width:19ch;margin:14px 0 12px;}.aura-entry-story h1 br{display:none;}
+ .aura-entry-lead{font-size:14px;max-width:34ch;}.aura-entry-environment,.aura-entry-features{display:none;}
+ .aura-entry-access{max-width:500px;margin:30px auto 0;}.aura-entry-form-card{padding:24px;border-radius:18px;}
+ .aura-entry-form-heading{margin-bottom:14px;}.aura-entry-form-heading .aura-login-icon{width:48px;height:48px;}
+ .aura-entry-form-card h2{font-size:23px;}.aura-entry form{margin-top:22px;}.aura-entry form label{font-size:12px;}
+ .aura-entry-access-note{display:none;}.aura-entry-footer{font-size:10px;justify-content:center;}.aura-entry-footer>span:last-child{display:none;}
+}
+@media(max-width:450px){.aura-entry{padding:22px 20px 18px;}.aura-entry-story h1{font-size:30px;}.aura-entry-lead{font-size:13px;}.aura-entry-form-card{padding:22px 20px;}.aura-entry-form-card>p{font-size:12px;}.aura-entry-status{font-size:11px;}}
+.aura-workspace .aura-overview-heading{flex-wrap:wrap;}
+.aura-workspace .aura-overview-heading>.brandhead{margin:0;max-width:320px;flex-shrink:0;}
+.aura-workspace .aura-overview-heading>.brandhead .brand-powered{width:100%;margin:0 0 0 38px;}
+@media(max-width:900px){.aura-workspace .aura-overview-heading>.brandhead{margin-top:18px;max-width:none;}.aura-workspace .aura-overview-heading>.brandhead .brand-powered{width:auto;margin:0 0 0 auto;}}
+.aura-workspace .aura-student-identity{display:flex;align-items:center;gap:14px;min-width:0;}
+.aura-workspace .aura-student-identity>div{min-width:0;}
+.aura-workspace .aura-student-initial{display:grid;place-items:center;width:38px;height:38px;flex-shrink:0;border:1px solid #385654;background:linear-gradient(140deg,#23413B,#192B29);border-radius:12px;font-size:12px;letter-spacing:.02em;color:#B4DED1;font-weight:600;}
+.aura-workspace .aura-profile-identity .aura-student-initial{width:50px;height:50px;font-size:16px;border-radius:15px;}
+.aura-workspace nav[aria-label="Resumo das prioridades"]{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;padding:4px;border:1px solid var(--premium-edge);border-radius:10px;background:#111C1B;margin:14px 0 8px;}
+.aura-workspace nav[aria-label="Resumo das prioridades"] button{background:transparent;border:1px solid transparent;border-radius:7px;padding:7px 6px;min-height:44px;font-size:10px;line-height:1.5;color:#BCD5CB;}
+.aura-workspace nav[aria-label="Resumo das prioridades"] button:hover,.aura-workspace nav[aria-label="Resumo das prioridades"] button[aria-pressed=true]{background:#234138;color:#D9F3E6;border-color:#426558;}
+@media(max-width:900px){.aura-workspace nav[aria-label="Resumo das prioridades"]{grid-template-columns:repeat(2,minmax(0,1fr));}.aura-workspace .aura-student-identity{gap:10px;}.aura-workspace input,.aura-workspace select,.aura-workspace textarea{font-size:16px;}}
+.aura-entry-form-card{background-color:#141c1c;}
+.aura-entry form button{background-color:#137F79;}
+@media(max-width:800px){.aura-entry-story{max-width:500px;margin:0 auto;}}
+@media(prefers-reduced-motion:reduce){.aura-entry *,.aura-workspace *{scroll-behavior:auto;transition:none;animation:none;}}
+
+/* Final product polish: workspace only. Approved login and tenant tokens stay intact. */
+.aura-workspace{--aura-muted:#BDCEC8;--aura-chart-label:#C4D8D0;}
+.aura-workspace .aura-caption,.aura-workspace .chartnote,.aura-workspace .stat small,
+.aura-workspace .aura-summary-grid small,.aura-workspace .aura-profile-identity p,
+.aura-workspace .aura-appointment-list small{font-size:13px;line-height:1.6;color:#BDCEC8;}
+.aura-workspace .heading p{font-size:14px;color:#BDCEC8;}
+.aura-workspace label{font-size:13px;color:#D1DFD8;}
+.aura-workspace .aura-breadcrumbs{font-size:12px;color:#BDCEC8;}
+.aura-workspace .aura-workspace-context>label{font-size:12px;}
+.aura-workspace .brandhead p,.aura-workspace .brand-powered{font-size:11px;}
+.aura-workspace .aura-daily-panel .aura-priority-list p{font-size:13px;color:#BDCEC8;}
+.aura-workspace .aura-daily-panel .eyebrow{font-size:11px;letter-spacing:.07em;}
+.aura-workspace .aura-priority-filters label{font-size:12px;}
+.aura-workspace .aura-dashboard-main .aura-section-title button{font-size:12px;min-height:44px;}
+.aura-workspace .stat{margin-bottom:12px;}
+.aura-workspace .stat>div{padding:18px 22px;min-height:142px;}
+.aura-workspace .stat span{font-size:14px;color:#D2E1DA;}
+.aura-workspace .stat strong{font-size:40px;margin:6px 0;}
+.aura-workspace .aura-dashboard-actions{padding:8px 0 16px;margin:0 0 18px;border-bottom:1px solid var(--premium-edge);gap:4px 10px;}
+.aura-workspace .aura-dashboard-actions>span{font-size:11px;margin-right:8px;}
+.aura-workspace .aura-dashboard-actions a{font-size:13px;min-height:44px;display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px;background:#152323;}
+.aura-workspace .aura-dashboard-actions a:hover{background:#233B38;}
+.aura-workspace .aura-daily-panel .aura-section-title{margin-bottom:12px;}
+.aura-workspace .aura-daily-panel>.aura-caption{margin-top:0;}
+.aura-workspace nav[aria-label="Resumo das prioridades"]{grid-template-columns:repeat(2,minmax(0,1fr));}
+.aura-workspace nav[aria-label="Resumo das prioridades"] button{font-size:12px;padding:8px;}
+.aura-workspace .aura-profile-tabs{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);align-items:start;padding:12px;gap:16px;margin:0;}
+.aura-workspace .aura-profile-nav-group{min-width:0;}
+.aura-workspace .aura-profile-nav-group>span{display:block;font-size:11px;letter-spacing:.06em;color:#BDCEC8;padding:4px 8px 8px;}
+.aura-workspace .aura-profile-nav-group>div{display:flex;flex-wrap:wrap;gap:4px;}
+.aura-workspace .aura-profile-tabs button{font-size:13px;min-height:44px;padding:9px 10px;text-align:left;white-space:normal;}
+.aura-workspace .aura-appointment-actions{min-width:0;}
+.aura-workspace .aura-appointment-actions>summary{cursor:pointer;min-height:44px;border:1px solid #385353;border-radius:9px;padding:10px 12px;font-size:13px;color:#D0E4D4;background:#192828;}
+.aura-workspace .aura-appointment-actions>div{padding-top:8px;}
+@media(min-width:901px){
+ .aura-workspace .aura-appointment-actions>summary{display:none;}
+ .aura-workspace .aura-appointment-actions>div{padding-top:0;}
+}
+@media(max-width:1100px) and (min-width:901px){.aura-workspace .aura-profile-tabs{grid-template-columns:1fr;gap:8px;}.aura-workspace .aura-profile-nav-group{display:grid;grid-template-columns:150px 1fr;}}
+@media(max-width:900px){
+ .aura-workspace .aura-workspace-header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:10px 0;margin-bottom:18px;gap:8px 12px;}
+ .aura-workspace .aura-workspace-header>nav{grid-column:1/-1;}
+ .aura-workspace .aura-workspace-context{width:auto;min-width:0;}
+ .aura-workspace .aura-workspace-header>.aura-quick-actions{width:auto;display:grid;gap:4px;margin:0;}
+ .aura-workspace .aura-workspace-header>.aura-quick-actions :is(a,button){min-height:44px;padding:8px 10px;}
+ .aura-workspace .aura-workspace-context>label{font-size:11px;}
+ .aura-workspace .aura-workspace-context select{min-width:0;width:100%;padding:9px 8px;}
+ .aura-workspace .aura-breadcrumbs{font-size:11px;gap:6px;}
+ .aura-workspace .aura-profile-tabs{display:none;}
+ .aura-workspace .stat>div{padding:14px 10px;min-height:145px;}
+ .aura-workspace .stat span{font-size:12px;}
+ .aura-workspace .stat strong{font-size:30px;}
+ .aura-workspace .stat small{font-size:11px;}
+ .aura-workspace .aura-dashboard-actions{gap:6px;margin-bottom:16px;padding-bottom:12px;}
+ .aura-workspace .aura-dashboard-actions>span{width:100%;}
+ .aura-workspace .aura-dashboard-actions a{font-size:12px;padding:6px 8px;}
+ .aura-workspace .aura-appointment-list>li>.aura-quick-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px;align-items:start;}
+ .aura-workspace .aura-appointment-actions{grid-column:2;grid-row:1;}
+ .aura-workspace .aura-appointment-actions>summary{text-align:center;}
+ .aura-workspace .aura-appointment-actions>div{display:grid;gap:6px;}
+ .aura-workspace .aura-appointment-actions button{width:100%;min-height:44px;}
+ .aura-workspace .aura-appointment-list .link{min-height:44px;display:flex;align-items:center;justify-content:center;}
+}
