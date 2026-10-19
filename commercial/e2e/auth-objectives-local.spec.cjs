@@ -1,3 +1,4 @@
+const {openPriorities}=require('./dashboard-helpers.cjs');
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs');
 const path=require('node:path');
@@ -38,7 +39,7 @@ test('real local synthetic account manages an objective through the existing pro
  const timeline=page.getByRole('region',{name:'Cronologia integrada do aluno'});
  await timeline.getByLabel('Tipo de registo').selectOption('assessment');await expect(timeline.getByText('80 kg',{exact:true})).toBeVisible();
  await timeline.getByLabel('Tipo de registo').selectOption('objective');await expect(timeline.getByRole('heading',{name:'Objetivo concluído',exact:true}).first()).toBeVisible();
- await page.goto('/');await expect(page.getByRole('region',{name:'Prioridades do profissional'})).toBeVisible();
+ await page.goto('/');await openPriorities(page);await expect(page.getByRole('region',{name:'Prioridades do profissional'})).toBeVisible();
  await page.getByRole('button',{name:'Terminar sessão',exact:true}).click();await expect(page.getByRole('button',{name:'Entrar na plataforma'})).toBeVisible();
  expect(unexpected).toEqual([]);
 });
