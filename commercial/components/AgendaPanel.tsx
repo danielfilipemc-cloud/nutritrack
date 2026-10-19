@@ -1,4 +1,5 @@
 "use client";
+import AppointmentActions from './AppointmentActions';
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { db } from "../lib/supabase";
 import { RequestScope } from "../lib/request-scope";
@@ -421,8 +422,8 @@ export default function AgendaPanel({
                       Registar avaliação
                     </a>
                   )}
-                  {allowed(a) && (
-                    <>
+                  {allowed(a) && (a.status === 'scheduled' || (a.status === 'cancelled' && !a.clients?.archived_at)) && (
+                    <AppointmentActions name={a.clients?.full_name || 'Aluno indisponível'}>
                       {(a.status === "scheduled" || a.status === "cancelled") &&
                         !a.clients?.archived_at && (
                           <button
@@ -460,7 +461,7 @@ export default function AgendaPanel({
                           </button>
                         </>
                       )}
-                    </>
+                    </AppointmentActions>
                   )}
                 </div>
               </li>

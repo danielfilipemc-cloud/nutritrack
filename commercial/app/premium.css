@@ -198,3 +198,67 @@
 .aura-entry form button{background-color:#137F79;}
 @media(max-width:800px){.aura-entry-story{max-width:500px;margin:0 auto;}}
 @media(prefers-reduced-motion:reduce){.aura-entry *,.aura-workspace *{scroll-behavior:auto;transition:none;animation:none;}}
+
+/* Final product polish: workspace only. Approved login and tenant tokens stay intact. */
+.aura-workspace{--aura-muted:#BDCEC8;--aura-chart-label:#C4D8D0;}
+.aura-workspace .aura-caption,.aura-workspace .chartnote,.aura-workspace .stat small,
+.aura-workspace .aura-summary-grid small,.aura-workspace .aura-profile-identity p,
+.aura-workspace .aura-appointment-list small{font-size:13px;line-height:1.6;color:#BDCEC8;}
+.aura-workspace .heading p{font-size:14px;color:#BDCEC8;}
+.aura-workspace label{font-size:13px;color:#D1DFD8;}
+.aura-workspace .aura-breadcrumbs{font-size:12px;color:#BDCEC8;}
+.aura-workspace .aura-workspace-context>label{font-size:12px;}
+.aura-workspace .brandhead p,.aura-workspace .brand-powered{font-size:11px;}
+.aura-workspace .aura-daily-panel .aura-priority-list p{font-size:13px;color:#BDCEC8;}
+.aura-workspace .aura-daily-panel .eyebrow{font-size:11px;letter-spacing:.07em;}
+.aura-workspace .aura-priority-filters label{font-size:12px;}
+.aura-workspace .aura-dashboard-main .aura-section-title button{font-size:12px;min-height:44px;}
+.aura-workspace .stat{margin-bottom:12px;}
+.aura-workspace .stat>div{padding:18px 22px;min-height:142px;}
+.aura-workspace .stat span{font-size:14px;color:#D2E1DA;}
+.aura-workspace .stat strong{font-size:40px;margin:6px 0;}
+.aura-workspace .aura-dashboard-actions{padding:8px 0 16px;margin:0 0 18px;border-bottom:1px solid var(--premium-edge);gap:4px 10px;}
+.aura-workspace .aura-dashboard-actions>span{font-size:11px;margin-right:8px;}
+.aura-workspace .aura-dashboard-actions a{font-size:13px;min-height:44px;display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px;background:#152323;}
+.aura-workspace .aura-dashboard-actions a:hover{background:#233B38;}
+.aura-workspace .aura-daily-panel .aura-section-title{margin-bottom:12px;}
+.aura-workspace .aura-daily-panel>.aura-caption{margin-top:0;}
+.aura-workspace nav[aria-label="Resumo das prioridades"]{grid-template-columns:repeat(2,minmax(0,1fr));}
+.aura-workspace nav[aria-label="Resumo das prioridades"] button{font-size:12px;padding:8px;}
+.aura-workspace .aura-profile-tabs{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);align-items:start;padding:12px;gap:16px;margin:0;}
+.aura-workspace .aura-profile-nav-group{min-width:0;}
+.aura-workspace .aura-profile-nav-group>span{display:block;font-size:11px;letter-spacing:.06em;color:#BDCEC8;padding:4px 8px 8px;}
+.aura-workspace .aura-profile-nav-group>div{display:flex;flex-wrap:wrap;gap:4px;}
+.aura-workspace .aura-profile-tabs button{font-size:13px;min-height:44px;padding:9px 10px;text-align:left;white-space:normal;}
+.aura-workspace .aura-appointment-actions{min-width:0;}
+.aura-workspace .aura-appointment-actions>summary{cursor:pointer;min-height:44px;border:1px solid #385353;border-radius:9px;padding:10px 12px;font-size:13px;color:#D0E4D4;background:#192828;}
+.aura-workspace .aura-appointment-actions>div{padding-top:8px;}
+@media(min-width:901px){
+ .aura-workspace .aura-appointment-actions>summary{display:none;}
+ .aura-workspace .aura-appointment-actions>div{padding-top:0;}
+}
+@media(max-width:1100px) and (min-width:901px){.aura-workspace .aura-profile-tabs{grid-template-columns:1fr;gap:8px;}.aura-workspace .aura-profile-nav-group{display:grid;grid-template-columns:150px 1fr;}}
+@media(max-width:900px){
+ .aura-workspace .aura-workspace-header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:10px 0;margin-bottom:18px;gap:8px 12px;}
+ .aura-workspace .aura-workspace-header>nav{grid-column:1/-1;}
+ .aura-workspace .aura-workspace-context{width:auto;min-width:0;}
+ .aura-workspace .aura-workspace-header>.aura-quick-actions{width:auto;display:grid;gap:4px;margin:0;}
+ .aura-workspace .aura-workspace-header>.aura-quick-actions :is(a,button){min-height:44px;padding:8px 10px;}
+ .aura-workspace .aura-workspace-context>label{font-size:11px;}
+ .aura-workspace .aura-workspace-context select{min-width:0;width:100%;padding:9px 8px;}
+ .aura-workspace .aura-breadcrumbs{font-size:11px;gap:6px;}
+ .aura-workspace .aura-profile-tabs{display:none;}
+ .aura-workspace .stat>div{padding:14px 10px;min-height:145px;}
+ .aura-workspace .stat span{font-size:12px;}
+ .aura-workspace .stat strong{font-size:30px;}
+ .aura-workspace .stat small{font-size:11px;}
+ .aura-workspace .aura-dashboard-actions{gap:6px;margin-bottom:16px;padding-bottom:12px;}
+ .aura-workspace .aura-dashboard-actions>span{width:100%;}
+ .aura-workspace .aura-dashboard-actions a{font-size:12px;padding:6px 8px;}
+ .aura-workspace .aura-appointment-list>li>.aura-quick-actions{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px;align-items:start;}
+ .aura-workspace .aura-appointment-actions{grid-column:2;grid-row:1;}
+ .aura-workspace .aura-appointment-actions>summary{text-align:center;}
+ .aura-workspace .aura-appointment-actions>div{display:grid;gap:6px;}
+ .aura-workspace .aura-appointment-actions button{width:100%;min-height:44px;}
+ .aura-workspace .aura-appointment-list .link{min-height:44px;display:flex;align-items:center;justify-content:center;}
+}

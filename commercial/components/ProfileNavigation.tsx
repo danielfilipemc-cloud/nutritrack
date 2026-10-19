@@ -1,5 +1,6 @@
 "use client";
 export default function ProfileNavigation<T extends string>({items,value,onChange,disabled}:{items:ReadonlyArray<readonly [T,string]>;value:T;onChange:(value:T)=>void;disabled:boolean}){
- return <><nav className="aura-profile-tabs" aria-label="Secções da ficha">{items.map(([key,label])=><button key={key} className={value===key?"":"outline"} aria-pressed={value===key} disabled={disabled} onClick={()=>onChange(key)}>{label}</button>)}</nav>
+ const groups=[{name:'Acompanhamento',keys:['overview','timeline','care','objectives','agenda']},{name:'Avaliação e dados',keys:['assessments','evolution','privacy']},{name:'Outras áreas',keys:['nutrition','integrations']}];
+ return <><nav className="aura-profile-tabs" aria-label="Secções da ficha">{groups.map(group=>{const entries=items.filter(([key])=>group.name==="Outras áreas"?!groups.slice(0,2).some(other=>other.keys.includes(key)):group.keys.includes(key));return entries.length?<div className="aura-profile-nav-group" role="group" aria-label={group.name} key={group.name}><span>{group.name}</span><div>{entries.map(([key,label])=><button key={key} className={value===key?"":"outline"} aria-pressed={value===key} disabled={disabled} onClick={()=>onChange(key)}>{label}</button>)}</div></div>:null;})}</nav>
  <label className="aura-profile-area">Área da ficha<select value={value} disabled={disabled} onChange={event=>onChange(event.target.value as T)}>{items.map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label></>;
 }
