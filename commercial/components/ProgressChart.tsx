@@ -1,8 +1,9 @@
 "use client";
 import {chartData,timePosition,type ChartPoint} from "../lib/chart";
-import {useEffect,useRef,useState} from "react";
+import {useEffect,useRef,useState,useId} from "react";
 export default function ProgressChart({records,unit,maxPoints=30,responsive=false}:{records:ChartPoint[];unit:string;maxPoints?:number;responsive?:boolean}){
  const container=useRef<HTMLDivElement>(null),[width,setWidth]=useState(680);
+ const areaId='aura-chart-'+useId().replace(/[^a-zA-Z0-9_-]/g,'');
  const data=chartData(records,maxPoints);
  const hasData=data.length>0;
  useEffect(()=>{if(!responsive||!hasData||!container.current)return;const observer=new ResizeObserver(entries=>{const size=entries[0]?.contentRect.width;if(size)setWidth(Math.min(680,Math.max(320,Math.round(size))));});observer.observe(container.current);return()=>observer.disconnect();},[responsive,hasData]);
@@ -15,6 +16,8 @@ export default function ProgressChart({records,unit,maxPoints=30,responsive=fals
  const coordinates=data.map((p,i)=>`${X(i)},${Y(p.value)}`).join(" ");
  return <div className="chartbox" ref={container}>
  <svg viewBox={`0 0 ${width} 250`} role="img" aria-label={`Evolução: ${data.length} medições, de ${data[0].value} a ${data[data.length-1].value} ${unit}`}>
+ <defs><linearGradient id={areaId} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--aura-chart-stroke, #70D6CA)" stopOpacity=".16"/><stop offset="1" stopColor="var(--aura-chart-stroke, #70D6CA)" stopOpacity="0"/></linearGradient></defs>
+ <polygon points={`${X(0)},205 ${coordinates} ${X(data.length-1)},205`} fill={`url(#${areaId})`} aria-hidden="true"/>
  {[0,1,2,3,4].map(i=><g key={i}><line x1={left} y1={40+i*41.25} x2={right} y2={40+i*41.25} stroke="var(--aura-chart-grid, #354541)"/><text x={left-6} y={44+i*41.25} textAnchor="end" fontSize="12" fill="var(--aura-chart-label, #B8CAC5)">{(hi-i*(hi-lo)/4).toFixed(1)}</text></g>)}
  <polyline points={coordinates} fill="none" stroke="var(--aura-chart-stroke, #70D6CA)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
  {data.map((p,i)=><circle key={i} cx={X(i)} cy={Y(p.value)} r="4.5" fill="var(--aura-chart-stroke, #70D6CA)"><title>{p.date}: {p.value} {unit}</title></circle>)}

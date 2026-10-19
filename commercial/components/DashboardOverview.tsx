@@ -3,6 +3,7 @@ import {useEffect,useState} from "react";
 import DailyPriorities from "./DailyPriorities";
 import {db} from "../lib/supabase";
 import {clientProfileUrl,type Dashboard} from "../lib/dashboard";
+import AuraIcon from './AuraIcon';
 export default function DashboardOverview({org,userId,role}:{org:string;userId:string;role:'owner'|'admin'|'coach'}){
  const [loaded,setLoaded]=useState<{org:string;userId:string;data:Dashboard}|null>(null);
  const [error,setError]=useState(""),[revision,setRevision]=useState(0);
@@ -16,9 +17,9 @@ export default function DashboardOverview({org,userId,role}:{org:string;userId:s
 
  {error?<section className="panel" role="alert"><p>{error}</p><button onClick={()=>setRevision(v=>v+1)}>Tentar novamente</button></section>:!data?<section className="panel" aria-busy="true"><p role="status">A carregar indicadores...</p></section>:<>
  <div className="stat" aria-label="Indicadores do estabelecimento">
- <div><span>Alunos ativos</span><strong>{data.active_clients}</strong><small>{data.archived_clients} arquivados</small></div>
- <div><span>Avaliações nos últimos 30 dias</span><strong>{data.assessments_30_days}</strong><small>Até {data.as_of}</small></div>
- <div><span>Alunos a acompanhar</span><strong>{data.pending_clients}</strong><small>Sem avaliação ou última há mais de 30 dias</small></div>
+ <div><AuraIcon name="students" className="aura-kpi-icon"/><span>Alunos ativos</span><strong>{data.active_clients}</strong><small>{data.archived_clients} arquivados</small></div>
+ <div><AuraIcon name="assessment" className="aura-kpi-icon"/><span>Avaliações nos últimos 30 dias</span><strong>{data.assessments_30_days}</strong><small>Até {data.as_of}</small></div>
+ <div><AuraIcon name="calendar" className="aura-kpi-icon"/><span>Alunos a acompanhar</span><strong>{data.pending_clients}</strong><small>Sem avaliação ou última há mais de 30 dias</small></div>
  </div>
  </>}
  <nav className="aura-quick-actions aura-dashboard-actions" aria-label="Operações frequentes"><span>Acesso rápido</span><a href={target('/alunos')}>Registar ou gerir aluno</a><a href={target('/avaliacoes')}>Registar avaliação</a><a href={target('/agenda')}>Abrir agenda</a>{role!=='coach'&&<><a href={target('/equipa')}>Gerir equipa</a><a href={target('/marca')}>Personalizar marca</a></>}</nav>
