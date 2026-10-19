@@ -12,11 +12,11 @@ test('synthetic entry, correction and void retain history without any nutrition 
  await page.getByRole('button',{name:'Resumo alimentar',exact:true}).click();await page.getByRole('button',{name:'Ensaiar registo',exact:true}).click();await expect(page.getByRole('region',{name:'Histórico do ensaio'})).toHaveCount(0);
 });
 test('simulated conflict preserves the draft and never creates a history version',async({page})=>{
- await open(page);await amount(page).fill('80');await review(page,'conflict');await expect(page.getByRole('alert')).toContainText('rascunho mantém-se');
+ await open(page);await amount(page).fill('80');await review(page,'conflict');await expect(page.getByRole('alert').filter({hasText:'Conflito simulado'})).toContainText('rascunho mantém-se');
  await expect(page.getByRole('region',{name:'Histórico do ensaio'})).toHaveCount(0);await page.getByRole('button',{name:'Rever rascunho preservado',exact:true}).click();await expect(amount(page)).toHaveValue('80');
 });
 test('uncertain outcome prevents blind retry and receipt check creates no duplicate version',async({page})=>{
- await open(page);await amount(page).fill('50');await review(page,'uncertain');await expect(page.getByRole('alert')).toContainText('Não repetir');await expect(page.getByRole('button',{name:'Confirmar apenas no ensaio'})).toHaveCount(0);
+ await open(page);await amount(page).fill('50');await review(page,'uncertain');await expect(page.getByRole('alert').filter({hasText:'Resposta perdida simulada'})).toContainText('Não repetir');await expect(page.getByRole('button',{name:'Confirmar apenas no ensaio'})).toHaveCount(0);
  await page.getByRole('button',{name:'Verificar resultado simulado',exact:true}).click();await expect(page.getByRole('region',{name:'Histórico do ensaio'}).getByRole('listitem')).toHaveCount(1);
 });
 test('entry draft guards section, organization, logout and reload and cannot leak into another organization',async({page})=>{
