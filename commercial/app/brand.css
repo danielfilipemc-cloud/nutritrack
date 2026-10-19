@@ -1,0 +1,8 @@
+/* Institutional assets are deliberately independent of tenant CSS variables.
+   Supplied :root tokens were reviewed, not imported over the design system. */
+.aura-institutional-logo{display:block;width:234px;height:auto;max-width:100%;aspect-ratio:390/112;object-fit:contain;flex-shrink:0;}
+.aura-institutional-logo--compact{width:194px;}
+.aura-workspace .aura-sidebar .aura-app-nav__brand{padding:8px 0 18px;}
+.aura-login-icon{display:block;width:64px;height:64px;margin:0 0 20px;}
+@media(max-width:900px){.aura-institutional-logo--compact{width:168px;}.aura-workspace .aura-sidebar .aura-app-nav__brand{padding:0;}}
+@media(max-width:450px){.aura-institutional-logo{width:208px;}.aura-institutional-logo--compact{width:168px;}}

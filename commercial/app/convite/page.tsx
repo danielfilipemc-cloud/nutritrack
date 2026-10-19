@@ -1,4 +1,5 @@
 "use client";
+import AuraBrand from '../../components/AuraBrand';
 import {useEffect,useRef,useState,type FormEvent} from "react";
 import {db} from "../../lib/supabase";
 import {useProfessional} from "../../lib/use-professional";
@@ -15,7 +16,7 @@ export default function Invitation(){
  if(error){setStatus("Não foi possível aceitar. O convite pode estar expirado, revogado ou ser para outro email. Confirma também o teu email.");return;}
  setToken("");setAccepted(true);setStatus("Convite aceite. O teu acesso ficou associado.");
  }catch{if(alive.current)setStatus("Não foi possível concluir a aceitação.");}finally{if(alive.current)setBusy(false);}}
- return <main className="shell" id="main-content" tabIndex={-1}><header><strong>AURA <span>Business</span></strong><a className="outline link" href="/">Painel principal</a></header><section className="login"><span className="eyebrow">{student?"CONVITE DO ALUNO":"CONVITE PROFISSIONAL"}</span><h1>{student?"Liga a tua conta ao acompanhamento.":"Junta-te à equipa."}</h1><p>O convite é pessoal e requer uma conta com o email do destinatário confirmado.</p>
+ return <main className="shell" id="main-content" tabIndex={-1}><header><AuraBrand/><a className="outline link" href="/">Painel principal</a></header><section className="login"><span className="eyebrow">{student?"CONVITE DO ALUNO":"CONVITE PROFISSIONAL"}</span><h1>{student?"Liga a tua conta ao acompanhamento.":"Junta-te à equipa."}</h1><p>O convite é pessoal e requer uma conta com o email do destinatário confirmado.</p>
  {!user?<><div className="columns"><button className="outline" disabled={busy} onClick={()=>setSignup(false)}>Já tenho conta</button><button className="outline" disabled={busy} onClick={()=>setSignup(true)}>Criar conta</button></div><form onSubmit={authenticate}><label>Email<input required type="email" autoComplete="username" value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Palavra-passe<input required type="password" minLength={signup?12:1} autoComplete={signup?"new-password":"current-password"} value={password} onChange={e=>setPassword(e.target.value)}/></label><button disabled={busy||!db}>{signup?"Criar conta e confirmar email":"Iniciar sessão"}</button></form>{signup&&<p>Usa pelo menos 12 caracteres. A criação da conta não concede acesso até aceitares um convite válido.</p>}</>:<p>Sessão iniciada: {user.email}</p>}
  {!accepted?<form onSubmit={accept}><label>Código do convite<input value={token} autoComplete="off" spellCheck={false} maxLength={64} onChange={e=>setToken(e.target.value)} placeholder="Preenchido pelo link ou colado aqui"/></label><button disabled={!user||busy||!/^[0-9a-f]{64}$/.test(token)}>Aceitar convite</button></form>:<a href={student?"/aluno":"/"} className="outline link">Abrir a minha área →</a>}
  <p role="status" className="status">{status}</p></section></main>;
