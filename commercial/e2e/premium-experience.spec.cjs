@@ -10,14 +10,16 @@ for(const width of [320,375,768,1440])test(`premium login composition and access
  await page.setViewportSize({width,height:width===1440?1000:900});await login(page);
  await expect(page.getByRole('heading',{level:1})).toHaveCount(1);await expect(page.getByRole('img',{name:'AURA Business',exact:true})).toHaveJSProperty('naturalWidth',390);
  const story=page.locator('.aura-entry-story'),access=page.locator('.aura-entry-access');
- if(width>800){const s=await story.boundingBox(),a=await access.boundingBox();expect(a.x).toBeGreaterThan(s.x+s.width);await expect(page.locator('.aura-entry-art')).toBeVisible();}
- else{await expect(page.locator('.aura-entry-art')).toBeHidden();expect((await access.boundingBox()).y).toBeGreaterThan((await story.boundingBox()).y);}
+ if(width>800){const s=await story.boundingBox(),a=await access.boundingBox();expect(a.x).toBeGreaterThan(s.x+s.width);await expect(page.locator('.aura-entry-environment')).toBeVisible();}
+ else{await expect(page.locator('.aura-entry-environment')).toBeHidden();expect((await access.boundingBox()).y).toBeGreaterThan((await story.boundingBox()).y);}
  for(const field of [page.getByLabel('Email',{exact:true}),page.getByLabel('Palavra-passe',{exact:true}),page.getByRole('button',{name:'Entrar na plataforma',exact:true})])expect((await field.boundingBox()).height).toBeGreaterThanOrEqual(44);
  const inputContrast=await page.getByLabel('Email',{exact:true}).evaluate(el=>({fg:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor}));expect(ratio(inputContrast.fg,inputContrast.bg)).toBeGreaterThanOrEqual(4.5);
  const buttonContrast=await page.getByRole('button',{name:'Entrar na plataforma',exact:true}).evaluate(el=>({fg:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor}));expect(ratio(buttonContrast.fg,buttonContrast.bg)).toBeGreaterThanOrEqual(4.5);
  await page.getByLabel('Email',{exact:true}).focus();await page.keyboard.press('Tab');await expect(page.getByLabel('Palavra-passe',{exact:true})).toBeFocused();await page.keyboard.press('Tab');await expect(page.getByRole('button',{name:'Entrar na plataforma',exact:true})).toBeFocused();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.locator('.aura-entry-art img').evaluate(img=>img.decode());await page.evaluate(()=>{document.activeElement.blur();window.scrollTo(0,0)});await page.screenshot({path:`${directory}/login-${width}.png`,fullPage:true});
+ const environment=page.locator('.aura-entry-environment img');await environment.evaluate(img=>img.decode());await expect(environment).toHaveJSProperty('naturalWidth',width>800?1600:1);
+ expect(fs.statSync('public/visual/aura-professional-environment.webp').size).toBeLessThan(60000);
+ await page.evaluate(()=>{document.activeElement.blur();window.scrollTo(0,0)});await page.screenshot({path:`${directory}/login-${width}.png`,fullPage:true});
 });
 test('premium login retains busy, failure feedback and the existing real destinations',async({page})=>{
  await login(page);let release,started=false;const gate=new Promise(r=>release=r);
@@ -41,6 +43,11 @@ test('reduced motion keeps the decorative environment static and focus visible',
  await page.emulateMedia({reducedMotion:'reduce'});await login(page);await page.getByLabel('Email',{exact:true}).focus();
  const style=await page.getByLabel('Email',{exact:true}).evaluate(el=>({outline:getComputedStyle(el).outlineStyle,width:getComputedStyle(el).outlineWidth}));expect(style.outline).toBe('solid');expect(parseFloat(style.width)).toBeGreaterThanOrEqual(2);
  const animated=await page.locator('.aura-entry').evaluate(el=>[...el.querySelectorAll('*')].some(node=>getComputedStyle(node).animationName!=='none'));expect(animated).toBe(false);
+});
+
+test('decorative photograph failure does not prevent login controls or real links',async({page})=>{
+ await page.setViewportSize({width:1440,height:1000});await page.route('**/visual/aura-professional-environment.webp',route=>route.abort('failed'));await login(page);
+ await expect(page.getByRole('heading',{level:1})).toBeVisible();await page.getByLabel('Email',{exact:true}).fill('fictional@example.invalid');await expect(page.getByRole('button',{name:'Entrar na plataforma',exact:true})).toBeEnabled();await expect(page.getByRole('link',{name:/Explorar demonstração/})).toHaveAttribute('href','/demo');
 });
 test('branding read failure remains usable and bounded in the compact desktop heading',async({page})=>{
  await page.setViewportSize({width:1024,height:900});await fixture(page);let failed=false;
