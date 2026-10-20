@@ -1,0 +1,22 @@
+const {test,expect}=require('@playwright/test');
+for(const width of [375,1440])test('premium demo is anonymous, navigable, and local-only '+width,async({page})=>{
+ await page.setViewportSize({width,height:850});
+ await page.goto('/demo/experiencia');
+ await expect(page.getByRole('heading',{name:/O teu dia/})).toBeVisible();
+ await expect(page.getByText('Sem dados reais')).toBeVisible();
+ const nav=page.getByRole('navigation',{name:width>800?'Navegação da demonstração':'Áreas da demonstração'});
+ await nav.getByRole('button',{name:'Alunos'}).click();
+ await expect(page.getByRole('heading',{name:'Os teus alunos'})).toBeVisible();
+ await page.getByPlaceholder('Ex.: Joana Exemplo').fill('Joana Exemplo');
+ await page.getByRole('button',{name:'Adicionar aluno'}).click();
+ await expect(page.getByRole('heading',{name:'Joana Exemplo'})).toBeVisible();
+ await page.getByRole('button',{name:'Guardar avaliação'}).isVisible();
+ await nav.getByRole('button',{name:'Agenda'}).click();
+ await expect(page.getByRole('heading',{name:'Agenda de hoje'})).toBeVisible();
+ await nav.getByRole('button',{name:'A tua marca'}).click();
+ await expect(page.getByRole('heading',{name:'A tua marca'})).toBeVisible();
+ await expect(page.getByText('Powered by AURA Business')).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.reload();
+ await expect(page.getByRole('heading',{name:/O teu dia/})).toBeVisible();
+});
