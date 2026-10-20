@@ -1,5 +1,5 @@
 "use client";
-import {useState} from "react";
+import {useEffect,useState} from "react";
 import AuraBrand from "../../../components/AuraBrand";
 import DemoStudentHub from "./DemoStudentHub";
 import useDemoNavigationFocus from "./use-demo-navigation-focus";
@@ -7,6 +7,8 @@ import {createDemoStudents,demoAppointments,demoDate,sortedAssessments,type Demo
 import "./experience.css";
 type Tab="inicio"|"alunos"|"ficha"|"agenda"|"marca";
 export default function DemoExperience(){
+ const [ready,setReady]=useState(false);
+ useEffect(()=>setReady(true),[]);
  const [records,setRecords]=useState(createDemoStudents),[tab,setTab]=useState<Tab>("inicio"),[chosen,setChosen]=useState(1),[newName,setNewName]=useState(""),[brand,setBrand]=useState("Estúdio Aurora"),[accent,setAccent]=useState("#137F79"),[message,setMessage]=useState("");
  const students=records.map(s=>{const weights=sortedAssessments(s).filter(r=>r.weight!==null);return {...s,weight:weights.at(-1)?.weight??0,previous:weights.at(-2)?.weight??0};});
  const student=students.find(s=>s.id===chosen)||students[0];
@@ -16,7 +18,7 @@ export default function DemoExperience(){
  const updateStudent=(student:DemoStudent)=>setRecords(v=>v.map(s=>s.id===student.id?student:s));
  const addStudent=(event:React.FormEvent<HTMLFormElement>)=>{event.preventDefault();const name=newName.trim();if(name.length<2||name.length>100){setMessage("Indica um nome fictício com 2 a 100 caracteres.");return;}const next=Math.max(...students.map(s=>s.id))+1;setRecords(v=>[...v,{id:next,name,assessments:[],care:{status:"active",responsible:"",review:"",goal:""}}]);setChosen(next);setNewName("");go("ficha");setMessage("Aluno fictício criado nesta sessão.");};
  const nav:[Tab,string][]=[["inicio","Visão geral"],["alunos","Alunos"],["ficha","Ficha 360.º"],["agenda","Agenda"],["marca","A tua marca"]];
- return <main className="aura-preview" id="main-content" tabIndex={-1} style={{"--demo-accent":accent} as React.CSSProperties}>
+ return <main aria-busy={!ready} inert={!ready} className="aura-preview" id="main-content" tabIndex={-1} style={{"--demo-accent":accent} as React.CSSProperties}>
   <aside className="aura-preview-side"><AuraBrand/><span className="aura-preview-overline">AMBIENTE DE DEMONSTRAÇÃO</span><nav aria-label="Navegação da demonstração">{nav.map(([key,label])=><button type="button" key={key} className={tab===key?"selected":""} aria-current={tab===key?"page":undefined} onClick={()=>go(key)}>{label}</button>)}</nav><div className="aura-preview-sidefoot"><strong>{brand}</strong><small>Dados totalmente fictícios, sem conta ou base de dados.</small><a href="/demo">Demonstração clássica ↗</a><a href="/">Voltar ao login ↗</a></div></aside>
   <section className="aura-preview-main">
    <header className="aura-preview-top"><div className="aura-preview-mobilebrand"><AuraBrand/></div><div><span className="aura-preview-overline">AURA BUSINESS / PRÉ-VISUALIZAÇÃO</span><strong>{brand}</strong></div><span className="aura-preview-pill">Sem dados reais</span></header>
