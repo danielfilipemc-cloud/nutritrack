@@ -23,7 +23,7 @@ for(const width of [320,375,1440]){
   const weight=page.getByLabel('Peso (kg)',{exact:true});
   await expect(weight).toBeFocused();await expect(weight).toHaveAttribute('aria-invalid','true');
   await expect(weight).toHaveAccessibleDescription(/Preenche pelo menos uma medição/);
-  const alert=page.getByRole('alert');await expect(alert).toHaveText('Preenche pelo menos uma medição.');
+  const alert=page.locator('.aura-preview-hubbody').getByRole('alert');await expect(alert).toHaveText('Preenche pelo menos uma medição.');
   expect(await alert.evaluate(el=>el.closest('section').querySelector('h2').textContent)).toBe('Registar avaliação fictícia');
   await weight.fill('68.5');await expect(weight).not.toHaveAttribute('aria-invalid','true');await expect(alert).toHaveCount(0);
   await page.getByRole('button',{name:'Guardar avaliação',exact:true}).click();
