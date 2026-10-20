@@ -4,6 +4,7 @@ import StudentIdentity from '../../../components/StudentIdentity';
 import ProfileNavigation from '../../../components/ProfileNavigation';
 import ProgressChart from '../../../components/ProgressChart';
 import ClientProgressSummary from '../../../components/ClientProgressSummary';
+import useDemoNavigationFocus from './use-demo-navigation-focus';
 import {demoDate,demoAppointments,emptyAssessment,parseDemoAssessment,sortedAssessments,type AssessmentDraft,type DemoCare,type DemoStudent} from './model';
 
 type Section='overview'|'assessments'|'evolution'|'agenda'|'care';
@@ -16,6 +17,8 @@ export default function DemoStudentHub({student,students,brand,onChoose,onUpdate
  const [view,setView]=useState<{studentId:number;section:Section}>({studentId:student.id,section:'overview'});
  const section=view.studentId===student.id?view.section:'overview';
  const setSection=(next:Section)=>setView({studentId:student.id,section:next});
+ const {container,requestFocus}=useDemoNavigationFocus(`${student.id}:${section}`);
+ const openSection=(next:Section)=>{if(next!==section)requestFocus();setSection(next);};
  const [metric,setMetric]=useState<Metric>('weight');
  const [drafts,setDrafts]=useState<Record<number,Drafts>>({});
  const [messages,setMessages]=useState<Record<number,string>>({});
@@ -49,11 +52,11 @@ export default function DemoStudentHub({student,students,brand,onChoose,onUpdate
   </section>
   <div className="aura-preview-hub">
    <aside className="aura-preview-hubnav"><ProfileNavigation items={sections} value={section} disabled={false} onChange={setSection}/></aside>
-   <div className="aura-preview-hubbody">
+   <div className="aura-preview-hubbody" ref={container}>
     {section==='overview'&&<>
      <div className="aura-preview-summary"><ClientProgressSummary records={records.slice(-30).map(r=>({assessed_on:r.date,weight_kg:r.weight,height_cm:r.height,waist_cm:r.waist}))}/></div>
-     <section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Evolução recente</h2><button type="button" className="quiet" onClick={()=>setSection('evolution')}>Consultar evolução →</button></div><ProgressChart responsive records={records.map(r=>({date:r.date,value:r.weight}))} unit="kg"/><button type="button" className="quiet" onClick={()=>setSection('assessments')}>Consultar avaliações →</button></section>
-     <section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Agenda e revisão</h2><button type="button" className="quiet" onClick={()=>setSection('agenda')}>Consultar agenda →</button></div><p>{appointments.length?`${appointments.length} marcação de exemplo associada a este aluno.`:'Sem marcações de exemplo para este aluno.'}</p><p>Próxima revisão: {student.care.review||'Sem revisão marcada'}</p><button type="button" className="quiet" onClick={()=>setSection('care')}>Editar acompanhamento →</button></section>
+     <section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Evolução recente</h2><button type="button" className="quiet" onClick={()=>openSection('evolution')}>Consultar evolução →</button></div><ProgressChart responsive records={records.map(r=>({date:r.date,value:r.weight}))} unit="kg"/><button type="button" className="quiet" onClick={()=>openSection('assessments')}>Consultar avaliações →</button></section>
+     <section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Agenda e revisão</h2><button type="button" className="quiet" onClick={()=>openSection('agenda')}>Consultar agenda →</button></div><p>{appointments.length?`${appointments.length} marcação de exemplo associada a este aluno.`:'Sem marcações de exemplo para este aluno.'}</p><p>Próxima revisão: {student.care.review||'Sem revisão marcada'}</p><button type="button" className="quiet" onClick={()=>openSection('care')}>Editar acompanhamento →</button></section>
     </>}
     {section==='assessments'&&<>
      <section className="aura-preview-panel"><h2>Registar avaliação fictícia</h2><form onSubmit={saveAssessment} className="aura-preview-form">

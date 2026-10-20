@@ -74,3 +74,9 @@
 @media(max-width:800px){.aura-preview-summary>.panel{padding:17px}}
 .aura-preview-top>.aura-preview-mobilebrand{display:none}
 @media(max-width:800px){.aura-preview-top>.aura-preview-mobilebrand{display:block}}
+/* Navigation targets remain visible without adding them to the normal tab order. */
+.aura-preview-content :is(h1,h2)[tabindex="-1"]{scroll-margin-top:16px}
+/* Valid long example names must wrap inside the header, sidebar and brand card. */
+.aura-preview-top>div,.aura-preview-sidefoot{min-width:0}
+.aura-preview-top strong,.aura-preview-sidefoot strong,.aura-preview-tenant strong{min-width:0;overflow-wrap:anywhere}
+.aura-preview-tenant strong{flex:1 1 140px}

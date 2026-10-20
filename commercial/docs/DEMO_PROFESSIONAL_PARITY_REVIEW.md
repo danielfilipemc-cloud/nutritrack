@@ -76,3 +76,16 @@ Para repetir `before`, compilar o commit base num checkout separado e copiar ape
 Os checks de GitHub Actions na HEAD do PR são a referência para a execução completa do workflow existente (lint, domínio/PostgreSQL local, TypeScript, build, audit e Chromium). Os resultados locais e a comparação das capturas acompanham o pacote de revisão. `tests/demo-isolation.test.ts` percorre imports/re-exports da rota e layout, incluindo as dependências dos componentes partilhados, rejeitando módulos não revistos, I/O, persistência e CSS remoto. `e2e/demo-isolation.spec.cjs` valida a sessão fictícia preexistente, URLs com IDs privados de fixture, mudanças de aluno, rascunhos, calendário, reposição ao recarregar e ausência de pedidos a serviços.
 
 Revisão independente pendente. Não autoriza dados reais, piloto ou integração. Safari, Firefox, leitores de ecrã e zoom nativo exigem validação separada; não se infere essa cobertura a partir de Chromium.
+
+## Continuação — navegação e nomes longos
+
+Revisão técnica adicional sobre `404f666`, mantendo o mesmo PR isolado. Os estados #40–#45 foram reconfirmados: #40–#42 abertos; #43–#44 integrados no staging; #45 aberto em rascunho, sem revisões submetidas. Esta revisão técnica não constitui aprovação independente para integrar.
+
+Os novos cenários de browser reproduzem perda de foco ao desmontar o botão de um atalho, posição incorreta após abrir a agenda a partir do fundo da ficha e transbordo de nomes de marca válidos sem espaços. A correção limita-se à apresentação da demo:
+
+- Um hook local recebe apenas uma referência ao conteúdo e a chave da área. Após navegação explícita, foca o primeiro título visível dentro desse conteúdo e coloca-o no ecrã. O hub escondido continua montado para preservar rascunhos, mas os seus títulos são excluídos da escolha de foco.
+- Os controlos da ficha mantêm o comportamento anterior ao escolher uma área ou aluno. Alterar campos e guardar não solicita reposicionamento do foco.
+- Nomes longos quebram dentro do cabeçalho, rodapé lateral e cartão de marca; os limites de 70/100 caracteres mantêm-se.
+- O destino do atalho de salto para o conteúdo pode receber foco sem entrar na ordem normal de tabulação.
+
+`e2e/demo-navigation.spec.cjs` acrescenta sete regressões de teclado, posição do título, estabilidade durante edição e limites de layout a 320, 375 e 1440 px. `AURA_USABILITY_CAPTURE=before` ou `after` recolhe seis imagens dos estados de navegação e marca longa, em `.aura-integration/demo-usability/`. As capturas ficam no novo pacote local; o pacote anterior é preservado. Os checks da HEAD do PR continuam a ser a referência para a validação completa.
