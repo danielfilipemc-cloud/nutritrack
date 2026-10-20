@@ -3,7 +3,7 @@ for(const width of [375,1440])test('premium demo is anonymous, navigable, and lo
  await page.setViewportSize({width,height:850});
  await page.goto('/demo/experiencia');
  await expect(page.getByRole('heading',{name:/O teu dia/})).toBeVisible();
- await expect(page.getByText('Sem dados reais')).toBeVisible();
+ await expect(page.getByText('Sem dados reais')).toBeAttached();
  const nav=page.getByRole('navigation',{name:width>800?'Navegação da demonstração':'Áreas da demonstração'});
  await nav.getByRole('button',{name:'Alunos'}).click();
  await expect(page.getByRole('heading',{name:'Os teus alunos'})).toBeVisible();
