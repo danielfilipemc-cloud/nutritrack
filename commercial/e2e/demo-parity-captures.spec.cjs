@@ -21,7 +21,7 @@ for(const width of [375,1440]){
    await page.getByRole('button',{name:'Agenda e acompanhamento',exact:true}).click();await shot('demo-care');
   }else{
    for(const [value,name] of [['assessments','demo-assessments'],['evolution','demo-evolution'],['agenda','demo-agenda'],['care','demo-care']]){
-    if(width<=900)await page.getByLabel('Área da ficha',{exact:true}).selectOption(value);
+    if(width<=900)await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption(value);
     else await page.getByRole('navigation',{name:'Secções da ficha',exact:true}).getByRole('button',{name:({assessments:'Avaliações',evolution:'Evolução',agenda:'Agenda do aluno',care:'Acompanhamento'})[value],exact:true}).click();
     await shot(name);
    }
@@ -44,7 +44,7 @@ test('compact empty student and drafted form',async({page})=>{
  await page.getByPlaceholder('Ex.: Joana Exemplo').fill('Aluno Novo Exemplo');await page.getByRole('button',{name:'Adicionar aluno'}).click();
  await expect(page.getByText('Sem medição',{exact:true})).toHaveCount(3);
  await page.screenshot({path:'docs/review/demo-professional-parity/after/demo-empty-320.png',fullPage:true});
- await page.getByLabel('Área da ficha',{exact:true}).selectOption('assessments');
+ await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption('assessments');
  await page.getByLabel('Peso (kg)',{exact:true}).fill('68.5');
  await page.screenshot({path:'docs/review/demo-professional-parity/after/demo-draft-320.png',fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);

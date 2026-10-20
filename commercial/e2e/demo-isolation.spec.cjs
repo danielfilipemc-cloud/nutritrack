@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const {fixture,A,C}=require('./fixtures.cjs');
 async function openSection(page,width,label,value){
- if(width<=900)await page.getByLabel('Área da ficha',{exact:true}).selectOption(value);
+ if(width<=900)await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption(value);
  else await page.getByRole('navigation',{name:'Secções da ficha',exact:true}).getByRole('button',{name:label,exact:true}).click();
 }
 for(const width of [320,375,1440])test(`demo stays offline and isolates student drafts ${width}`,async({page})=>{
@@ -21,10 +21,10 @@ for(const width of [320,375,1440])test(`demo stays offline and isolates student 
  await nav.getByRole('button',{name:'Ficha 360.º'}).click();
  await openSection(page,width,'Avaliações','assessments');
  await page.getByLabel('Peso (kg)',{exact:true}).fill('68.5');
- await page.getByLabel('Escolher aluno',{exact:true}).selectOption('2');
+ await page.getByRole('combobox',{name:'Escolher aluno',exact:true}).selectOption('2');
  await openSection(page,width,'Avaliações','assessments');
  await expect(page.getByLabel('Peso (kg)',{exact:true})).toHaveValue('');
- await page.getByLabel('Escolher aluno',{exact:true}).selectOption('1');
+ await page.getByRole('combobox',{name:'Escolher aluno',exact:true}).selectOption('1');
  await openSection(page,width,'Avaliações','assessments');
  await expect(page.getByLabel('Peso (kg)',{exact:true})).toHaveValue('68.5');
  await page.getByRole('button',{name:'Guardar avaliação',exact:true}).click();
@@ -32,7 +32,7 @@ for(const width of [320,375,1440])test(`demo stays offline and isolates student 
  await expect(page.getByRole('cell',{name:'68.5',exact:true})).toBeVisible();
  await openSection(page,width,'Acompanhamento','care');
  await page.getByLabel('Objetivo fictício').fill('Objetivo local da Sofia');
- await page.getByLabel('Profissional responsável',{exact:true}).selectOption('Profissional Demonstração');
+ await page.getByRole('combobox',{name:'Profissional responsável',exact:true}).selectOption('Profissional Demonstração');
  await page.getByLabel('Próxima revisão',{exact:true}).fill('2026-10-25');
  await nav.getByRole('button',{name:'Agenda',exact:true}).click();
  await nav.getByRole('button',{name:'Ficha 360.º'}).click();
@@ -40,7 +40,7 @@ for(const width of [320,375,1440])test(`demo stays offline and isolates student 
  await page.getByRole('button',{name:'Guardar acompanhamento',exact:true}).click();
  await expect(page.locator('.aura-preview-context')).toContainText('Profissional Demonstração');
  await expect(page.locator('.aura-preview-context')).toContainText('2026-10-25');
- await page.getByLabel('Escolher aluno',{exact:true}).selectOption('2');
+ await page.getByRole('combobox',{name:'Escolher aluno',exact:true}).selectOption('2');
  await openSection(page,width,'Acompanhamento','care');
  await expect(page.getByLabel('Objetivo fictício')).not.toHaveValue('Objetivo local da Sofia');
  await openSection(page,width,'Agenda do aluno','agenda');
@@ -61,7 +61,7 @@ for(const width of [320,375,1440])test(`demo stays offline and isolates student 
  expect(await storage()).toEqual(before);expect(forbidden).toEqual([]);
  await page.reload();await nav.getByRole('button',{name:'Ficha 360.º'}).click();
  await expect(page.getByRole('heading',{name:'Sofia Exemplo',exact:true})).toBeVisible();
- await expect(page.getByLabel('Escolher aluno').locator('option')).toHaveCount(3);
+ await expect(page.getByRole('combobox',{name:'Escolher aluno',exact:true}).locator('option')).toHaveCount(3);
  await expect(page.locator('.aura-preview-context')).toContainText('Profissional Exemplo');
  expect(forbidden).toEqual([]);expect(await storage()).toEqual(before);
 });
@@ -90,7 +90,7 @@ test('keyboard submission, validation and metric changes work without a backend'
  await page.getByRole('button',{name:'Guardar avaliação'}).click();await expect(page.getByRole('status').filter({hasText:'Preenche pelo menos uma medição.'})).toBeVisible();
  await page.getByLabel('Peso (kg)',{exact:true}).fill('68.5');await page.getByLabel('Peso (kg)',{exact:true}).press('Enter');
  await openSection(page,375,'Evolução','evolution');await expect(page.getByRole('img',{name:/1 medições/})).toBeVisible();
- await page.getByLabel('Indicador da evolução').selectOption('height');await expect(page.getByText('Regista avaliações para visualizar a evolução.',{exact:true})).toBeVisible();
+ await page.getByRole('combobox',{name:'Indicador da evolução',exact:true}).selectOption('height');await expect(page.getByText('Regista avaliações para visualizar a evolução.',{exact:true})).toBeVisible();
 });
 test('local review drives priorities and repeated dates replace only a local example',async({page})=>{
  await page.goto('/demo/experiencia');
@@ -112,7 +112,7 @@ test('local review drives priorities and repeated dates replace only a local exa
  await expect(history.getByRole('row')).toHaveCount(4);
  await expect(history.getByRole('cell',{name:'68.5',exact:true})).toHaveCount(0);
  await expect(history.getByRole('cell',{name:'69.2',exact:true})).toBeVisible();
- await page.getByLabel('Escolher aluno',{exact:true}).selectOption('2');
+ await page.getByRole('combobox',{name:'Escolher aluno',exact:true}).selectOption('2');
  await openSection(page,1440,'Avaliações','assessments');
  await expect(page.getByRole('cell',{name:'69.2',exact:true})).toHaveCount(0);
 });

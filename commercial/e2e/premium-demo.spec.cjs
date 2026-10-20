@@ -10,13 +10,13 @@ for(const width of [375,1440])test('premium demo is anonymous, navigable, and lo
  await page.getByPlaceholder('Ex.: Joana Exemplo').fill('Joana Exemplo');
  await page.getByRole('button',{name:'Adicionar aluno'}).click();
  await expect(page.getByRole('heading',{name:'Joana Exemplo'})).toBeVisible();
- if(width<=900)await page.getByLabel('Área da ficha',{exact:true}).selectOption('assessments');
+ if(width<=900)await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption('assessments');
  else await page.getByRole('navigation',{name:'Secções da ficha',exact:true}).getByRole('button',{name:'Avaliações',exact:true}).click();
  await expect(page.getByRole('button',{name:'Guardar avaliação'})).toBeVisible();
  await page.getByLabel('Peso (kg)').fill('68.5');
  await page.getByRole('button',{name:'Guardar avaliação'}).click();
  await expect(page.getByRole('cell',{name:'68.5',exact:true})).toBeVisible();
- if(width<=900)await page.getByLabel('Área da ficha',{exact:true}).selectOption('overview');
+ if(width<=900)await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption('overview');
  else await page.getByRole('navigation',{name:'Secções da ficha',exact:true}).getByRole('button',{name:'Resumo',exact:true}).click();
  await expect(page.getByText('68.5 kg').first()).toBeVisible();
  await nav.getByRole('button',{name:'Agenda'}).click();
