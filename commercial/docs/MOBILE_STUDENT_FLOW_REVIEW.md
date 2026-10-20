@@ -12,6 +12,8 @@ Um aluno sem avaliações recebe uma ação para registar a primeira medição. 
 
 A revisão WebKit revelou ainda um clique perdido antes da hidratação e transbordo da apresentação nativa do seletor de aluno com nomes de 100 caracteres a 320 px. O `main` da demo fica `inert` e `aria-busy` até o primeiro efeito de montagem, sem acrescentar acessos a dados. Uma regressão atrasa os scripts para confirmar que os controlos só aceitam interação quando os handlers estão prontos. O seletor de aluno mantém o controlo nativo e o nome completo acessível, mas usa `appearance:none`, reticências e seta CSS local. Isso evita o transbordo de pintura do WebKit sem cortar a página ou o contorno de foco; `min-width:0` isoladamente não resolvia. Estas correções também ficam limitadas à demo.
 
+A repetição detetou também movimento do alvo de clique durante o scroll suave herdado de `html`: `behavior:auto` seguia essa regra global. O hook da demo passa a pedir scroll instantâneo, e apenas na rota que contém `.aura-preview` o scroll do documento é automático. Isso evita a corrida entre foco, scroll e o próximo clique, sem delays/retries no teste nem alterações à navegação profissional.
+
 ## Âmbito preservado
 
 Apenas apresentação e estado local da demo, testes e documentação. Componentes partilhados, loaders, Auth/RLS, migrations, dependências, dashboard Premium profissional, dados profissionais e NutriTrack pessoal não são alterados. Não são usadas credenciais nem dados reais.

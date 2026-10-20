@@ -13,7 +13,7 @@ export default function useDemoNavigationFocus(view:string) {
   if(!heading)return;
   heading.tabIndex=-1;
   heading.focus({preventScroll:true});
-  heading.scrollIntoView({block:'start',behavior:'auto'});
+  heading.scrollIntoView({block:'start',behavior:'instant'});
  },[view]);
  return {container,requestFocus:()=>{requested.current=true;}};
 }

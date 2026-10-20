@@ -81,6 +81,7 @@
 .aura-preview-top strong,.aura-preview-sidefoot strong,.aura-preview-tenant strong{min-width:0;overflow-wrap:anywhere}
 .aura-preview-tenant strong{flex:1 1 140px}
 /* The mobile profile keeps its context available without pushing the task below it. */
+html:has(.aura-preview){scroll-behavior:auto}
 .aura-preview-context-desktop{flex:1 0 100%;min-width:0}
 .aura-preview-context-mobile{display:none}
 .aura-preview input[aria-invalid=true]{border-color:#ffb5ac;outline-color:#ffb5ac}
