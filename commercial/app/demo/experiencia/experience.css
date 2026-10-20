@@ -85,6 +85,12 @@
 .aura-preview-context-mobile{display:none}
 .aura-preview input[aria-invalid=true]{border-color:#ffb5ac;outline-color:#ffb5ac}
 .aura-preview-empty p{color:#bdd1cb}
+.aura-preview label,.aura-preview select{min-width:0}
+.aura-preview-student-header>label select{
+ appearance:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:34px;
+ background-image:linear-gradient(45deg,transparent 50%,#bdd1cb 50%),linear-gradient(135deg,#bdd1cb 50%,transparent 50%);
+ background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px;background-repeat:no-repeat;
+}
 @media(max-width:900px){
  .aura-preview-student-title{padding:18px 0 8px}
  .aura-preview-student-title h1{font-size:30px}

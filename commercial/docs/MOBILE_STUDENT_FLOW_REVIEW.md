@@ -10,6 +10,8 @@ O erro por avaliação sem medições aparecia depois do histórico, como mensag
 
 Um aluno sem avaliações recebe uma ação para registar a primeira medição. Um indicador sem medições na evolução recebe também uma ação para abrir o formulário. Os atalhos reutilizam a navegação por foco já revista. Não se acrescentam interpretações clínicas ou valores simulados para campos vazios.
 
+A revisão WebKit revelou ainda um clique perdido antes da hidratação e transbordo da apresentação nativa do seletor de aluno com nomes de 100 caracteres a 320 px. O `main` da demo fica `inert` e `aria-busy` até o primeiro efeito de montagem, sem acrescentar acessos a dados. Uma regressão atrasa os scripts para confirmar que os controlos só aceitam interação quando os handlers estão prontos. O seletor de aluno mantém o controlo nativo e o nome completo acessível, mas usa `appearance:none`, reticências e seta CSS local. Isso evita o transbordo de pintura do WebKit sem cortar a página ou o contorno de foco; `min-width:0` isoladamente não resolvia. Estas correções também ficam limitadas à demo.
+
 ## Âmbito preservado
 
 Apenas apresentação e estado local da demo, testes e documentação. Componentes partilhados, loaders, Auth/RLS, migrations, dependências, dashboard Premium profissional, dados profissionais e NutriTrack pessoal não são alterados. Não são usadas credenciais nem dados reais.

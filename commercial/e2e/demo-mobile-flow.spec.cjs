@@ -2,6 +2,18 @@ const {test,expect}=require('@playwright/test');
 const fs=require('node:fs');
 const phase=process.env.AURA_MOBILE_CAPTURE;
 const nav=(page,width)=>page.getByRole('navigation',{name:width>800?'Navegação da demonstração':'Áreas da demonstração'});
+test('server-rendered demo waits for hydration before accepting interaction',async({page})=>{
+ let release;const gate=new Promise(resolve=>{release=resolve;});
+ await page.route('**/_next/static/**/*.js',async route=>{await gate;await route.continue();});
+ try{
+  await page.setViewportSize({width:375,height:900});await page.goto('/demo/experiencia',{waitUntil:'commit'});
+  const main=page.locator('main.aura-preview');await expect(main).toHaveAttribute('inert','');await expect(main).toHaveAttribute('aria-busy','true');
+  await page.locator('.aura-preview-mobiletabs button').filter({hasText:'Ficha 360.º'}).click({force:true});
+  release();await expect(main).not.toHaveAttribute('inert','');await expect(main).toHaveAttribute('aria-busy','false');
+  await expect(page.getByRole('heading',{name:/O teu dia/})).toBeVisible();
+  await nav(page,375).getByRole('button',{name:'Ficha 360.º',exact:true}).click();await expect(page.getByRole('heading',{name:'Sofia Exemplo',exact:true})).toBeVisible();
+ }finally{release();}
+});
 async function area(page,width,value){
  if(width<=900)await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption(value);
  else await page.getByRole('navigation',{name:'Secções da ficha',exact:true}).getByRole('button',{name:{overview:'Resumo',assessments:'Avaliações',evolution:'Evolução',care:'Acompanhamento'}[value],exact:true}).click();
