@@ -10,7 +10,13 @@ for(const width of [375,1440])test('premium demo is anonymous, navigable, and lo
  await page.getByPlaceholder('Ex.: Joana Exemplo').fill('Joana Exemplo');
  await page.getByRole('button',{name:'Adicionar aluno'}).click();
  await expect(page.getByRole('heading',{name:'Joana Exemplo'})).toBeVisible();
- await page.getByRole('button',{name:'Guardar avaliação'}).isVisible();
+ await page.getByRole('button',{name:'Evolução e avaliações'}).click();
+ await expect(page.getByRole('button',{name:'Guardar avaliação'})).toBeVisible();
+ await page.getByLabel('Peso (kg)').fill('68.5');
+ await page.getByRole('button',{name:'Guardar avaliação'}).click();
+ await expect(page.getByText('68.5 kg')).toBeVisible();
+ await page.getByRole('button',{name:'Resumo',exact:true}).click();
+ await expect(page.getByText('68.5 kg').first()).toBeVisible();
  await nav.getByRole('button',{name:'Agenda'}).click();
  await expect(page.getByRole('heading',{name:'Agenda de hoje'})).toBeVisible();
  await nav.getByRole('button',{name:'A tua marca'}).click();
