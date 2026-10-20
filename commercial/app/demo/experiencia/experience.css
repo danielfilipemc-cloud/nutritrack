@@ -16,3 +16,67 @@
 .aura-preview-history li span{color:#b8cfc7}
 .aura-preview-history li strong{font-variant-numeric:tabular-nums}
 @media(max-width:580px){.aura-preview-profiletabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.aura-preview-profiletabs button{padding:10px 7px;font-size:12px}.aura-preview-student-header>label{width:100%}}
+/* Demo-only presentation: shared components never inherit professional data access. */
+.aura-preview [hidden]{display:none!important}
+.aura-preview button,.aura-preview .quiet{min-height:44px}
+.aura-preview textarea{font:inherit;min-height:100px;color:#fff;background:#0b1718;border:1px solid #34504b;border-radius:9px;padding:10px;width:100%;max-width:100%;resize:vertical}
+.aura-preview textarea:focus-visible{outline:2px solid #86dfd3;outline-offset:3px}
+.aura-preview .aura-student-identity{display:flex;align-items:center;gap:14px;min-width:0}
+.aura-preview .aura-student-identity strong,.aura-preview .aura-student-identity small{display:block;overflow-wrap:anywhere}
+.aura-preview .aura-student-identity strong{font-size:21px}
+.aura-preview .aura-student-identity small{color:#b8d3cc;margin-top:4px;font-size:13px}
+.aura-preview .aura-student-initial{display:grid;place-items:center;background:var(--demo-accent);width:54px;height:54px;border-radius:14px;color:#fff;font-size:20px;font-weight:700;flex-shrink:0}
+.aura-preview-context{flex:1 0 100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0;border-top:1px solid #34504b;padding-top:16px}
+.aura-preview-context dt{color:#b8d3cc;font-size:13px;margin-bottom:5px}
+.aura-preview-context dd{margin:0;overflow-wrap:anywhere}
+.aura-preview-hub{display:grid;grid-template-columns:190px minmax(0,1fr);gap:18px;align-items:start}
+.aura-preview-hubnav{position:sticky;top:16px;border:1px solid #2a4543;background:#101e20;border-radius:14px;padding:14px}
+.aura-preview .aura-profile-tabs{display:grid;gap:18px;padding:0;margin:0;border:0;background:none}
+.aura-preview .aura-profile-nav-group{display:block;width:100%}
+.aura-preview .aura-profile-nav-group>span{font-size:12px;display:block;color:#bdd1cb;padding:0 4px 8px}
+.aura-preview .aura-profile-nav-group>div{display:grid;gap:5px}
+.aura-preview .aura-profile-tabs button{text-align:left;width:100%;font-size:13px;white-space:normal}
+.aura-preview .aura-profile-tabs button[aria-pressed=true]{background:#18403b;border-color:#62a99b;box-shadow:inset 3px 0 #72c9b9}
+.aura-preview .aura-profile-area{display:none}
+.aura-preview-hubbody{min-width:0}
+.aura-preview-hubbody .aura-preview-panel:last-child{margin-bottom:0}
+.aura-preview-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:end}
+.aura-preview-form>button{justify-self:start}
+.aura-preview-full{grid-column:1/-1}
+.aura-preview-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.aura-preview-metrics article{background:#102524;border:1px solid #30504c;border-radius:12px;padding:14px;min-width:0}
+.aura-preview-metrics span,.aura-preview-metrics small{display:block;color:#bdd1cb;font-size:13px}
+.aura-preview-metrics strong{display:block;font-size:25px;margin:6px 0}
+.aura-preview-metrics p{font-size:13px;color:#bdd1cb}
+.aura-preview .chartbox{overflow:hidden;min-width:0}
+.aura-preview .chartbox svg{display:block;width:100%;height:auto;min-width:0}
+.aura-preview .chartbox .chartnote{font-size:13px;color:#bdd1cb}
+.aura-preview .chartbox summary{cursor:pointer;min-height:44px;padding:10px 0;color:#8fddd2}
+.aura-preview-table,.aura-preview .chartbox details{overflow-x:auto;max-width:100%}
+.aura-preview table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}
+.aura-preview caption{font-size:13px;text-align:left;padding:12px 0;color:#bdd1cb}
+.aura-preview td,.aura-preview th{padding:12px 8px;border-bottom:1px solid #34504b;white-space:nowrap}
+.aura-preview-heading h1,.aura-preview-roster strong{overflow-wrap:anywhere}
+.aura-preview-roster button{flex-wrap:wrap}
+.aura-preview-overline{font-size:11px}
+.aura-preview-note,.aura-preview-timeline small,.aura-preview-stats small{font-size:13px}
+@media(max-width:1100px){.aura-preview-hub{grid-template-columns:165px minmax(0,1fr)}.aura-preview-metrics{grid-template-columns:1fr}.aura-preview-metrics article{display:grid;grid-template-columns:1fr 1fr;gap:5px;align-items:center}.aura-preview-metrics p{margin:0}}
+@media(max-width:900px){.aura-preview-hub{display:block}.aura-preview-hubnav{position:static;margin-bottom:16px}.aura-preview .aura-profile-tabs{display:none}.aura-preview .aura-profile-area{display:grid;margin:0}.aura-preview-context{grid-template-columns:1fr;gap:12px}.aura-preview-form{grid-template-columns:1fr}.aura-preview-form>button{width:100%}.aura-preview-hubbody .aura-preview-panelhead{flex-wrap:wrap}.aura-preview-hubbody .aura-preview-panelhead h2{font-size:19px}.aura-preview-metrics strong{font-size:24px}}
+@media(max-width:580px){.aura-preview-metrics article{display:block}.aura-preview-metrics p{margin-top:6px}.aura-preview-timeline>div{gap:8px;grid-template-columns:44px 12px minmax(0,1fr)}.aura-preview-student-header>label{width:100%}}
+.aura-preview-summary>.panel{border:1px solid #2a4543;border-radius:15px;background:linear-gradient(145deg,#172827,#101b1c);padding:22px;margin:0 0 16px;color:#edf6f4}
+.aura-preview-summary h2{font-size:19px;margin:0 0 18px}
+.aura-preview .aura-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.aura-preview .aura-summary-grid>div{background:#102524;border:1px solid #30504c;border-radius:12px;padding:14px;min-width:0}
+.aura-preview .aura-summary-grid :is(span,small){display:block;color:#bdd1cb;font-size:13px}
+.aura-preview .aura-summary-grid strong{display:block;font-size:25px;margin:6px 0}
+.aura-preview .aura-summary-grid p,.aura-preview .aura-summary-grid+p{font-size:13px;color:#bdd1cb}
+@media(max-width:1100px){.aura-preview .aura-summary-grid{grid-template-columns:1fr}}
+@media(max-width:800px){.aura-preview-summary>.panel{padding:17px}}
+.aura-preview-top>.aura-preview-mobilebrand{display:none}
+@media(max-width:800px){.aura-preview-top>.aura-preview-mobilebrand{display:block}}
+/* Navigation targets remain visible without adding them to the normal tab order. */
+.aura-preview-content :is(h1,h2)[tabindex="-1"]{scroll-margin-top:16px}
+/* Valid long example names must wrap inside the header, sidebar and brand card. */
+.aura-preview-top>div,.aura-preview-sidefoot{min-width:0}
+.aura-preview-top strong,.aura-preview-sidefoot strong,.aura-preview-tenant strong{min-width:0;overflow-wrap:anywhere}
+.aura-preview-tenant strong{flex:1 1 140px}
