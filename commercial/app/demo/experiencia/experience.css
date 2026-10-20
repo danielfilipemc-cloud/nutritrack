@@ -80,3 +80,19 @@
 .aura-preview-top>div,.aura-preview-sidefoot{min-width:0}
 .aura-preview-top strong,.aura-preview-sidefoot strong,.aura-preview-tenant strong{min-width:0;overflow-wrap:anywhere}
 .aura-preview-tenant strong{flex:1 1 140px}
+/* The mobile profile keeps its context available without pushing the task below it. */
+.aura-preview-context-desktop{flex:1 0 100%;min-width:0}
+.aura-preview-context-mobile{display:none}
+.aura-preview input[aria-invalid=true]{border-color:#ffb5ac;outline-color:#ffb5ac}
+.aura-preview-empty p{color:#bdd1cb}
+@media(max-width:900px){
+ .aura-preview-student-title{padding:18px 0 8px}
+ .aura-preview-student-title h1{font-size:30px}
+ .aura-preview-student-title p{font-size:13px;margin-bottom:8px}
+ .aura-preview-student-header .aura-student-identity,.aura-preview-context-desktop{display:none}
+ .aura-preview-context-mobile{display:block;flex:1 0 100%;min-width:0;border-top:1px solid #34504b;padding-top:8px}
+ .aura-preview-context-mobile summary{cursor:pointer;min-height:44px;padding:8px 0;color:#edf6f4;font-size:14px;overflow-wrap:anywhere}
+ .aura-preview-context-mobile summary span{display:block;color:#bdd1cb;font-size:13px;padding-top:4px}
+ .aura-preview-context-mobile .aura-preview-context{border:0;padding:12px 0 0}
+ .aura-preview-student-header{gap:12px}
+}

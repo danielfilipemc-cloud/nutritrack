@@ -38,8 +38,8 @@ for(const width of [320,375,1440])test(`demo stays offline and isolates student 
  await nav.getByRole('button',{name:'Ficha 360.º'}).click();
  await expect(page.getByLabel('Objetivo fictício')).toHaveValue('Objetivo local da Sofia');
  await page.getByRole('button',{name:'Guardar acompanhamento',exact:true}).click();
- await expect(page.locator('.aura-preview-context')).toContainText('Profissional Demonstração');
- await expect(page.locator('.aura-preview-context')).toContainText('2026-10-25');
+ await expect(page.locator('.aura-preview-student-header')).toContainText('Profissional Demonstração');
+ await expect(page.locator('.aura-preview-student-header')).toContainText('2026-10-25');
  await page.getByRole('combobox',{name:'Escolher aluno',exact:true}).selectOption('2');
  await openSection(page,width,'Acompanhamento','care');
  await expect(page.getByLabel('Objetivo fictício')).not.toHaveValue('Objetivo local da Sofia');
@@ -62,7 +62,7 @@ for(const width of [320,375,1440])test(`demo stays offline and isolates student 
  await page.reload();await nav.getByRole('button',{name:'Ficha 360.º'}).click();
  await expect(page.getByRole('heading',{name:'Sofia Exemplo',exact:true})).toBeVisible();
  await expect(page.getByRole('combobox',{name:'Escolher aluno',exact:true}).locator('option')).toHaveCount(3);
- await expect(page.locator('.aura-preview-context')).toContainText('Profissional Exemplo');
+ await expect(page.locator('.aura-preview-student-header')).toContainText('Profissional Exemplo');
  expect(forbidden).toEqual([]);expect(await storage()).toEqual(before);
 });
 test('a professional fixture session is neither read nor changed by the demo',async({page})=>{
@@ -87,7 +87,7 @@ test('keyboard submission, validation and metric changes work without a backend'
  await page.getByPlaceholder('Ex.: Joana Exemplo').fill('Teclado Exemplo');await page.getByPlaceholder('Ex.: Joana Exemplo').press('Enter');
  await expect(page.getByRole('heading',{name:'Teclado Exemplo'})).toBeVisible();
  await openSection(page,375,'Avaliações','assessments');
- await page.getByRole('button',{name:'Guardar avaliação'}).click();await expect(page.getByRole('status').filter({hasText:'Preenche pelo menos uma medição.'})).toBeVisible();
+ await page.getByRole('button',{name:'Guardar avaliação'}).click();await expect(page.getByRole('alert').filter({hasText:'Preenche pelo menos uma medição.'})).toBeVisible();
  await page.getByLabel('Peso (kg)',{exact:true}).fill('68.5');await page.getByLabel('Peso (kg)',{exact:true}).press('Enter');
  await openSection(page,375,'Evolução','evolution');await expect(page.getByRole('img',{name:/1 medições/})).toBeVisible();
  await page.getByRole('combobox',{name:'Indicador da evolução',exact:true}).selectOption('height');await expect(page.getByText('Regista avaliações para visualizar a evolução.',{exact:true})).toBeVisible();
