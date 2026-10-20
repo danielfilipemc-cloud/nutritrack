@@ -1,0 +1,79 @@
+"use client";
+import {useState} from 'react';
+import StudentIdentity from '../../../components/StudentIdentity';
+import ProfileNavigation from '../../../components/ProfileNavigation';
+import ProgressChart from '../../../components/ProgressChart';
+import ClientProgressSummary from '../../../components/ClientProgressSummary';
+import {demoDate,demoAppointments,emptyAssessment,parseDemoAssessment,sortedAssessments,type AssessmentDraft,type DemoCare,type DemoStudent} from './model';
+
+type Section='overview'|'assessments'|'evolution'|'agenda'|'care';
+const sections:ReadonlyArray<readonly [Section,string]>=[['overview','Resumo'],['assessments','Avaliações'],['evolution','Evolução'],['agenda','Agenda do aluno'],['care','Acompanhamento']];
+const metrics=[['weight','Peso','kg'],['height','Altura','cm'],['waist','Cintura','cm']] as const;
+type Metric=typeof metrics[number][0];
+type Drafts={assessment:AssessmentDraft;care:DemoCare};
+const statusLabels={active:'Em acompanhamento',paused:'Em pausa',completed:'Concluído'};
+export default function DemoStudentHub({student,students,brand,onChoose,onUpdate,onAgenda}:{student:DemoStudent;students:DemoStudent[];brand:string;onChoose:(id:number)=>void;onUpdate:(student:DemoStudent)=>void;onAgenda:()=>void}) {
+ const [view,setView]=useState<{studentId:number;section:Section}>({studentId:student.id,section:'overview'});
+ const section=view.studentId===student.id?view.section:'overview';
+ const setSection=(next:Section)=>setView({studentId:student.id,section:next});
+ const [metric,setMetric]=useState<Metric>('weight');
+ const [drafts,setDrafts]=useState<Record<number,Drafts>>({});
+ const [messages,setMessages]=useState<Record<number,string>>({});
+ const draft=drafts[student.id]||{assessment:{...emptyAssessment},care:{...student.care}};
+ const updateDraft=(next:Partial<Drafts>)=>setDrafts(v=>({...v,[student.id]:{...draft,...next}}));
+ const notify=(text:string)=>setMessages(v=>({...v,[student.id]:text}));
+ const records=sortedAssessments(student);
+ const appointments=demoAppointments.filter(a=>a.studentId===student.id);
+ const [,,unit]=metrics.find(([key])=>key===metric)!;
+ function saveAssessment(event:React.FormEvent<HTMLFormElement>) {
+  event.preventDefault();
+  try {
+   const assessment=parseDemoAssessment(draft.assessment);
+   // A repeat on the same example date replaces that day's local example.
+   onUpdate({...student,assessments:[...student.assessments.filter(a=>a.date!==assessment.date),assessment]});
+   updateDraft({assessment:{...emptyAssessment}});
+   notify('Avaliação fictícia guardada apenas nesta sessão. Um registo por data.');
+  }catch(error){notify(error instanceof Error?error.message:'Não foi possível guardar o exemplo.');}
+ }
+ function saveCare(event:React.FormEvent<HTMLFormElement>) {
+  event.preventDefault();
+  onUpdate({...student,care:{...draft.care,goal:draft.care.goal.trim()}});
+  notify('Acompanhamento fictício guardado apenas nesta sessão.');
+ }
+ return <>
+  <div className="aura-preview-heading"><span className="aura-preview-overline">ACOMPANHAMENTO / FICHA 360.º</span><h1>{student.name}</h1><p>Informação fictícia · Data de referência: <time dateTime={demoDate}>{demoDate}</time></p></div>
+  <section className="aura-preview-panel aura-preview-student-header">
+   <StudentIdentity name={student.name}><strong>{student.name}</strong><small>Aluno de demonstração · {brand}</small></StudentIdentity>
+   <label>Escolher aluno<select value={student.id} onChange={event=>{onChoose(Number(event.target.value));setSection('overview');}}>{students.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+   <dl className="aura-preview-context"><div><dt>Acompanhamento</dt><dd>{statusLabels[student.care.status]}</dd></div><div><dt>Responsável</dt><dd>{student.care.responsible||'Por atribuir'}</dd></div><div><dt>Próxima revisão</dt><dd>{student.care.review?<time dateTime={student.care.review}>{student.care.review}</time>:'Sem revisão marcada'}</dd></div></dl>
+  </section>
+  <div className="aura-preview-hub">
+   <aside className="aura-preview-hubnav"><ProfileNavigation items={sections} value={section} disabled={false} onChange={setSection}/></aside>
+   <div className="aura-preview-hubbody">
+    {section==='overview'&&<>
+     <div className="aura-preview-summary"><ClientProgressSummary records={records.slice(-30).map(r=>({assessed_on:r.date,weight_kg:r.weight,height_cm:r.height,waist_cm:r.waist}))}/></div>
+     <section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Evolução recente</h2><button type="button" className="quiet" onClick={()=>setSection('evolution')}>Consultar evolução →</button></div><ProgressChart responsive records={records.map(r=>({date:r.date,value:r.weight}))} unit="kg"/><button type="button" className="quiet" onClick={()=>setSection('assessments')}>Consultar avaliações →</button></section>
+     <section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Agenda e revisão</h2><button type="button" className="quiet" onClick={()=>setSection('agenda')}>Consultar agenda →</button></div><p>{appointments.length?`${appointments.length} marcação de exemplo associada a este aluno.`:'Sem marcações de exemplo para este aluno.'}</p><p>Próxima revisão: {student.care.review||'Sem revisão marcada'}</p><button type="button" className="quiet" onClick={()=>setSection('care')}>Editar acompanhamento →</button></section>
+    </>}
+    {section==='assessments'&&<>
+     <section className="aura-preview-panel"><h2>Registar avaliação fictícia</h2><form onSubmit={saveAssessment} className="aura-preview-form">
+      <label>Data da avaliação<input type="date" required min="2000-01-01" max={demoDate} value={draft.assessment.date} onChange={e=>updateDraft({assessment:{...draft.assessment,date:e.target.value}})}/></label>
+      {metrics.map(([key,label,unit])=><label key={key}>{label} ({unit})<input inputMode="decimal" type="number" min={key==='weight'?'0.01':'0.1'} max={key==='weight'?500:300} step={key==='weight'?'0.01':'0.1'} value={draft.assessment[key]} onChange={e=>updateDraft({assessment:{...draft.assessment,[key]:e.target.value}})}/></label>)}
+      <button type="submit">Guardar avaliação</button>
+     </form><p className="aura-preview-note">Preenche pelo menos uma medição. Um registo por data; guardar novamente substitui o exemplo dessa data. Rascunhos mantidos por aluno nesta sessão.</p></section>
+     <section className="aura-preview-panel"><h2>Histórico de avaliações</h2>{records.length?<div className="aura-preview-table"><table><caption>Avaliações fictícias de {student.name}</caption><thead><tr><th scope="col">Data</th><th scope="col">Peso (kg)</th><th scope="col">Altura (cm)</th><th scope="col">Cintura (cm)</th></tr></thead><tbody>{records.slice().reverse().map(r=><tr key={r.date}><th scope="row">{r.date}</th><td>{r.weight??'—'}</td><td>{r.height??'—'}</td><td>{r.waist??'—'}</td></tr>)}</tbody></table></div>:<p>Este aluno ainda não tem avaliações de exemplo.</p>}</section>
+    </>}
+    {section==='evolution'&&<section className="aura-preview-panel"><h2>Evolução do aluno</h2><label>Indicador da evolução<select value={metric} onChange={e=>setMetric(e.target.value as Metric)}>{metrics.map(([key,label,unit])=><option key={key} value={key}>{label} ({unit})</option>)}</select></label><ProgressChart responsive records={records.map(r=>({date:r.date,value:r[metric]}))} unit={unit}/><p className="aura-preview-note">Até 30 medições fictícias apresentadas, sem interpretação clínica. Todas as avaliações permanecem no histórico.</p></section>}
+    {section==='agenda'&&<section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Agenda do aluno</h2><button type="button" className="quiet" onClick={onAgenda}>Abrir agenda geral →</button></div><p>Marcações fictícias de <time dateTime={demoDate}>{demoDate}</time>.</p>{appointments.length?<div className="aura-preview-timeline">{appointments.map(a=><div key={a.id}><time dateTime={`${a.date}T${a.time}`}>{a.time}</time><span className="aura-preview-dot"/><div><strong>{a.kind}</strong><small>{student.name} · Agendado · Exemplo</small></div></div>)}</div>:<p>Sem marcações de exemplo para este aluno.</p>}<p className="aura-preview-note">A demo permite consultar estes exemplos. Marcações profissionais exigem acesso autorizado.</p></section>}
+    {section==='care'&&<section className="aura-preview-panel"><h2>Acompanhamento do aluno</h2><form className="aura-preview-form" onSubmit={saveCare}>
+     <label>Estado do acompanhamento<select value={draft.care.status} onChange={e=>updateDraft({care:{...draft.care,status:e.target.value as DemoCare['status']}})}>{Object.entries(statusLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+     <label>Profissional responsável<select value={draft.care.responsible} onChange={e=>updateDraft({care:{...draft.care,responsible:e.target.value}})}><option value="">Por atribuir</option><option>Profissional Exemplo</option><option>Profissional Demonstração</option></select></label>
+     <label>Próxima revisão<input type="date" min="2000-01-01" max="2100-12-31" value={draft.care.review} onChange={e=>updateDraft({care:{...draft.care,review:e.target.value}})}/></label>
+     <label className="aura-preview-full">Objetivo fictício<textarea rows={3} maxLength={500} value={draft.care.goal} onChange={e=>updateDraft({care:{...draft.care,goal:e.target.value}})}/></label>
+     <button type="submit">Guardar acompanhamento</button>
+    </form><p className="aura-preview-note">Usa apenas exemplos. O cabeçalho e as prioridades refletem o acompanhamento guardado nesta sessão; recarregar repõe os exemplos.</p></section>}
+    {messages[student.id]&&<p role="status" className="aura-preview-message">{messages[student.id]}</p>}
+   </div>
+  </div>
+ </>;
+}
