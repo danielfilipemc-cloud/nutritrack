@@ -29,7 +29,7 @@ for(const width of [375,1440]){
  });
  test(`parity professional review captures ${width}`,async({page})=>{
   test.setTimeout(240000);const shot=await setup(page,width);
-  await fixture(page,{seedAppointments:2,seedObjectives:2});
+  await fixture(page,{seedAppointments:2,seedObjectives:2,referenceDate:'2026-10-20'});
   await expect(page.getByRole('region',{name:'Evolução individual na dashboard',exact:true})).toHaveAttribute('aria-busy','false');await shot('professional-dashboard');
   await page.goto(`/alunos/${C}?org=${A}&section=overview`);
   await expect(page.getByRole('heading',{name:'Evolução recente',exact:true})).toBeVisible({timeout:30000});

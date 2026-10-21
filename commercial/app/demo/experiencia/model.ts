@@ -5,11 +5,11 @@ export const demoDate = '2026-10-20';
 export type DemoAssessment = {date:string; weight:number|null; height:number|null; waist:number|null};
 export type DemoCare = {status:'active'|'paused'|'completed'; responsible:string; review:string; goal:string};
 export type DemoStudent = {id:number; name:string; assessments:DemoAssessment[]; care:DemoCare};
-export type DemoAppointment = {id:number; studentId:number; date:string; time:string; duration:number; kind:string};
+export type DemoAppointment = {id:number; studentId:number; date:string; time:string; duration:number; kind:string; status:'scheduled'|'cancelled'};
 export const demoAppointments:DemoAppointment[] = [
- {id:1,studentId:1,date:demoDate,time:'09:00',duration:45,kind:'Sessão de treino'},
- {id:2,studentId:2,date:demoDate,time:'10:30',duration:30,kind:'Avaliação física'},
- {id:3,studentId:3,date:demoDate,time:'14:00',duration:30,kind:'Revisão de acompanhamento'},
+ {id:1,studentId:1,date:demoDate,time:'09:00',duration:45,status:'scheduled',kind:'Sessão de treino'},
+ {id:2,studentId:2,date:demoDate,time:'10:30',duration:30,status:'scheduled',kind:'Avaliação física'},
+ {id:3,studentId:3,date:demoDate,time:'14:00',duration:30,status:'scheduled',kind:'Revisão de acompanhamento'},
 ];
 export function createDemoStudents():DemoStudent[] {
  return [
