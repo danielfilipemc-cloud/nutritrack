@@ -1,0 +1,41 @@
+const {test,expect}=require('@playwright/test');
+const fs=require('node:fs');
+const nav=(page,width)=>page.getByRole('navigation',{name:width>800?'Navegação da demonstração':'Áreas da demonstração'});
+const row=(page,time)=>page.locator('.aura-preview-bookings li').filter({has:page.locator('time').filter({hasText:`· ${time}–`})});
+async function agenda(page,width){await nav(page,width).getByRole('button',{name:'Agenda',exact:true}).click();}
+async function studentAgenda(page,width){if(width<=900)await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption('agenda');else await page.getByRole('button',{name:'Agenda do aluno',exact:true}).click();}
+for(const width of [320,375,1440]){
+ test(`reschedule and cancel stay consistent across the fictitious session ${width}`,async({page},testInfo)=>{
+  const origin=new URL(testInfo.project.use.baseURL).origin,external=[];page.on('request',r=>{if(new URL(r.url()).origin!==origin)external.push(r.url());});
+  await page.setViewportSize({width,height:900});await page.goto('/demo/experiencia');await agenda(page,width);
+  await row(page,'09:00').getByRole('button',{name:/^Reagendar marcação/}).click();
+  await expect(page.getByRole('heading',{name:'Reagendar marcação fictícia',exact:true})).toBeFocused();
+  await expect(page.getByLabel('Aluno da marcação',{exact:true})).toBeDisabled();await expect(page.getByLabel('Tipo de marcação',{exact:true})).toBeDisabled();
+  const save=page.getByRole('button',{name:'Guardar reagendamento fictício',exact:true});await save.click();await expect(page.getByRole('status')).toContainText('reagendada');await expect(save).toBeFocused();await expect(page.locator('.aura-preview-bookings li')).toHaveCount(3);
+  const time=page.getByLabel('Hora da marcação',{exact:true});await time.fill('10:45');await save.click();await expect(time).toBeFocused();await expect(time).toHaveAccessibleDescription(/sobrepõe/);await expect(row(page,'09:00')).toHaveCount(1);
+  await time.fill('11:00');await save.click();await expect(row(page,'11:00')).toContainText('Sofia Exemplo');await expect(row(page,'09:00')).toHaveCount(0);
+  await row(page,'11:00').getByRole('button',{name:'Abrir ficha de Sofia Exemplo',exact:true}).click();await studentAgenda(page,width);await expect(page.locator('.aura-preview-hubbody').getByText('2026-10-20 · 11:00–11:45',{exact:true})).toBeVisible();
+  await nav(page,width).getByRole('button',{name:'Visão geral',exact:true}).click();await expect(page.getByText('11:00',{exact:true})).toBeVisible();await agenda(page,width);
+  const cancel=row(page,'11:00').getByRole('button',{name:/^Cancelar marcação/});await cancel.click();await expect(page.getByRole('button',{name:'Manter marcação',exact:true})).toBeFocused();await page.keyboard.press('Escape');await expect(cancel).toBeFocused();await expect(page.locator('.aura-preview-bookings li')).toHaveCount(3);
+  await cancel.click();await page.getByRole('button',{name:'Confirmar cancelamento fictício',exact:true}).click();await expect(page.getByRole('status')).toContainText('cancelada');await expect(page.getByRole('heading',{name:'Consultar marcações fictícias',exact:true})).toBeFocused();await expect(page.locator('.aura-preview-bookings li')).toHaveCount(2);
+  await nav(page,width).getByRole('button',{name:'Visão geral',exact:true}).click();await expect(page.locator('.aura-preview-stats article').filter({hasText:'Marcações no dia de exemplo'})).toContainText('2');await expect(page.getByText('11:00',{exact:true})).toHaveCount(0);await agenda(page,width);
+  await page.getByLabel('Estado da marcação',{exact:true}).selectOption('cancelled');await expect(page.locator('.aura-preview-bookings li')).toHaveCount(1);await expect(row(page,'11:00')).toContainText('Cancelado');await expect(row(page,'11:00').getByRole('button',{name:/^Reagendar marcação|^Cancelar marcação/})).toHaveCount(0);
+  await row(page,'11:00').getByRole('button',{name:'Abrir ficha de Sofia Exemplo',exact:true}).click();await studentAgenda(page,width);await expect(page.locator('.aura-preview-student-bookings')).toContainText('Cancelado');await agenda(page,width);
+  await page.getByLabel('Hora da marcação',{exact:true}).fill('11:00');await page.getByRole('button',{name:'Criar marcação fictícia',exact:true}).click();await expect(page.getByLabel('Estado da marcação',{exact:true})).toHaveValue('scheduled');await expect(page.locator('.aura-preview-bookings li')).toHaveCount(3);
+  await page.getByLabel('Estado da marcação',{exact:true}).selectOption('all');await expect(page.locator('.aura-preview-bookings li')).toHaveCount(4);await page.reload();await agenda(page,width);await expect(row(page,'09:00')).toHaveCount(1);await expect(page.locator('.aura-preview-bookings li')).toHaveCount(3);expect(external).toEqual([]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ });
+ test(`editing preserves the creation draft and long names fit lifecycle actions ${width}`,async({page})=>{
+  await page.setViewportSize({width,height:900});await page.goto('/demo/experiencia');await agenda(page,width);
+  await page.getByLabel('Hora da marcação',{exact:true}).fill('17:00');await page.getByLabel('Aluno da marcação',{exact:true}).selectOption('3');
+  await row(page,'09:00').getByRole('button',{name:/^Reagendar marcação/}).click();await page.getByLabel('Hora da marcação',{exact:true}).fill('16:00');await nav(page,width).getByRole('button',{name:'Ficha 360.º',exact:true}).click();await agenda(page,width);await expect(page.getByLabel('Hora da marcação',{exact:true})).toHaveValue('16:00');
+  await row(page,'10:30').getByRole('button',{name:/^Reagendar marcação/}).click();await page.getByRole('button',{name:'Voltar à criação',exact:true}).click();await expect(page.getByLabel('Hora da marcação',{exact:true})).toHaveValue('17:00');await expect(page.getByLabel('Aluno da marcação',{exact:true})).toHaveValue('3');
+  await nav(page,width).getByRole('button',{name:'Alunos',exact:true}).click();await page.getByPlaceholder('Ex.: Joana Exemplo').fill('F'.repeat(100));await page.getByRole('button',{name:'Adicionar aluno',exact:true}).click();await agenda(page,width);await page.getByLabel('Aluno da marcação',{exact:true}).selectOption('4');await page.getByRole('button',{name:'Criar marcação fictícia',exact:true}).click();
+  await row(page,'17:00').getByRole('button',{name:/^Cancelar marcação/}).click();await expect(page.locator('.aura-preview-cancel-confirm')).toContainText('F'.repeat(100));expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.getByRole('button',{name:'Manter marcação',exact:true}).click();await expect(row(page,'17:00')).toBeVisible();
+ });
+ test(`lifecycle review capture ${width}`,async({page})=>{
+  test.skip(process.env.AURA_LIFECYCLE_CAPTURE!=='after','Explicit local capture only');const dir='.aura-integration/appointment-lifecycle/after';fs.mkdirSync(dir,{recursive:true});
+  await page.setViewportSize({width,height:900});await page.goto('/demo/experiencia');await agenda(page,width);await page.screenshot({path:`${dir}/agenda-${width}.png`,fullPage:true});
+  await row(page,'09:00').getByRole('button',{name:/^Reagendar marcação/}).click();await page.screenshot({path:`${dir}/edit-${width}.png`,fullPage:true});await page.getByLabel('Hora da marcação',{exact:true}).fill('11:00');await page.getByRole('button',{name:'Guardar reagendamento fictício',exact:true}).click();
+  await row(page,'11:00').getByRole('button',{name:/^Cancelar marcação/}).click();await page.screenshot({path:`${dir}/confirm-${width}.png`,fullPage:true});await page.getByRole('button',{name:'Confirmar cancelamento fictício',exact:true}).click();await page.getByLabel('Estado da marcação',{exact:true}).selectOption('all');await page.screenshot({path:`${dir}/cancelled-${width}.png`,fullPage:true});
+ });
+}

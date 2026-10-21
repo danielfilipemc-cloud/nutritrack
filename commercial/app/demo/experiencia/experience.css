@@ -115,3 +115,5 @@ html:has(.aura-preview){scroll-behavior:auto}
 }
 
 .aura-preview button.aura-preview-agenda-link:hover:not(:disabled){background:#143b3a;color:#b2f4e8}
+
+.aura-preview-bookings .aura-preview-booking-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0;max-width:100%}.aura-preview-booking-actions button{max-width:100%;white-space:normal;overflow-wrap:anywhere}.aura-preview-cancel-confirm{border:1px solid #618d83;padding:16px;border-radius:10px;margin-bottom:16px}.aura-preview-cancel-confirm h3{margin-top:0}.aura-preview-cancel-confirm p{overflow-wrap:anywhere}.aura-preview-agenda-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}@media(max-width:900px){.aura-preview-agenda-toolbar{grid-template-columns:1fr}.aura-preview-bookings .aura-preview-booking-actions{display:grid;width:100%}}
