@@ -97,11 +97,24 @@ html:has(.aura-preview){scroll-behavior:auto}
 .aura-preview input[aria-invalid=true]{border-color:#ffb5ac;outline-color:#ffb5ac}
 .aura-preview-empty p{color:#bdd1cb}
 .aura-preview label,.aura-preview select{min-width:0}
-.aura-preview-student-header>label select,.aura-preview-columns select{
+.aura-preview-student-header>label select,.aura-preview-columns select,.aura-preview-directory-filters select{
  appearance:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:34px;
  background-image:linear-gradient(45deg,transparent 50%,#bdd1cb 50%),linear-gradient(135deg,#bdd1cb 50%,transparent 50%);
  background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px;background-repeat:no-repeat;
 }
+.aura-preview-directory .aura-preview-panelhead{flex-wrap:wrap}
+.aura-preview-directory [role=status]{font-size:13px;color:#bdd1cb}
+.aura-preview-directory-filters{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:16px}
+.aura-preview-directory-list{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:10px}
+.aura-preview-directory-list li{min-width:0}
+.aura-preview-directory-list button{display:flex;align-items:center;flex-wrap:wrap;gap:12px;width:100%;min-width:0;text-align:left;background:#102524;color:#edf6f4;border:1px solid #34504b;padding:16px}
+.aura-preview .aura-preview-directory-list button:hover:not(:disabled){background:#143b3a;color:#b2f4e8}
+.aura-preview-directory .aura-student-identity{min-width:0;flex:1 1 160px}
+.aura-preview-directory .aura-student-identity>div{min-width:0;overflow-wrap:anywhere}
+.aura-preview-directory .aura-student-initial{flex-shrink:0}
+.aura-preview-directory .aura-student-identity strong,.aura-preview-directory .aura-student-identity>div>span{display:block}
+.aura-preview-directory .aura-student-identity>div>span,.aura-preview-directory-action{font-size:13px;color:#bdd1cb;margin-top:5px}
+@media(max-width:900px){.aura-preview-directory-filters{grid-template-columns:1fr}}
 @media(max-width:900px){
  .aura-preview-student-title{padding:18px 0 8px}
  .aura-preview-student-title h1{font-size:30px}
