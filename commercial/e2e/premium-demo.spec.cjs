@@ -20,7 +20,7 @@ for(const width of [375,1440])test('premium demo is anonymous, navigable, and lo
  else await page.getByRole('navigation',{name:'Secções da ficha',exact:true}).getByRole('button',{name:'Resumo',exact:true}).click();
  await expect(page.getByText('68.5 kg').first()).toBeVisible();
  await nav.getByRole('button',{name:'Agenda'}).click();
- await expect(page.getByRole('heading',{name:'Agenda do dia de exemplo'})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Agenda de exemplo'})).toBeVisible();
  await nav.getByRole('button',{name:'A tua marca'}).click();
  await expect(page.getByRole('heading',{name:'A tua marca'})).toBeVisible();
  await expect(page.getByText('Powered by AURA Business')).toBeVisible();

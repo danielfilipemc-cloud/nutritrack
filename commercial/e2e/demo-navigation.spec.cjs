@@ -26,7 +26,7 @@ for(const width of [375,1440]){
   await nav(page,width).getByRole('button',{name:'Ficha 360.º'}).click();
   await page.getByRole('button',{name:'Consultar agenda →',exact:true}).click();
   await page.getByRole('button',{name:'Abrir agenda geral →',exact:true}).click();
-  const title=page.getByRole('heading',{name:'Agenda do dia de exemplo',exact:true});
+  const title=page.getByRole('heading',{name:'Agenda de exemplo',exact:true});
   await expect(title).toBeVisible();await capture(page,`agenda-navigation-${width}`);
   await expect(title).toBeFocused();
   await expect(title).toBeInViewport({ratio:1});

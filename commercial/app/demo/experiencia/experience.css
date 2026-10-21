@@ -82,6 +82,16 @@
 .aura-preview-tenant strong{flex:1 1 140px}
 /* The mobile profile keeps its context available without pushing the task below it. */
 html:has(.aura-preview){scroll-behavior:auto}
+.aura-preview-agenda-toolbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.aura-preview-agenda-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.aura-preview-bookings{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.aura-preview-bookings li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:16px;border:1px solid #34504b;border-radius:12px;background:#102524;min-width:0}
+.aura-preview-bookings li>div{display:grid;gap:5px;min-width:0;flex:1 1 240px;overflow-wrap:anywhere}
+.aura-preview-bookings time,.aura-preview-bookings small{color:#bdd1cb;font-size:13px}
+.aura-preview-bookings button{overflow-wrap:anywhere;white-space:normal;text-align:left}
+.aura-preview .aura-preview-student-bookings>div{grid-template-columns:minmax(140px,1fr) 12px minmax(0,2fr)}
+.aura-preview-agenda-toolbar select,.aura-preview-form select{appearance:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:34px;background-image:linear-gradient(45deg,transparent 50%,#bdd1cb 50%),linear-gradient(135deg,#bdd1cb 50%,transparent 50%);background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+@media(max-width:900px){.aura-preview-agenda-toolbar{grid-template-columns:1fr}.aura-preview .aura-preview-student-bookings>div{grid-template-columns:1fr}.aura-preview-student-bookings .aura-preview-dot{display:none}}
 .aura-preview-context-desktop{flex:1 0 100%;min-width:0}
 .aura-preview-context-mobile{display:none}
 .aura-preview input[aria-invalid=true]{border-color:#ffb5ac;outline-color:#ffb5ac}
@@ -103,3 +113,5 @@ html:has(.aura-preview){scroll-behavior:auto}
  .aura-preview-context-mobile .aura-preview-context{border:0;padding:12px 0 0}
  .aura-preview-student-header{gap:12px}
 }
+
+.aura-preview button.aura-preview-agenda-link:hover:not(:disabled){background:#143b3a;color:#b2f4e8}
