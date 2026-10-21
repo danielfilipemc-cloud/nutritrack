@@ -12,7 +12,7 @@ for(const width of [320,375,1440]){
   await page.setViewportSize({width,height:900});await page.goto('/demo/experiencia?org=private-fixture&student=private-fixture');
   await expect(priority(page,'Sofia Exemplo')).toContainText('Revisão hoje');await priority(page,'Sofia Exemplo').focus();await page.keyboard.press('Enter');await expect(heading(page)).toBeFocused();await expect(heading(page)).toBeInViewport({ratio:1});
   await expect(page.getByRole('combobox',{name:'Escolher aluno',exact:true})).toHaveValue('1');
-  const review=page.getByLabel('Próxima revisão',{exact:true}),goal=page.getByLabel('Objetivo fictício',{exact:true});
+  const review=page.getByLabel('Próxima revisão',{exact:true}),goal=page.getByRole('textbox',{name:'Objetivo fictício',exact:true});
   await review.fill('2026-10-25');await goal.fill('  Objetivo fictício da Sofia  ');
   const context=page.locator(width<=900?'.aura-preview-context-mobile summary':'.aura-preview-context-desktop');await expect(context).toContainText('2026-10-20');
   await overview(page,width);await expect(priority(page,'Sofia Exemplo')).toContainText('2026-10-20');await priority(page,'Sofia Exemplo').click();await expect(heading(page)).toBeFocused();await expect(review).toHaveValue('2026-10-25');await expect(goal).toHaveValue('  Objetivo fictício da Sofia  ');
@@ -27,11 +27,11 @@ for(const width of [320,375,1440]){
  });
  test(`due reviews sort predictably while student drafts and calendar bounds stay isolated ${width}`,async({page})=>{
   await page.setViewportSize({width,height:900});await page.goto('/demo/experiencia');await nav(page,width).getByRole('button',{name:'Ficha 360.º',exact:true}).click();await care(page,width);
-  await page.getByLabel('Objetivo fictício',{exact:true}).fill('Rascunho Sofia');
-  await page.getByRole('combobox',{name:'Escolher aluno',exact:true}).selectOption('2');await care(page,width);await expect(page.getByLabel('Objetivo fictício',{exact:true})).not.toHaveValue('Rascunho Sofia');
+  await page.getByRole('textbox',{name:'Objetivo fictício',exact:true}).fill('Rascunho Sofia');
+  await page.getByRole('combobox',{name:'Escolher aluno',exact:true}).selectOption('2');await care(page,width);await expect(page.getByRole('textbox',{name:'Objetivo fictício',exact:true})).not.toHaveValue('Rascunho Sofia');
   await page.getByLabel('Próxima revisão',{exact:true}).fill('2026-10-19');await save(page).click();await overview(page,width);
   await expect(priorities(page).getByRole('button')).toHaveCount(2);await expect(priorities(page).getByRole('button').first()).toContainText('Miguel Exemplo');await expect(priority(page,'Miguel Exemplo')).toContainText('Revisão em atraso');
-  await priority(page,'Sofia Exemplo').click();await expect(page.getByLabel('Objetivo fictício',{exact:true})).toHaveValue('Rascunho Sofia');await page.getByLabel('Próxima revisão',{exact:true}).fill('2026-10-19');await save(page).click();await overview(page,width);await expect(priorities(page).getByRole('button').first()).toContainText('Sofia Exemplo');
+  await priority(page,'Sofia Exemplo').click();await expect(page.getByRole('textbox',{name:'Objetivo fictício',exact:true})).toHaveValue('Rascunho Sofia');await page.getByLabel('Próxima revisão',{exact:true}).fill('2026-10-19');await save(page).click();await overview(page,width);await expect(priorities(page).getByRole('button').first()).toContainText('Sofia Exemplo');
   await priority(page,'Miguel Exemplo').click();await page.getByRole('combobox',{name:'Estado do acompanhamento',exact:true}).selectOption('completed');await save(page).click();await overview(page,width);await expect(priority(page,'Miguel Exemplo')).toHaveCount(0);
   await priority(page,'Sofia Exemplo').click();const review=page.getByLabel('Próxima revisão',{exact:true});await review.fill('2101-01-01');await save(page).click();expect(await review.evaluate(el=>el.validity.rangeOverflow)).toBe(true);await overview(page,width);await expect(priority(page,'Sofia Exemplo')).toContainText('2026-10-19');
   await nav(page,width).getByRole('button',{name:'Alunos',exact:true}).click();await page.getByPlaceholder('Ex.: Joana Exemplo').fill('F'.repeat(100));await page.getByRole('button',{name:'Adicionar aluno',exact:true}).click();await care(page,width);await review.fill('2026-10-20');await save(page).click();await overview(page,width);
