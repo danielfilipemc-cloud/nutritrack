@@ -97,7 +97,7 @@ html:has(.aura-preview){scroll-behavior:auto}
 .aura-preview input[aria-invalid=true]{border-color:#ffb5ac;outline-color:#ffb5ac}
 .aura-preview-empty p{color:#bdd1cb}
 .aura-preview label,.aura-preview select{min-width:0}
-.aura-preview-student-header>label select{
+.aura-preview-student-header>label select,.aura-preview-columns select{
  appearance:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:34px;
  background-image:linear-gradient(45deg,transparent 50%,#bdd1cb 50%),linear-gradient(135deg,#bdd1cb 50%,transparent 50%);
  background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px;background-repeat:no-repeat;
@@ -117,3 +117,5 @@ html:has(.aura-preview){scroll-behavior:auto}
 .aura-preview button.aura-preview-agenda-link:hover:not(:disabled){background:#143b3a;color:#b2f4e8}
 
 .aura-preview-bookings .aura-preview-booking-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0;max-width:100%}.aura-preview-booking-actions button{max-width:100%;white-space:normal;overflow-wrap:anywhere}.aura-preview-cancel-confirm{border:1px solid #618d83;padding:16px;border-radius:10px;margin-bottom:16px}.aura-preview-cancel-confirm h3{margin-top:0}.aura-preview-cancel-confirm p{overflow-wrap:anywhere}.aura-preview-agenda-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}@media(max-width:900px){.aura-preview-agenda-toolbar{grid-template-columns:1fr}.aura-preview-bookings .aura-preview-booking-actions{display:grid;width:100%}}
+
+.aura-preview .aura-preview-priorities button:hover:not(:disabled){background:#143b3a;color:#b2f4e8}
