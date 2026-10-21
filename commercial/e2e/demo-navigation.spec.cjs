@@ -21,15 +21,17 @@ for(const width of [375,1440]){
   await page.getByRole('combobox',{name:'Estado do acompanhamento',exact:true}).selectOption('paused');
   await expect(page.getByRole('combobox',{name:'Estado do acompanhamento',exact:true})).toBeFocused();
  });
- test(`deep mobile navigation exposes the new page heading ${width}`,async({page})=>{
+ test(`contextual agenda navigation focuses the student schedule ${width}`,async({page})=>{
   await page.setViewportSize({width,height:900});await page.goto('/demo/experiencia');
   await nav(page,width).getByRole('button',{name:'Ficha 360.º'}).click();
   await page.getByRole('button',{name:'Consultar agenda →',exact:true}).click();
   await page.getByRole('button',{name:'Abrir agenda geral →',exact:true}).click();
-  const title=page.getByRole('heading',{name:'Agenda de exemplo',exact:true});
+  const title=page.getByRole('heading',{name:'Consultar marcações fictícias',exact:true});
   await expect(title).toBeVisible();await capture(page,`agenda-navigation-${width}`);
+  await expect(page.getByRole('combobox',{name:'Filtrar por aluno',exact:true})).toHaveValue('1');
   await expect(title).toBeFocused();
   await expect(title).toBeInViewport({ratio:1});
+  await page.keyboard.press('Tab');await expect(page.getByRole('combobox',{name:'Vista da agenda',exact:true})).toBeFocused();
  });
 }
 for(const width of [320,1440])test(`valid long names stay inside their layout ${width}`,async({page})=>{

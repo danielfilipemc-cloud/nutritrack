@@ -109,6 +109,14 @@ html:has(.aura-preview){scroll-behavior:auto}
 .aura-preview-directory-list li{min-width:0}
 .aura-preview-directory-list button{display:flex;align-items:center;flex-wrap:wrap;gap:12px;width:100%;min-width:0;text-align:left;background:#102524;color:#edf6f4;border:1px solid #34504b;padding:16px}
 .aura-preview .aura-preview-directory button:hover:not(:disabled){background:#143b3a;color:#b2f4e8}
+.aura-preview .aura-preview-journey button:hover:not(:disabled),.aura-preview .aura-preview-journey-action:hover:not(:disabled),.aura-preview .aura-preview-evolution button:hover:not(:disabled){background:#143b3a;color:#b2f4e8}
+.aura-preview-journey{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:20px;padding-top:18px;border-top:1px solid #34504b}
+.aura-preview-journey button,.aura-preview-journey-action{white-space:normal;overflow-wrap:anywhere;max-width:100%;text-align:left}
+.aura-preview-evolution-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}
+.aura-preview-evolution-summary>div,.aura-preview-review-date{min-width:0;padding:16px;background:#102524;border:1px solid #34504b;border-radius:12px;overflow-wrap:anywhere}
+.aura-preview-evolution-summary dt{color:#bdd1cb;font-size:13px}.aura-preview-evolution-summary dd{margin:8px 0 0;font-weight:700;font-size:18px}
+.aura-preview-review-date{margin-bottom:20px}.aura-preview-agenda-context strong{overflow-wrap:anywhere}
+@media(max-width:900px){.aura-preview-evolution-summary{grid-template-columns:1fr}.aura-preview-journey button{flex:1 1 180px}}
 .aura-preview-directory .aura-student-identity{min-width:0;flex:1 1 160px}
 .aura-preview-directory .aura-student-identity>div{min-width:0;overflow-wrap:anywhere}
 .aura-preview .aura-preview-directory .aura-student-initial{flex-shrink:0;width:38px;height:38px;font-size:13px;border-radius:12px}

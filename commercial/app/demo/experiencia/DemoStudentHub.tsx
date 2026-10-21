@@ -3,6 +3,8 @@ import {useRef,useState} from 'react';
 import StudentIdentity from '../../../components/StudentIdentity';
 import ProfileNavigation from '../../../components/ProfileNavigation';
 import ProgressChart from '../../../components/ProgressChart';
+import DemoEvolution from './DemoEvolution';
+import {nextStudentReview} from './journey';
 import ClientProgressSummary from '../../../components/ClientProgressSummary';
 import {appointmentEnd,sortedAppointments} from './appointments';
 import useDemoNavigationFocus from './use-demo-navigation-focus';
@@ -17,12 +19,14 @@ const metrics=[['weight','Peso','kg'],['height','Altura','cm'],['waist','Cintura
 type Metric=typeof metrics[number][0];
 type Drafts={assessment:AssessmentDraft;care:DemoCare};
 const statusLabels={active:'Em acompanhamento',paused:'Em pausa',completed:'Concluído'};
-export default function DemoStudentHub({view,onViewChange,focusRequest,allAppointments,student,students,brand,onChoose,onUpdate,onAgenda}:{view:DemoStudentView;onViewChange:(view:DemoStudentView)=>void;focusRequest:number;allAppointments:DemoAppointment[];student:DemoStudent;students:DemoStudent[];brand:string;onChoose:(id:number)=>void;onUpdate:(student:DemoStudent)=>void;onAgenda:()=>void}) {
+export default function DemoStudentHub({view,onViewChange,focusRequest,allAppointments,student,students,brand,onChoose,onUpdate,onAgenda,onScheduleReview,onBack,backLabel}:{view:DemoStudentView;onViewChange:(view:DemoStudentView)=>void;focusRequest:number;allAppointments:DemoAppointment[];student:DemoStudent;students:DemoStudent[];brand:string;onChoose:(id:number)=>void;onUpdate:(student:DemoStudent)=>void;onAgenda:()=>void;onScheduleReview:()=>void;onBack:()=>void;backLabel:string}) {
  const section=view.studentId===student.id?view.section:'overview';
  const setSection=(next:Section)=>onViewChange({studentId:student.id,section:next});
  const {container,requestFocus}=useDemoNavigationFocus(`${student.id}:${section}`,focusRequest);
  const openSection=(next:Section)=>{if(next!==section)requestFocus();setSection(next);};
- const [metric,setMetric]=useState<Metric>('weight');
+ const [studentMetrics,setStudentMetrics]=useState<Record<number,Metric>>({});
+ const metric=studentMetrics[student.id]||'weight';
+ const setMetric=(next:Metric)=>setStudentMetrics(v=>({...v,[student.id]:next}));
  const [drafts,setDrafts]=useState<Record<number,Drafts>>({});
  const [feedback,setFeedback]=useState<Record<number,{assessment?:{error:boolean;text:string};care?:CareFeedback}>>({});
  const weightInput=useRef<HTMLInputElement>(null);
@@ -37,7 +41,8 @@ export default function DemoStudentHub({view,onViewChange,focusRequest,allAppoin
  const clearAssessmentFeedback=()=>setFeedback(v=>({...v,[student.id]:{...v[student.id],assessment:undefined}}));
  const records=sortedAssessments(student);
  const appointments=sortedAppointments(allAppointments).filter(a=>a.studentId===student.id);
- const [,,unit]=metrics.find(([key])=>key===metric)!;
+ const nextReview=nextStudentReview(allAppointments,student.id);
+ const sectionIndex=sections.findIndex(([key])=>key===section);
  function saveAssessment(event:React.FormEvent<HTMLFormElement>) {
   event.preventDefault();
   try {
@@ -61,10 +66,10 @@ export default function DemoStudentHub({view,onViewChange,focusRequest,allAppoin
  }
  const context=<dl className="aura-preview-context"><div><dt>Acompanhamento</dt><dd>{statusLabels[student.care.status]}</dd></div><div><dt>Responsável</dt><dd>{student.care.responsible||'Por atribuir'}</dd></div><div><dt>Próxima revisão</dt><dd>{student.care.review?<time dateTime={student.care.review}>{student.care.review}</time>:'Sem revisão marcada'}</dd></div></dl>;
  return <>
-  <div className="aura-preview-heading aura-preview-student-title"><span className="aura-preview-overline">ACOMPANHAMENTO / FICHA 360.º</span><h1>{student.name}</h1><p>Informação fictícia · Data de referência: <time dateTime={demoDate}>{demoDate}</time></p></div>
+  <div className="aura-preview-heading aura-preview-student-title"><span className="aura-preview-overline">ACOMPANHAMENTO / FICHA 360.º</span><h1>{student.name}</h1><p>Informação fictícia · Data de referência: <time dateTime={demoDate}>{demoDate}</time></p><button type="button" className="quiet aura-preview-journey-action" onClick={onBack}>← {backLabel}</button></div>
   <section className="aura-preview-panel aura-preview-student-header">
    <StudentIdentity name={student.name}><strong>{student.name}</strong><small>Aluno de demonstração · {brand}</small></StudentIdentity>
-   <label>Escolher aluno<select value={student.id} onChange={event=>{onChoose(Number(event.target.value));setSection('overview');}}>{students.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+   <label>Escolher aluno<select value={student.id} onChange={event=>onChoose(Number(event.target.value))}>{students.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
    <div className="aura-preview-context-desktop">{context}</div>
    <details className="aura-preview-context-mobile"><summary>Contexto do acompanhamento <span>{statusLabels[student.care.status]} · {student.care.review?`Revisão: ${student.care.review}`:'Sem revisão marcada'}</span></summary>{context}</details>
   </section>
@@ -85,15 +90,16 @@ export default function DemoStudentHub({view,onViewChange,focusRequest,allAppoin
      </form><p id="demo-assessment-hint" className="aura-preview-note">Preenche pelo menos uma medição. Um registo por data; guardar novamente substitui o exemplo dessa data. Rascunhos mantidos por aluno nesta sessão.</p>{assessmentFeedback&&<p id={assessmentFeedback.error?'demo-assessment-error':undefined} role={assessmentFeedback.error?'alert':'status'} className="aura-preview-message">{assessmentFeedback.text}</p>}</section>
      <section className="aura-preview-panel"><h2>Histórico de avaliações</h2>{records.length?<div className="aura-preview-table"><table><caption>Avaliações fictícias de {student.name}</caption><thead><tr><th scope="col">Data</th><th scope="col">Peso (kg)</th><th scope="col">Altura (cm)</th><th scope="col">Cintura (cm)</th></tr></thead><tbody>{records.slice().reverse().map(r=><tr key={r.date}><th scope="row">{r.date}</th><td>{r.weight??'—'}</td><td>{r.height??'—'}</td><td>{r.waist??'—'}</td></tr>)}</tbody></table></div>:<p>Este aluno ainda não tem avaliações de exemplo.</p>}</section>
     </>}
-    {section==='evolution'&&<section className="aura-preview-panel"><h2>Evolução do aluno</h2><label>Indicador da evolução<select value={metric} onChange={e=>setMetric(e.target.value as Metric)}>{metrics.map(([key,label,unit])=><option key={key} value={key}>{label} ({unit})</option>)}</select></label><ProgressChart responsive records={records.map(r=>({date:r.date,value:r[metric]}))} unit={unit}/>{!records.some(r=>r[metric]!==null)&&<button type="button" onClick={()=>openSection('assessments')}>Registar medição de {metrics.find(([key])=>key===metric)![1].toLowerCase()}</button>}<p className="aura-preview-note">Até 30 medições fictícias apresentadas, sem interpretação clínica. Todas as avaliações permanecem no histórico.</p></section>}
-    {section==='agenda'&&<section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Agenda do aluno</h2><button type="button" className="quiet" onClick={onAgenda}>Abrir agenda geral →</button></div><p>Marcações fictícias associadas a este aluno. Referência: <time dateTime={demoDate}>{demoDate}</time>.</p>{appointments.length?<div className="aura-preview-timeline aura-preview-student-bookings">{appointments.map(a=><div key={a.id}><time dateTime={`${a.date}T${a.time}`}>{a.date} · {a.time}–{appointmentEnd(a)}</time><span className="aura-preview-dot"/><div><strong>{a.kind}</strong><small>{student.name} · {a.status==='cancelled'?'Cancelado':'Agendado'} · Exemplo</small></div></div>)}</div>:<p>Sem marcações de exemplo para este aluno.</p>}<p className="aura-preview-note">Cria exemplos na agenda geral. Marcações profissionais exigem acesso autorizado.</p></section>}
-    {section==='care'&&<section className="aura-preview-panel"><h2>Acompanhamento do aluno</h2><form ref={careForm} className="aura-preview-form" onSubmit={saveCare} onChange={clearCareFeedback} aria-describedby="demo-care-hint">
+    {section==='evolution'&&<DemoEvolution records={records} metric={metric} onMetric={setMetric} onAssessment={()=>openSection('assessments')}/>}
+    {section==='agenda'&&<section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Agenda do aluno</h2><button type="button" className="quiet" onClick={onAgenda}>Abrir agenda geral →</button></div><p>Marcações fictícias associadas a este aluno. Referência: <time dateTime={demoDate}>{demoDate}</time>.</p>{appointments.length?<div className="aura-preview-timeline aura-preview-student-bookings">{appointments.map(a=><div key={a.id}><time dateTime={`${a.date}T${a.time}`}>{a.date} · {a.time}–{appointmentEnd(a)}</time><span className="aura-preview-dot"/><div><strong>{a.kind}</strong><small>{student.name} · {a.status==='cancelled'?'Cancelado':'Agendado'} · Exemplo</small></div></div>)}</div>:<p>Sem marcações de exemplo para este aluno.</p>}<button type="button" className="aura-preview-journey-action" onClick={onScheduleReview}>Agendar revisão deste aluno →</button><p className="aura-preview-note">Cria exemplos na agenda geral. Marcações profissionais exigem acesso autorizado.</p></section>}
+    {section==='care'&&<section className="aura-preview-panel"><h2>Acompanhamento do aluno</h2>{nextReview&&<div className="aura-preview-review-date"><p>Próxima revisão na agenda: <time dateTime={`${nextReview.date}T${nextReview.time}`}>{nextReview.date} · {nextReview.time}</time></p><button type="button" className="quiet aura-preview-journey-action" onClick={()=>{updateDraft({care:{...draft.care,review:nextReview.date}});clearCareFeedback();}}>Usar data da marcação na próxima revisão</button><p className="aura-preview-note">Confirma a data e guarda o acompanhamento para atualizar o cabeçalho e as prioridades. Cancelar uma marcação não altera esta data guardada.</p></div>}<form ref={careForm} className="aura-preview-form" onSubmit={saveCare} onChange={clearCareFeedback} aria-describedby="demo-care-hint">
      <label>Estado do acompanhamento<select name="status" {...careErrorProps('status')} value={draft.care.status} onChange={e=>updateDraft({care:{...draft.care,status:e.target.value as DemoCare['status']}})}>{Object.entries(statusLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
      <label>Profissional responsável<select name="responsible" {...careErrorProps('responsible')} value={draft.care.responsible} onChange={e=>updateDraft({care:{...draft.care,responsible:e.target.value}})}>{demoResponsible.map(name=><option key={name} value={name}>{name||'Por atribuir'}</option>)}</select></label>
      <label>Próxima revisão<input name="review" {...careErrorProps('review')} type="date" min="2000-01-01" max="2100-12-31" value={draft.care.review} onChange={e=>updateDraft({care:{...draft.care,review:e.target.value}})}/></label>
      <label className="aura-preview-full">Objetivo fictício<textarea name="goal" {...careErrorProps('goal')} rows={3} maxLength={500} value={draft.care.goal} onChange={e=>updateDraft({care:{...draft.care,goal:e.target.value}})}/></label>
      <button type="submit">Guardar acompanhamento</button>
     </form><p id="demo-care-hint" className="aura-preview-note">Usa apenas exemplos. O cabeçalho e as prioridades refletem o acompanhamento guardado nesta sessão; recarregar repõe os exemplos.</p>{careFeedback&&<p id={careFeedback.error?'demo-care-error':undefined} role={careFeedback.error?'alert':'status'} className="aura-preview-message">{careFeedback.text}</p>}</section>}
+    <nav className="aura-preview-journey" aria-label="Continuar percurso do aluno">{sectionIndex>0&&<button type="button" className="quiet" onClick={()=>openSection(sections[sectionIndex-1][0])}>← Anterior: {sections[sectionIndex-1][1]}</button>}{sectionIndex<sections.length-1?<button type="button" onClick={()=>openSection(sections[sectionIndex+1][0])}>Seguinte: {sections[sectionIndex+1][1]} →</button>:<button type="button" onClick={()=>openSection('overview')}>Voltar ao resumo →</button>}</nav>
    </div>
   </div>
  </>;
