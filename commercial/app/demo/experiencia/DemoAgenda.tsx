@@ -23,7 +23,7 @@ export default function DemoAgenda({students,schedule,onCreate,onReschedule,onCa
   else {if(editing!==null)setDraft({...savedCreateDraft.current});setEditing(null);}
   setFocusSequence(n=>n+1);
  };
- const keepAppointment=()=>{setCancelId(null);cancelTrigger.current?.focus();};
+ const keepAppointment=()=>{setCancelId(null);const target=cancelTrigger.current;if(target?.isConnected&&target.getClientRects().length)target.focus();else{listHeading.current?.focus({preventScroll:true});listHeading.current?.scrollIntoView({block:'start',behavior:'instant'});}};
  useEffect(()=>{
   if(!result)return;
   if(result.ok&&result.created){setDay(result.created.date);setFilter('');setStatusFilter('scheduled');setDraft(v=>({...v,time:''}));}
