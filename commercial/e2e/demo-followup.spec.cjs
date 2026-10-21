@@ -10,7 +10,7 @@ for(const width of [320,375,1440]){
  test(`priority opens the correct followup and only saved changes affect the day ${width}`,async({page},testInfo)=>{
   const origin=new URL(testInfo.project.use.baseURL).origin,external=[];page.on('request',r=>{if(new URL(r.url()).origin!==origin)external.push(r.url());});
   await page.setViewportSize({width,height:900});await page.goto('/demo/experiencia?org=private-fixture&student=private-fixture');
-  await expect(priority(page,'Sofia Exemplo')).toContainText('Revisão hoje');await priority(page,'Sofia Exemplo').focus();await page.keyboard.press('Enter');await expect(heading(page)).toBeFocused();await expect(heading(page)).toBeInViewport({ratio:1});
+  await expect(page.locator('main.aura-preview')).toHaveAttribute('aria-busy','false');await expect(priority(page,'Sofia Exemplo')).toContainText('Revisão hoje');await priority(page,'Sofia Exemplo').focus();await expect(priority(page,'Sofia Exemplo')).toBeFocused();await page.keyboard.press('Enter');await expect(heading(page)).toBeFocused();await expect(heading(page)).toBeInViewport({ratio:1});
   await expect(page.getByRole('combobox',{name:'Escolher aluno',exact:true})).toHaveValue('1');
   const review=page.getByLabel('Próxima revisão',{exact:true}),goal=page.getByRole('textbox',{name:'Objetivo fictício',exact:true});
   await review.fill('2026-10-25');await goal.fill('  Objetivo fictício da Sofia  ');
