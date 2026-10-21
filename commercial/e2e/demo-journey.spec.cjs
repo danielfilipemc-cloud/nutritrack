@@ -37,7 +37,7 @@ test('review contexts preserve each student draft, the general creation draft an
   await find(page,name);await area(page,'agenda');
   if(name==='Miguel Exemplo'){
    await page.getByRole('button',{name:'Abrir agenda geral →',exact:true}).click();
-   await expect(page.getByRole('heading',{name:'Reagendar marcação fictícia',exact:true})).toBeVisible();await expect(field(page,'Hora da marcação')).toHaveValue('18:00');await expect(page.getByRole('combobox',{name:'Aluno da marcação',exact:true})).toHaveValue('2');await expect(page.getByText('Revisão de',{exact:false})).toHaveCount(0);
+   await expect(page.getByRole('heading',{name:'Reagendar marcação fictícia',exact:true})).toBeVisible();await expect(field(page,'Hora da marcação')).toHaveValue('18:00');await expect(page.getByRole('combobox',{name:'Aluno da marcação',exact:true})).toHaveValue('2');await expect(page.locator('p.aura-preview-note').filter({hasText:/^Revisão de /})).toHaveCount(0);
   }
   await page.getByRole('button',{name:'Agendar revisão deste aluno →',exact:true}).click();await expect(field(page,'Hora da marcação')).toHaveValue('');await field(page,'Data da marcação').fill(date);await field(page,'Hora da marcação').fill(time);await page.getByRole('combobox',{name:'Duração da marcação',exact:true}).selectOption(duration);
  }
