@@ -113,3 +113,5 @@ html:has(.aura-preview){scroll-behavior:auto}
  .aura-preview-context-mobile .aura-preview-context{border:0;padding:12px 0 0}
  .aura-preview-student-header{gap:12px}
 }
+
+.aura-preview button.aura-preview-agenda-link:hover:not(:disabled){background:#143b3a;color:#b2f4e8}

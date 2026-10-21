@@ -16,8 +16,8 @@ for(const width of [320,375,1440]){
   await expect(page.getByRole('status')).toContainText('Marcação fictícia criada');
   const row=page.locator('.aura-preview-bookings li').filter({hasText:'15:15–15:45'});await expect(row).toContainText('Miguel Exemplo');
   await expect(page.getByRole('button',{name:'Criar marcação fictícia',exact:true})).toBeFocused();
-  await row.getByRole('button',{name:'Abrir ficha de Miguel Exemplo',exact:true}).click();await area(page,width,'agenda');await expect(page.getByText('2026-10-20 · 15:15–15:45',{exact:true})).toBeVisible();
-  await page.getByRole('combobox',{name:'Escolher aluno',exact:true}).selectOption('1');await area(page,width,'agenda');await expect(page.getByText('2026-10-20 · 15:15–15:45',{exact:true})).toHaveCount(0);
+  await row.getByRole('button',{name:'Abrir ficha de Miguel Exemplo',exact:true}).click();await area(page,width,'agenda');await expect(page.locator('.aura-preview-hubbody').getByText('2026-10-20 · 15:15–15:45',{exact:true})).toBeVisible();
+  await page.getByRole('combobox',{name:'Escolher aluno',exact:true}).selectOption('1');await area(page,width,'agenda');await expect(page.locator('.aura-preview-hubbody').getByText('2026-10-20 · 15:15–15:45',{exact:true})).toHaveCount(0);
   await nav(page,width).getByRole('button',{name:'Visão geral',exact:true}).click();
   await expect(page.locator('.aura-preview-stats article').filter({hasText:'Marcações no dia de exemplo'})).toContainText('4');await expect(page.getByText('15:15',{exact:true})).toBeVisible();
   await agenda(page,width);await page.getByLabel('Data da marcação',{exact:true}).fill('2026-10-21');await page.getByLabel('Hora da marcação',{exact:true}).fill('09:00');await page.getByRole('button',{name:'Criar marcação fictícia',exact:true}).click();
