@@ -111,7 +111,8 @@ html:has(.aura-preview){scroll-behavior:auto}
 .aura-preview .aura-preview-directory button:hover:not(:disabled){background:#143b3a;color:#b2f4e8}
 .aura-preview-directory .aura-student-identity{min-width:0;flex:1 1 160px}
 .aura-preview-directory .aura-student-identity>div{min-width:0;overflow-wrap:anywhere}
-.aura-preview-directory .aura-student-initial{flex-shrink:0}
+.aura-preview .aura-preview-directory .aura-student-initial{flex-shrink:0;width:38px;height:38px;font-size:13px;border-radius:12px}
+.aura-preview .aura-preview-directory .aura-student-identity strong{font-size:16px}
 .aura-preview-directory .aura-student-identity strong,.aura-preview-directory .aura-student-identity>div>span{display:block}
 .aura-preview-directory .aura-student-identity>div>span,.aura-preview-directory-action{font-size:13px;color:#bdd1cb;margin-top:5px}
 @media(max-width:900px){.aura-preview-directory-filters{grid-template-columns:1fr}}

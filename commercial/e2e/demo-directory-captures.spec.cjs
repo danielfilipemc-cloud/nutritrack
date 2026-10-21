@@ -9,10 +9,13 @@ for(const width of [320,375,1440])test(`directory review captures ${width}`,asyn
  await nav.getByRole('button',{name:'Alunos',exact:true}).click();
  await page.screenshot({path:`${dir}/directory-${width}.png`,fullPage:true});
  if(phase==='before')return;
+ await page.screenshot({path:`${dir}/directory-viewport-${width}.png`});
  await page.getByRole('searchbox',{name:'Pesquisar alunos',exact:true}).fill('ines');
  await expect(page.getByRole('button',{name:'Abrir resumo de Inês Exemplo',exact:true})).toBeVisible();
  await page.screenshot({path:`${dir}/search-${width}.png`,fullPage:true});
  await page.getByRole('combobox',{name:'Estado do acompanhamento',exact:true}).selectOption('paused');
  await expect(page.getByRole('heading',{name:'Sem alunos encontrados',exact:true})).toBeVisible();
+ const clear=page.getByRole('button',{name:'Limpar pesquisa e filtros',exact:true});await clear.hover();
+ fs.writeFileSync(`${dir}/empty-action-style-${width}.json`,JSON.stringify(await clear.evaluate(el=>({color:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor})),null,2));
  await page.screenshot({path:`${dir}/empty-${width}.png`,fullPage:true});
 });
