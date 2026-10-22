@@ -1,0 +1,15 @@
+# PR #52 — Dashboard Premium da demonstração
+
+Base publicada: PR #51, integração c89acf61854ad32f4d88d8d2603e4f66b1a7f94a. Branch isolada feat/aura-demo-premium-dashboard; destino exclusivo integration/aura-staging.
+
+A dashboard passa a usar dashboardSnapshot como projeção única dos alunos e marcações guardados. Os três indicadores anteriores mantêm ordem e significado; o quarto conta revisões guardadas pendentes de acompanhamentos ativos. Canceladas e marcações sem aluno não entram nos totais. A semana inclui segunda a domingo, com dias vazios e duração agendada; não mede presenças ou utilização de capacidade. A referência continua fixa em 2026-10-20, independentemente do relógio do browser.
+
+O hero, identidade Premium e agenda lateral são preservados. O progresso individual reutiliza ProgressChart, com indicador/unidade, valores anterior/atual, datas, até 30 medições, tabela e estado vazio acionável. O indicador por aluno foi elevado à página para continuar na ficha, sem perder rascunhos. A escolha Dia/Semana mantém-se ao navegar. A dashboard deixa de renderizar conteúdo quando oculta, conservando o estado do componente e evitando títulos/tabelas duplicados em seletores de acessibilidade.
+
+A agenda permite consultar marcações no contexto do aluno e data exatos, sem substituir o rascunho geral ou de revisão. A próxima marcação é calculada desde o dia de exemplo; a data de revisão guardada continua distinta. As prioridades abrem acompanhamento com foco no título. O atalho por âncora foca o título de prioridades. A lista de alunos mostra até seis exemplos, com acesso ao diretório completo.
+
+Alteração visual intencional: as duas capturas da dashboard demo a375/1440 são comparadas antes/depois para revisão, preservando as referências anteriores; não devem ser declaradas byte-idênticas ou substituídas silenciosamente. As quatro referências profissionais (dashboard/resumo a375/1440) devem manter identidade byte a byte. Recolher também dashboard a320/768, vazio e semana. Esperar viewBox estável antes de comparar gráficos, conforme diagnóstico dos PRs anteriores.
+
+Testes: domínio sobre criação/reagendamento/cancelamento, limites semanais entre anos, canceladas/órfãos, ausência de mutação, dados vazios e acompanhamentos. Browser sobre totais, marcação futura/data exata, alternância de período, indicador partilhado, foco/âncora, rascunhos, prioridades e isolamento. Executar CI completo, Chromium, Android Chromium360/412 e iPhone WebKit320/390 emulados, percurso PR51 e testes online. Sem equivalência a aparelhos físicos ou Safari/iOS real.
+
+Apenas dados fictícios em memória. Sem alterações profissionais, Auth/RLS, migrations, produção, main, base de dados real, dependências ou NutriTrack pessoal. Componentes partilhados mantêm apresentação e não recebem adaptadores privados. Publicar somente staging após CI e revisão independente positivos, conforme autorização persistente. Capturas ficam no pacote local, sem upload público para GitHub. Próxima fase separada: PR #53, equipa/personalização, seguida de auditoria final da demonstração.

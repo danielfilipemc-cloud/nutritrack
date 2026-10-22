@@ -141,3 +141,31 @@ html:has(.aura-preview){scroll-behavior:auto}
 .aura-preview-bookings .aura-preview-booking-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0;max-width:100%}.aura-preview-booking-actions button{max-width:100%;white-space:normal;overflow-wrap:anywhere}.aura-preview-cancel-confirm{border:1px solid #618d83;padding:16px;border-radius:10px;margin-bottom:16px}.aura-preview-cancel-confirm h3{margin-top:0}.aura-preview-cancel-confirm p{overflow-wrap:anywhere}.aura-preview-agenda-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}@media(max-width:900px){.aura-preview-agenda-toolbar{grid-template-columns:1fr}.aura-preview-bookings .aura-preview-booking-actions{display:grid;width:100%}}
 
 .aura-preview .aura-preview-priorities button:hover:not(:disabled){background:#143b3a;color:#b2f4e8}
+/* PR52: scoped demo dashboard presentation; professional surfaces stay unchanged. */
+.aura-dashboard .aura-preview-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+.aura-dashboard .aura-preview-stats article{align-content:start;gap:9px;overflow-wrap:anywhere}
+.aura-dashboard .aura-preview-stats a{display:flex;align-items:center;min-height:44px;text-underline-offset:4px}
+.aura-dashboard .quiet{text-align:left;white-space:normal;overflow-wrap:anywhere}
+.aura-dashboard .quiet:hover:not(:disabled){background:#143b3a;color:#b2f4e8;border-radius:8px}
+.aura-dashboard .aura-preview-panelhead{align-items:flex-start;flex-wrap:wrap}
+.aura-dashboard .aura-preview-roster strong,.aura-dashboard-next strong{overflow-wrap:anywhere;min-width:0}
+.aura-dashboard-filters{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:12px}
+.aura-dashboard select option{background:#0b1718;color:#fff}
+.aura-dashboard .aura-preview-progress small{font-size:12px;color:#bdd1cb}
+.aura-dashboard .aura-preview-progress strong{font-size:22px;overflow-wrap:anywhere}
+.aura-dashboard-reference{margin:18px 0}
+.aura-dashboard-period{display:flex;gap:8px;flex-wrap:wrap}
+.aura-dashboard-period button[aria-pressed=true]{background:#18403b;border-color:#72c9b9;box-shadow:inset 0 -2px #72c9b9}
+.aura-dashboard-next,.aura-dashboard-empty{background:#102524;border:1px solid #34504b;border-radius:12px;padding:16px;margin:16px 0;overflow-wrap:anywhere}
+.aura-dashboard-next>strong{display:block;margin-top:10px}.aura-dashboard-next p{color:#bdd1cb;font-size:13px}
+.aura-dashboard .aura-preview-timeline>div{grid-template-columns:42px 10px minmax(0,1fr);gap:10px}
+.aura-dashboard .aura-preview-timeline strong,.aura-dashboard .aura-preview-timeline small{overflow-wrap:anywhere}
+.aura-dashboard-week figure{margin:22px 0 12px}.aura-dashboard-week figcaption{font-size:12px;color:#bdd1cb;margin-top:12px}
+.aura-dashboard-bars{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:12px}
+.aura-dashboard-bars li{text-align:center;min-width:0}.aura-dashboard-bars strong{font-size:16px}.aura-dashboard-bars time{font-size:12px;color:#bdd1cb}
+.aura-dashboard-bar-track{height:100px;margin:8px auto;width:min(100%,40px);display:flex;align-items:flex-end;background:#0b1718;border-bottom:1px solid #4c7169;border-radius:6px 6px 0 0}
+.aura-dashboard-bar-track span{width:100%;background:linear-gradient(#71d6c9,#168a80);border-radius:6px 6px 0 0}
+.aura-dashboard-week details{overflow-x:auto}.aura-dashboard-week summary{cursor:pointer;min-height:44px;padding:10px 0;color:#8fddd2}
+.aura-dashboard-week table{border-collapse:collapse;width:100%;font-size:13px}.aura-dashboard-week th,.aura-dashboard-week td{padding:10px;text-align:left;border-bottom:1px solid #34504b}.aura-dashboard-week caption{text-align:left;padding:12px 0}
+@media(max-width:1100px){.aura-dashboard .aura-preview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:800px){.aura-dashboard .aura-preview-stats article:last-child{grid-column:auto}.aura-dashboard-filters{grid-template-columns:1fr}.aura-dashboard-bars{gap:5px}.aura-dashboard-bars time{font-size:11px}.aura-dashboard .aura-preview-stats article{padding:15px}.aura-dashboard .aura-preview-roster button{flex-wrap:wrap}}

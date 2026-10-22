@@ -1,0 +1,1 @@
+const {defineConfig}=require('@playwright/test');const base=require('./playwright.demo-journey.config.cjs');module.exports=defineConfig({...base,testMatch:['demo-dashboard.spec.cjs'],outputDir:'.aura-integration/dashboard-device-results'});
