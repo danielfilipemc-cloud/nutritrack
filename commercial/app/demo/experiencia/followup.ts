@@ -12,9 +12,10 @@ export function reviewPriorities(students:DemoStudent[],reference=demoDate):Demo
 export class DemoCareError extends Error {
  constructor(message:string,readonly field:keyof DemoCare){super(message);}
 }
-export function parseDemoCare(draft:DemoCare):DemoCare {
+export function parseDemoCare(draft:DemoCare,available:readonly string[]=demoResponsible,savedResponsible=''):DemoCare {
  if(!['active','paused','completed'].includes(draft.status))throw new DemoCareError('Escolhe um estado de acompanhamento de exemplo.','status');
  if(!demoResponsible.some(name=>name===draft.responsible))throw new DemoCareError('Escolhe um dos responsáveis fictícios ou deixa por atribuir.','responsible');
+ if(draft.responsible&&!available.includes(draft.responsible)&&draft.responsible!==savedResponsible)throw new DemoCareError('Este profissional está em pausa no exemplo. Reativa-o na equipa ou escolhe outro responsável.','responsible');
  if(draft.review&&(!validDate(draft.review)||draft.review<'2000-01-01'||draft.review>'2100-12-31'))throw new DemoCareError('Indica uma revisão entre 2000-01-01 e 2100-12-31, ou deixa a data vazia.','review');
  if(draft.goal.length>500)throw new DemoCareError('Usa um objetivo fictício com até 500 caracteres.','goal');
  return {status:draft.status,responsible:draft.responsible,review:draft.review,goal:draft.goal.trim()};

@@ -1,5 +1,5 @@
 "use client";
-import {useRef,useState} from 'react';
+import {useRef,useState,useEffect} from 'react';
 import StudentIdentity from '../../../components/StudentIdentity';
 import ProfileNavigation from '../../../components/ProfileNavigation';
 import ProgressChart from '../../../components/ProgressChart';
@@ -19,7 +19,7 @@ const metrics=[['weight','Peso','kg'],['height','Altura','cm'],['waist','Cintura
 type Metric=typeof metrics[number][0];
 type Drafts={assessment:AssessmentDraft;care:DemoCare};
 const statusLabels={active:'Em acompanhamento',paused:'Em pausa',completed:'Concluído'};
-export default function DemoStudentHub({view,onViewChange,focusRequest,allAppointments,student,students,brand,onChoose,onUpdate,onAgenda,onScheduleReview,onBack,backLabel,studentMetrics,onMetric}:{view:DemoStudentView;onViewChange:(view:DemoStudentView)=>void;focusRequest:number;allAppointments:DemoAppointment[];student:DemoStudent;students:DemoStudent[];brand:string;onChoose:(id:number)=>void;onUpdate:(student:DemoStudent)=>void;onAgenda:()=>void;onScheduleReview:()=>void;onBack:()=>void;backLabel:string;studentMetrics:Record<number,Metric>;onMetric:(id:number,metric:Metric)=>void}) {
+export default function DemoStudentHub({view,onViewChange,focusRequest,allAppointments,student,students,brand,onChoose,onUpdate,onAgenda,onScheduleReview,onBack,backLabel,studentMetrics,onMetric,availableResponsible}:{view:DemoStudentView;onViewChange:(view:DemoStudentView)=>void;focusRequest:number;allAppointments:DemoAppointment[];student:DemoStudent;students:DemoStudent[];brand:string;onChoose:(id:number)=>void;onUpdate:(student:DemoStudent)=>void;onAgenda:()=>void;onScheduleReview:()=>void;onBack:()=>void;backLabel:string;studentMetrics:Record<number,Metric>;onMetric:(id:number,metric:Metric)=>void;availableResponsible:readonly string[]}) {
  const section=view.studentId===student.id?view.section:'overview';
  const setSection=(next:Section)=>onViewChange({studentId:student.id,section:next});
  const {container,requestFocus}=useDemoNavigationFocus(`${student.id}:${section}`,focusRequest);
@@ -28,6 +28,8 @@ export default function DemoStudentHub({view,onViewChange,focusRequest,allAppoin
  const setMetric=(next:Metric)=>onMetric(student.id,next);
  const [drafts,setDrafts]=useState<Record<number,Drafts>>({});
  const [feedback,setFeedback]=useState<Record<number,{assessment?:{error:boolean;text:string};care?:CareFeedback}>>({});
+ const availableKey=availableResponsible.join('|');
+ useEffect(()=>setFeedback(previous=>{let changed=false;const next={...previous};for(const [id,value] of Object.entries(previous)){if(value.care?.error&&value.care.field==='responsible'){next[Number(id)]={...value,care:undefined};changed=true;}}return changed?next:previous;}),[availableKey]);
  const weightInput=useRef<HTMLInputElement>(null);
  const assessmentFeedback=feedback[student.id]?.assessment;
  const careFeedback=feedback[student.id]?.care;
@@ -55,7 +57,7 @@ export default function DemoStudentHub({view,onViewChange,focusRequest,allAppoin
  function saveCare(event:React.FormEvent<HTMLFormElement>) {
   event.preventDefault();
   try {
-   const care=parseDemoCare(draft.care);onUpdate({...student,care});updateDraft({care});
+   const care=parseDemoCare(draft.care,availableResponsible,student.care.responsible);onUpdate({...student,care});updateDraft({care});
    setFeedback(v=>({...v,[student.id]:{...v[student.id],care:{error:false,text:'Acompanhamento fictício guardado apenas nesta sessão.'}}}));
   }catch(error){
    const field=error instanceof DemoCareError?error.field:undefined;
@@ -93,7 +95,7 @@ export default function DemoStudentHub({view,onViewChange,focusRequest,allAppoin
     {section==='agenda'&&<section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Agenda do aluno</h2><button type="button" className="quiet" onClick={onAgenda}>Abrir agenda geral →</button></div><p>Marcações fictícias associadas a este aluno. Referência: <time dateTime={demoDate}>{demoDate}</time>.</p>{appointments.length?<div className="aura-preview-timeline aura-preview-student-bookings">{appointments.map(a=><div key={a.id}><time dateTime={`${a.date}T${a.time}`}>{a.date} · {a.time}–{appointmentEnd(a)}</time><span className="aura-preview-dot"/><div><strong>{a.kind}</strong><small>{student.name} · {a.status==='cancelled'?'Cancelado':'Agendado'} · Exemplo</small></div></div>)}</div>:<p>Sem marcações de exemplo para este aluno.</p>}<button type="button" className="aura-preview-journey-action" onClick={onScheduleReview}>Agendar revisão deste aluno →</button><p className="aura-preview-note">Cria exemplos na agenda geral. Marcações profissionais exigem acesso autorizado.</p></section>}
     {section==='care'&&<section className="aura-preview-panel"><h2>Acompanhamento do aluno</h2>{nextReview&&<div className="aura-preview-review-date"><p>Próxima revisão na agenda: <time dateTime={`${nextReview.date}T${nextReview.time}`}>{nextReview.date} · {nextReview.time}</time></p><button type="button" className="quiet aura-preview-journey-action" onClick={()=>{updateDraft({care:{...draft.care,review:nextReview.date}});clearCareFeedback();}}>Usar data da marcação na próxima revisão</button><p className="aura-preview-note">Confirma a data e guarda o acompanhamento para atualizar o cabeçalho e as prioridades. Cancelar uma marcação não altera esta data guardada.</p></div>}<form ref={careForm} className="aura-preview-form" onSubmit={saveCare} onChange={clearCareFeedback} aria-describedby="demo-care-hint">
      <label>Estado do acompanhamento<select name="status" {...careErrorProps('status')} value={draft.care.status} onChange={e=>updateDraft({care:{...draft.care,status:e.target.value as DemoCare['status']}})}>{Object.entries(statusLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-     <label>Profissional responsável<select name="responsible" {...careErrorProps('responsible')} value={draft.care.responsible} onChange={e=>updateDraft({care:{...draft.care,responsible:e.target.value}})}>{demoResponsible.map(name=><option key={name} value={name}>{name||'Por atribuir'}</option>)}</select></label>
+     <label>Profissional responsável<select name="responsible" {...careErrorProps('responsible')} value={draft.care.responsible} onChange={e=>updateDraft({care:{...draft.care,responsible:e.target.value}})}>{demoResponsible.map(name=><option key={name} value={name} disabled={!!name&&!availableResponsible.includes(name)&&name!==student.care.responsible}>{name?(availableResponsible.includes(name)?name:name+' — Pausado no exemplo'):'Por atribuir'}</option>)}</select></label>
      <label>Próxima revisão<input name="review" {...careErrorProps('review')} type="date" min="2000-01-01" max="2100-12-31" value={draft.care.review} onChange={e=>updateDraft({care:{...draft.care,review:e.target.value}})}/></label>
      <label className="aura-preview-full">Objetivo fictício<textarea name="goal" {...careErrorProps('goal')} rows={3} maxLength={500} value={draft.care.goal} onChange={e=>updateDraft({care:{...draft.care,goal:e.target.value}})}/></label>
      <button type="submit">Guardar acompanhamento</button>
