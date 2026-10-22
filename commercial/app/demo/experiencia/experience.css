@@ -169,3 +169,4 @@ html:has(.aura-preview){scroll-behavior:auto}
 .aura-dashboard-week table{border-collapse:collapse;width:100%;font-size:13px}.aura-dashboard-week th,.aura-dashboard-week td{padding:10px;text-align:left;border-bottom:1px solid #34504b}.aura-dashboard-week caption{text-align:left;padding:12px 0}
 @media(max-width:1100px){.aura-dashboard .aura-preview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:800px){.aura-dashboard .aura-preview-stats article:last-child{grid-column:auto}.aura-dashboard-filters{grid-template-columns:1fr}.aura-dashboard-bars{gap:5px}.aura-dashboard-bars time{font-size:11px}.aura-dashboard .aura-preview-stats article{padding:15px}.aura-dashboard .aura-preview-roster button{flex-wrap:wrap}}
+.aura-dashboard .aura-preview-note{overflow-wrap:anywhere}
