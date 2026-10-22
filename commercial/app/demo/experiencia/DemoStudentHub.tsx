@@ -3,6 +3,8 @@ import {useRef,useState,useEffect} from 'react';
 import StudentIdentity from '../../../components/StudentIdentity';
 import ProfileNavigation from '../../../components/ProfileNavigation';
 import ProgressChart from '../../../components/ProgressChart';
+import DemoActions from './DemoActions';
+import type {DemoActionDraft,DemoActionPlan} from './actions';
 import DemoEvolution from './DemoEvolution';
 import {nextStudentReview} from './journey';
 import ClientProgressSummary from '../../../components/ClientProgressSummary';
@@ -19,7 +21,7 @@ const metrics=[['weight','Peso','kg'],['height','Altura','cm'],['waist','Cintura
 type Metric=typeof metrics[number][0];
 type Drafts={assessment:AssessmentDraft;care:DemoCare};
 const statusLabels={active:'Em acompanhamento',paused:'Em pausa',completed:'Concluído'};
-export default function DemoStudentHub({view,onViewChange,focusRequest,allAppointments,student,students,brand,onChoose,onUpdate,onAgenda,onScheduleReview,onBack,backLabel,studentMetrics,onMetric,availableResponsible}:{view:DemoStudentView;onViewChange:(view:DemoStudentView)=>void;focusRequest:number;allAppointments:DemoAppointment[];student:DemoStudent;students:DemoStudent[];brand:string;onChoose:(id:number)=>void;onUpdate:(student:DemoStudent)=>void;onAgenda:()=>void;onScheduleReview:()=>void;onBack:()=>void;backLabel:string;studentMetrics:Record<number,Metric>;onMetric:(id:number,metric:Metric)=>void;availableResponsible:readonly string[]}) {
+export default function DemoStudentHub({view,onViewChange,focusRequest,allAppointments,student,students,brand,onChoose,onUpdate,onAgenda,onScheduleReview,onBack,backLabel,studentMetrics,onMetric,availableResponsible,actionPlan,onActionSave,onActionToggle}:{view:DemoStudentView;onViewChange:(view:DemoStudentView)=>void;focusRequest:number;allAppointments:DemoAppointment[];student:DemoStudent;students:DemoStudent[];brand:string;onChoose:(id:number)=>void;onUpdate:(student:DemoStudent)=>void;onAgenda:()=>void;onScheduleReview:()=>void;onBack:()=>void;backLabel:string;studentMetrics:Record<number,Metric>;onMetric:(id:number,metric:Metric)=>void;availableResponsible:readonly string[];actionPlan:DemoActionPlan;onActionSave:(studentId:number,draft:DemoActionDraft,editingId:number|null)=>void;onActionToggle:(studentId:number,id:number)=>void}) {
  const section=view.studentId===student.id?view.section:'overview';
  const setSection=(next:Section)=>onViewChange({studentId:student.id,section:next});
  const {container,requestFocus}=useDemoNavigationFocus(`${student.id}:${section}`,focusRequest);
@@ -100,6 +102,7 @@ export default function DemoStudentHub({view,onViewChange,focusRequest,allAppoin
      <label className="aura-preview-full">Objetivo fictício<textarea name="goal" {...careErrorProps('goal')} rows={3} maxLength={500} value={draft.care.goal} onChange={e=>updateDraft({care:{...draft.care,goal:e.target.value}})}/></label>
      <button type="submit">Guardar acompanhamento</button>
     </form><p id="demo-care-hint" className="aura-preview-note">Usa apenas exemplos. O cabeçalho e as prioridades refletem o acompanhamento guardado nesta sessão; recarregar repõe os exemplos.</p>{careFeedback&&<p id={careFeedback.error?'demo-care-error':undefined} role={careFeedback.error?'alert':'status'} className="aura-preview-message">{careFeedback.text}</p>}</section>}
+    <DemoActions visible={section==='care'} student={student} plan={actionPlan} onSave={onActionSave} onToggle={onActionToggle}/>
     <nav className="aura-preview-journey" aria-label="Continuar percurso do aluno">{sectionIndex>0&&<button type="button" className="quiet" onClick={()=>openSection(sections[sectionIndex-1][0])}>← Anterior: {sections[sectionIndex-1][1]}</button>}{sectionIndex<sections.length-1?<button type="button" onClick={()=>openSection(sections[sectionIndex+1][0])}>Seguinte: {sections[sectionIndex+1][1]} →</button>:<button type="button" onClick={()=>openSection('overview')}>Voltar ao resumo →</button>}</nav>
    </div>
   </div>
