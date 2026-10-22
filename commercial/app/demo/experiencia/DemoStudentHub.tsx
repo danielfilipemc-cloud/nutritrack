@@ -4,6 +4,9 @@ import StudentIdentity from '../../../components/StudentIdentity';
 import ProfileNavigation from '../../../components/ProfileNavigation';
 import ProgressChart from '../../../components/ProgressChart';
 import DemoActions from './DemoActions';
+import DemoCheckins,{type CheckinCommands} from './DemoCheckins';
+import DemoSessionPreparation from './DemoSessionPreparation';
+import type {CheckinPlan} from './checkins';
 import type {DemoActionDraft,DemoActionPlan} from './actions';
 import DemoEvolution from './DemoEvolution';
 import {nextStudentReview} from './journey';
@@ -21,7 +24,8 @@ const metrics=[['weight','Peso','kg'],['height','Altura','cm'],['waist','Cintura
 type Metric=typeof metrics[number][0];
 type Drafts={assessment:AssessmentDraft;care:DemoCare};
 const statusLabels={active:'Em acompanhamento',paused:'Em pausa',completed:'Concluído'};
-export default function DemoStudentHub({view,onViewChange,focusRequest,allAppointments,student,students,brand,onChoose,onUpdate,onAgenda,onScheduleReview,onBack,backLabel,studentMetrics,onMetric,availableResponsible,actionPlan,onActionSave,onActionToggle}:{view:DemoStudentView;onViewChange:(view:DemoStudentView)=>void;focusRequest:number;allAppointments:DemoAppointment[];student:DemoStudent;students:DemoStudent[];brand:string;onChoose:(id:number)=>void;onUpdate:(student:DemoStudent)=>void;onAgenda:()=>void;onScheduleReview:()=>void;onBack:()=>void;backLabel:string;studentMetrics:Record<number,Metric>;onMetric:(id:number,metric:Metric)=>void;availableResponsible:readonly string[];actionPlan:DemoActionPlan;onActionSave:(studentId:number,draft:DemoActionDraft,editingId:number|null)=>void;onActionToggle:(studentId:number,id:number)=>void}) {
+export default function DemoStudentHub({view,onViewChange,focusRequest,allAppointments,student,students,brand,onChoose,onUpdate,onAgenda,onScheduleReview,onBack,backLabel,studentMetrics,onMetric,availableResponsible,actionPlan,onActionSave,onActionToggle,checkinPlan,checkinCommands}:{checkinPlan:CheckinPlan;checkinCommands:CheckinCommands;view:DemoStudentView;onViewChange:(view:DemoStudentView)=>void;focusRequest:number;allAppointments:DemoAppointment[];student:DemoStudent;students:DemoStudent[];brand:string;onChoose:(id:number)=>void;onUpdate:(student:DemoStudent)=>void;onAgenda:()=>void;onScheduleReview:()=>void;onBack:()=>void;backLabel:string;studentMetrics:Record<number,Metric>;onMetric:(id:number,metric:Metric)=>void;availableResponsible:readonly string[];actionPlan:DemoActionPlan;onActionSave:(studentId:number,draft:DemoActionDraft,editingId:number|null)=>void;onActionToggle:(studentId:number,id:number)=>void}) {
+ const [checkinOrigin,setCheckinOrigin]=useState<{id:number;sequence:number}|null>(null);
  const section=view.studentId===student.id?view.section:'overview';
  const setSection=(next:Section)=>onViewChange({studentId:student.id,section:next});
  const {container,requestFocus}=useDemoNavigationFocus(`${student.id}:${section}`,focusRequest);
@@ -85,6 +89,7 @@ export default function DemoStudentHub({view,onViewChange,focusRequest,allAppoin
      <section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Evolução recente</h2><button type="button" className="quiet" onClick={()=>openSection('evolution')}>Consultar evolução →</button></div><ProgressChart responsive records={records.map(r=>({date:r.date,value:r.weight}))} unit="kg"/><button type="button" className="quiet" onClick={()=>openSection('assessments')}>Consultar avaliações →</button></section>
      <section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Agenda e revisão</h2><button type="button" className="quiet" onClick={()=>openSection('agenda')}>Consultar agenda →</button></div><p>{appointments.some(a=>a.status==='scheduled')?`${appointments.filter(a=>a.status==='scheduled').length} marcação de exemplo associada a este aluno.`:'Sem marcações ativas de exemplo para este aluno.'}</p><p>Próxima revisão: {student.care.review||'Sem revisão marcada'}</p><button type="button" className="quiet" onClick={()=>openSection('care')}>Editar acompanhamento →</button></section>
     </>}
+    <DemoSessionPreparation visible={section==='overview'} student={student} appointments={allAppointments} plan={checkinPlan} actions={actionPlan} onCare={()=>openSection('care')} onAgenda={()=>openSection('agenda')} onAssessments={()=>openSection('assessments')}/>
     {section==='assessments'&&<>
      <section className="aura-preview-panel"><h2>Registar avaliação fictícia</h2><form onSubmit={saveAssessment} className="aura-preview-form" onChange={clearAssessmentFeedback} aria-describedby="demo-assessment-hint">
       <label>Data da avaliação<input type="date" required min="2000-01-01" max={demoDate} value={draft.assessment.date} onChange={e=>updateDraft({assessment:{...draft.assessment,date:e.target.value}})}/></label>
@@ -102,7 +107,8 @@ export default function DemoStudentHub({view,onViewChange,focusRequest,allAppoin
      <label className="aura-preview-full">Objetivo fictício<textarea name="goal" {...careErrorProps('goal')} rows={3} maxLength={500} value={draft.care.goal} onChange={e=>updateDraft({care:{...draft.care,goal:e.target.value}})}/></label>
      <button type="submit">Guardar acompanhamento</button>
     </form><p id="demo-care-hint" className="aura-preview-note">Usa apenas exemplos. O cabeçalho e as prioridades refletem o acompanhamento guardado nesta sessão; recarregar repõe os exemplos.</p>{careFeedback&&<p id={careFeedback.error?'demo-care-error':undefined} role={careFeedback.error?'alert':'status'} className="aura-preview-message">{careFeedback.text}</p>}</section>}
-    <DemoActions visible={section==='care'} student={student} plan={actionPlan} onSave={onActionSave} onToggle={onActionToggle}/>
+    <DemoCheckins visible={section==='care'} student={student} plan={checkinPlan} actions={actionPlan} commands={checkinCommands} sourceRequest={checkinOrigin}/>
+    <DemoActions visible={section==='care'} student={student} plan={actionPlan} onSave={onActionSave} onToggle={onActionToggle} onSource={id=>setCheckinOrigin(v=>({id,sequence:(v?.sequence||0)+1}))}/>
     <nav className="aura-preview-journey" aria-label="Continuar percurso do aluno">{sectionIndex>0&&<button type="button" className="quiet" onClick={()=>openSection(sections[sectionIndex-1][0])}>← Anterior: {sections[sectionIndex-1][1]}</button>}{sectionIndex<sections.length-1?<button type="button" onClick={()=>openSection(sections[sectionIndex+1][0])}>Seguinte: {sections[sectionIndex+1][1]} →</button>:<button type="button" onClick={()=>openSection('overview')}>Voltar ao resumo →</button>}</nav>
    </div>
   </div>

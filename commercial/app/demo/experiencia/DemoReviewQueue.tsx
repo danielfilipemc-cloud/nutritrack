@@ -1,0 +1,15 @@
+"use client";
+import {useState} from 'react';
+import {reviewRows,type CheckinPlan} from './checkins';
+import type {DemoActionPlan} from './actions';
+import type {DemoStudent} from './model';
+export default function DemoReviewQueue({visible,students,plan,actions,onStudent}:{visible:boolean;students:DemoStudent[];plan:CheckinPlan;actions:DemoActionPlan;onStudent:(id:number)=>void}){
+ const [reason,setReason]=useState('all'),[responsible,setResponsible]=useState('all');
+ if(!visible)return null;
+ const all=reviewRows(students,plan,actions),rows=all.filter(r=>(responsible==='all'||r.student.care.responsible===responsible)&&(reason==='all'||reason==='review'&&r.unreviewed||reason==='overdue'&&r.overdue||reason==='actions'&&r.pending));
+ const names=[...new Set([...students.map(s=>s.care.responsible).filter(Boolean),...(responsible&&responsible!=='all'?[responsible]:[])])];
+ return <section className="aura-preview-panel aura-demo-continuity" aria-labelledby="demo-review-queue"><span className="aura-preview-overline">DAR SEGUIMENTO</span><h2 id="demo-review-queue">Fila de revisão</h2><p>Um registo por aluno, com motivos separados. Uma resposta por rever, um prazo vencido e uma ação interna são situações distintas.</p><div className="aura-preview-form"><label>Motivo da revisão<select value={reason} onChange={e=>setReason(e.target.value)}><option value="all">Todos os motivos</option><option value="review">Respostas por rever</option><option value="overdue">Check-ins sem resposta no prazo</option><option value="actions">Ações por concluir</option></select></label><label>Responsável da fila<select value={responsible} onChange={e=>setResponsible(e.target.value)}><option value="all">Todos os responsáveis</option><option value="">Por atribuir</option>{names.map(name=><option key={name} value={name}>{name}</option>)}</select></label></div>
+ <p role="status">{rows.length} {rows.length===1?'aluno neste filtro':'alunos neste filtro'} · {all.length} no total com assuntos pendentes.</p>
+ {rows.length?<ul className="aura-demo-continuity-list">{rows.map(r=><li key={r.student.id}><h3>{r.student.name}</h3><p>Responsável: {r.student.care.responsible||'Por atribuir'}</p><ul>{r.unreviewed>0&&<li>{r.unreviewed} {r.unreviewed===1?'resposta por rever':'respostas por rever'}</li>}{r.overdue>0&&<li>{r.overdue} {r.overdue===1?'check-in sem resposta no prazo':'check-ins sem resposta no prazo'}</li>}{r.pending>0&&<li>{r.pending} {r.pending===1?'ação por concluir':'ações por concluir'}</li>}</ul><button type="button" className="quiet" onClick={()=>onStudent(r.student.id)} aria-label={`Rever acompanhamento de ${r.student.name}`}>Abrir origens no acompanhamento →</button></li>)}</ul>:<p>Sem alunos com este motivo e responsável. Os outros filtros conservam os restantes assuntos.</p>}
+ </section>;
+}

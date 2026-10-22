@@ -1,3 +1,4 @@
+import {validateLisbonAppointment,DemoLocalTimeError} from './local-time';
 import {validDate} from '../../../lib/validation';
 import {demoAppointments,demoDate,type DemoAppointment,type DemoStudent} from './model';
 
@@ -54,16 +55,18 @@ function unavailableAppointment(state:DemoSchedule,operation?:'reschedule'|'canc
 }
 export function rescheduleAppointment(state:DemoSchedule,id:number,draft:RescheduleDraft,students:DemoStudent[]):DemoSchedule {
  const original=state.appointments.find(a=>a.id===id&&a.status==='scheduled');
- if(!original)return unavailableAppointment(state,'reschedule');
+ if(!original||original.seriesId&&original.date<demoDate)return unavailableAppointment(state,'reschedule');
+ if(original.seriesId&&draft.date<demoDate)return {...state,sequence:state.sequence+1,result:{ok:false,text:'Uma ocorrência de série deve ficar na data de referência ou depois.',field:'date'}};
  const validated=createAppointment({...state,appointments:state.appointments.filter(a=>a.id!==id)},
   {...draft,studentId:String(original.studentId),kind:original.kind},students);
  if(!validated.result?.ok)return {...state,sequence:state.sequence+1,result:validated.result};
+ if(original.seriesId){try{validateLisbonAppointment(draft.date,draft.time,draft.duration);}catch(error){if(!(error instanceof DemoLocalTimeError))throw error;return {...state,sequence:state.sequence+1,result:{ok:false,text:error.message,field:'time'}};}}
  const updated:DemoAppointment={...original,date:draft.date,time:draft.time,duration:Number(draft.duration)};
  return {appointments:state.appointments.map(a=>a.id===id?updated:a),sequence:state.sequence+1,result:{ok:true,text:'Marcação fictícia reagendada apenas nesta sessão.',operation:'reschedule',updated}};
 }
 export function cancelAppointment(state:DemoSchedule,id:number):DemoSchedule {
  const original=state.appointments.find(a=>a.id===id&&a.status==='scheduled');
- if(!original)return unavailableAppointment(state,'cancel');
+ if(!original||original.seriesId&&original.date<demoDate)return unavailableAppointment(state,'cancel');
  const updated:DemoAppointment={...original,status:'cancelled'};
  return {appointments:state.appointments.map(a=>a.id===id?updated:a),sequence:state.sequence+1,result:{ok:true,text:'Marcação fictícia cancelada. O exemplo foi preservado no histórico desta sessão.',operation:'cancel',updated}};
 }

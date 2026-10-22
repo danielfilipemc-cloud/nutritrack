@@ -1,11 +1,12 @@
 "use client";
+import DemoRecurrence from './DemoRecurrence';
 import {useEffect,useRef,useState} from 'react';
 import {copyComposer,reviewComposer,type ComposerSnapshot,type AgendaRequest} from './journey';
 import {validDate} from '../../../lib/validation';
 import {demoDate,type DemoAppointment,type DemoStudent} from './model';
 import {appointmentEnd,appointmentKinds,emptyAppointment,inAppointmentRange,shiftDemoDate,sortedAppointments,weekStart,type AppointmentDraft,type RescheduleDraft,type DemoSchedule} from './appointments';
 
-export default function DemoAgenda({students,schedule,onCreate,onReschedule,onCancel,onClearResult,onOpenStudent,request,onRequestReview,onContinueCare}:{students:DemoStudent[];schedule:DemoSchedule;onCreate:(draft:AppointmentDraft)=>void;onReschedule:(id:number,draft:RescheduleDraft)=>void;onCancel:(id:number)=>void;onClearResult:()=>void;onOpenStudent:(id:number)=>void;request:AgendaRequest|null;onRequestReview:(id:number)=>void;onContinueCare:(id:number)=>void}){
+export default function DemoAgenda({students,schedule,onCreate,onReschedule,onCancel,onClearResult,onOpenStudent,request,onRequestReview,onContinueCare,onScheduleChange}:{onScheduleChange:(schedule:DemoSchedule)=>void;students:DemoStudent[];schedule:DemoSchedule;onCreate:(draft:AppointmentDraft)=>void;onReschedule:(id:number,draft:RescheduleDraft)=>void;onCancel:(id:number)=>void;onClearResult:()=>void;onOpenStudent:(id:number)=>void;request:AgendaRequest|null;onRequestReview:(id:number)=>void;onContinueCare:(id:number)=>void}){
  const [day,setDay]=useState(demoDate),[view,setView]=useState<'day'|'week'>('day'),[filter,setFilter]=useState('');
  const [draft,setDraft]=useState<AppointmentDraft>({...emptyAppointment});
  const [editing,setEditing]=useState<number|null>(null),[cancelId,setCancelId]=useState<number|null>(null);
@@ -96,5 +97,6 @@ export default function DemoAgenda({students,schedule,onCreate,onReschedule,onCa
    {result?.ok&&result.created&&<button type="button" className="quiet aura-preview-agenda-link" onClick={()=>onContinueCare(result.created!.studentId)}>Continuar no acompanhamento do aluno →</button>}
    {result&&result.operation!=='cancel'&&<p id={result.ok?undefined:'demo-booking-error'} role={result.ok?'status':'alert'} className="aura-preview-message">{result.text}</p>}
   </section>
+  <DemoRecurrence students={students} schedule={schedule} onChange={onScheduleChange}/>
  </>;
 }
