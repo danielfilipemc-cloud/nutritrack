@@ -19,14 +19,13 @@ const metrics=[['weight','Peso','kg'],['height','Altura','cm'],['waist','Cintura
 type Metric=typeof metrics[number][0];
 type Drafts={assessment:AssessmentDraft;care:DemoCare};
 const statusLabels={active:'Em acompanhamento',paused:'Em pausa',completed:'Concluído'};
-export default function DemoStudentHub({view,onViewChange,focusRequest,allAppointments,student,students,brand,onChoose,onUpdate,onAgenda,onScheduleReview,onBack,backLabel}:{view:DemoStudentView;onViewChange:(view:DemoStudentView)=>void;focusRequest:number;allAppointments:DemoAppointment[];student:DemoStudent;students:DemoStudent[];brand:string;onChoose:(id:number)=>void;onUpdate:(student:DemoStudent)=>void;onAgenda:()=>void;onScheduleReview:()=>void;onBack:()=>void;backLabel:string}) {
+export default function DemoStudentHub({view,onViewChange,focusRequest,allAppointments,student,students,brand,onChoose,onUpdate,onAgenda,onScheduleReview,onBack,backLabel,studentMetrics,onMetric}:{view:DemoStudentView;onViewChange:(view:DemoStudentView)=>void;focusRequest:number;allAppointments:DemoAppointment[];student:DemoStudent;students:DemoStudent[];brand:string;onChoose:(id:number)=>void;onUpdate:(student:DemoStudent)=>void;onAgenda:()=>void;onScheduleReview:()=>void;onBack:()=>void;backLabel:string;studentMetrics:Record<number,Metric>;onMetric:(id:number,metric:Metric)=>void}) {
  const section=view.studentId===student.id?view.section:'overview';
  const setSection=(next:Section)=>onViewChange({studentId:student.id,section:next});
  const {container,requestFocus}=useDemoNavigationFocus(`${student.id}:${section}`,focusRequest);
  const openSection=(next:Section)=>{if(next!==section)requestFocus();setSection(next);};
- const [studentMetrics,setStudentMetrics]=useState<Record<number,Metric>>({});
  const metric=studentMetrics[student.id]||'weight';
- const setMetric=(next:Metric)=>setStudentMetrics(v=>({...v,[student.id]:next}));
+ const setMetric=(next:Metric)=>onMetric(student.id,next);
  const [drafts,setDrafts]=useState<Record<number,Drafts>>({});
  const [feedback,setFeedback]=useState<Record<number,{assessment?:{error:boolean;text:string};care?:CareFeedback}>>({});
  const weightInput=useRef<HTMLInputElement>(null);
