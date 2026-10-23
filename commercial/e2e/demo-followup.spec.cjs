@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const nav=(page,width)=>page.getByRole('navigation',{name:width>800?'Navegação da demonstração':'Áreas da demonstração'});
 const priorities=page=>page.getByRole('region',{name:'Prioridades de exemplo',exact:true});
-const priority=(page,name)=>priorities(page).getByRole('button',{name:new RegExp(`^Abrir acompanhamento de ${name}:`)});
+const priority=(page,name)=>priorities(page).getByRole('button',{name:new RegExp(`^${name} Revisão`)});
 const heading=page=>page.getByRole('heading',{name:'Acompanhamento do aluno',exact:true});
 async function overview(page,width){await nav(page,width).getByRole('button',{name:'Visão geral',exact:true}).click();}
 async function care(page,width){if(width<=900)await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption('care');else await page.getByRole('button',{name:'Acompanhamento',exact:true}).click();}

@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 const nav=(page,width)=>page.getByRole('navigation',{name:width>800?'Navegação da demonstração':'Áreas da demonstração'});
 const directory=page=>page.getByRole('region',{name:'Diretório',exact:true});
-const row=(page,name)=>directory(page).getByRole('button',{name:`Abrir resumo de ${name}`,exact:true});
+const row=(page,name)=>directory(page).getByRole('button',{name:new RegExp(`^${name} (Em acompanhamento|Em pausa|Concluído) Ficha 360.º →$`)});
 const search=page=>page.getByRole('searchbox',{name:'Pesquisar alunos',exact:true});
 const filter=page=>directory(page).getByRole('combobox',{name:'Estado do acompanhamento',exact:true});
 async function students(page,width){await nav(page,width).getByRole('button',{name:'Alunos',exact:true}).click();}

@@ -11,7 +11,7 @@ for(const width of [320,375,1440])test(`directory review captures ${width}`,asyn
  if(phase==='before')return;
  await page.screenshot({path:`${dir}/directory-viewport-${width}.png`});
  await page.getByRole('searchbox',{name:'Pesquisar alunos',exact:true}).fill('ines');
- await expect(page.getByRole('button',{name:'Abrir resumo de Inês Exemplo',exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Inês Exemplo Em acompanhamento Ficha 360.º →',exact:true})).toBeVisible();
  await page.screenshot({path:`${dir}/search-${width}.png`,fullPage:true});
  await page.getByRole('combobox',{name:'Estado do acompanhamento',exact:true}).selectOption('paused');
  await expect(page.getByRole('heading',{name:'Sem alunos encontrados',exact:true})).toBeVisible();
