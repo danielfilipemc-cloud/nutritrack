@@ -9,7 +9,7 @@ import {createDemoStudents,parseDemoAssessment,emptyAssessment} from '../app/dem
 // The demo may depend on React and these reviewed presentation/pure modules only.
 test('public Premium demo module closure cannot import professional or data adapters',()=>{
  const root=path.resolve(import.meta.dirname,'..');
- const permitted=new Set(['app/layout.tsx','components/AuraBrand.tsx','components/StudentIdentity.tsx','components/ProfileNavigation.tsx','components/ProgressChart.tsx','components/ClientProgressSummary.tsx','lib/care.ts','lib/chart.ts','lib/validation.ts']);
+ const permitted=new Set(['app/layout.tsx','components/AuraBrand.tsx','components/StudentIdentity.tsx','components/ProfileNavigation.tsx','components/ProgressChart.tsx','components/ClientProgressSummary.tsx','lib/nutrition.ts','lib/nutrition-contract.ts','lib/nutrition-demo.ts','lib/care.ts','lib/chart.ts','lib/validation.ts']);
  const visited=new Set<string>();
  function visit(file:string) {
   if(visited.has(file))return;visited.add(file);

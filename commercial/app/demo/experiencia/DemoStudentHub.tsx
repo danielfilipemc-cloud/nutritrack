@@ -4,6 +4,8 @@ import StudentIdentity from '../../../components/StudentIdentity';
 import ProfileNavigation from '../../../components/ProfileNavigation';
 import ProgressChart from '../../../components/ProgressChart';
 import DemoActions from './DemoActions';
+import DemoNutrition from './DemoNutrition';
+import {createNutritionState,studentMeals} from './nutrition';
 import DemoCheckins,{type CheckinCommands} from './DemoCheckins';
 import DemoSessionPreparation from './DemoSessionPreparation';
 import type {CheckinPlan} from './checkins';
@@ -16,15 +18,17 @@ import useDemoNavigationFocus from './use-demo-navigation-focus';
 import {DemoCareError,demoResponsible,parseDemoCare} from './followup';
 import {demoDate,emptyAssessment,parseDemoAssessment,sortedAssessments,type AssessmentDraft,type DemoCare,type DemoStudent,type DemoAppointment} from './model';
 
-type Section='overview'|'assessments'|'evolution'|'agenda'|'care';
+type Section='overview'|'assessments'|'evolution'|'agenda'|'care'|'nutrition';
 export type DemoStudentView={studentId:number;section:Section};
 type CareFeedback={error:boolean;text:string;field?:keyof DemoCare};
-const sections:ReadonlyArray<readonly [Section,string]>=[['overview','Resumo'],['assessments','Avaliações'],['evolution','Evolução'],['agenda','Agenda do aluno'],['care','Acompanhamento']];
+const sections:ReadonlyArray<readonly [Section,string]>=[['overview','Resumo'],['assessments','Avaliações'],['evolution','Evolução'],['agenda','Agenda do aluno'],['care','Acompanhamento'],['nutrition','Nutrição']];
+const journeySections=sections.filter(([key])=>key!=='nutrition');
 const metrics=[['weight','Peso','kg'],['height','Altura','cm'],['waist','Cintura','cm']] as const;
 type Metric=typeof metrics[number][0];
 type Drafts={assessment:AssessmentDraft;care:DemoCare};
 const statusLabels={active:'Em acompanhamento',paused:'Em pausa',completed:'Concluído'};
 export default function DemoStudentHub({view,onViewChange,focusRequest,allAppointments,student,students,brand,onChoose,onUpdate,onAgenda,onScheduleReview,onBack,backLabel,studentMetrics,onMetric,availableResponsible,actionPlan,onActionSave,onActionToggle,checkinPlan,checkinCommands}:{checkinPlan:CheckinPlan;checkinCommands:CheckinCommands;view:DemoStudentView;onViewChange:(view:DemoStudentView)=>void;focusRequest:number;allAppointments:DemoAppointment[];student:DemoStudent;students:DemoStudent[];brand:string;onChoose:(id:number)=>void;onUpdate:(student:DemoStudent)=>void;onAgenda:()=>void;onScheduleReview:()=>void;onBack:()=>void;backLabel:string;studentMetrics:Record<number,Metric>;onMetric:(id:number,metric:Metric)=>void;availableResponsible:readonly string[];actionPlan:DemoActionPlan;onActionSave:(studentId:number,draft:DemoActionDraft,editingId:number|null)=>void;onActionToggle:(studentId:number,id:number)=>void}) {
+ const [nutrition,setNutrition]=useState(createNutritionState);
  const [checkinOrigin,setCheckinOrigin]=useState<{id:number;sequence:number}|null>(null);
  const section=view.studentId===student.id?view.section:'overview';
  const setSection=(next:Section)=>onViewChange({studentId:student.id,section:next});
@@ -46,10 +50,11 @@ export default function DemoStudentHub({view,onViewChange,focusRequest,allAppoin
  const updateDraft=(next:Partial<Drafts>)=>setDrafts(v=>({...v,[student.id]:{...draft,...next}}));
  const notifyAssessment=(text:string,error=false)=>setFeedback(v=>({...v,[student.id]:{...v[student.id],assessment:{text,error}}}));
  const clearAssessmentFeedback=()=>setFeedback(v=>({...v,[student.id]:{...v[student.id],assessment:undefined}}));
+ const nutritionMealCount=studentMeals(nutrition,student.id).length,nutritionEntryCount=nutrition.entries.filter(e=>e.studentId===student.id).length;
  const records=sortedAssessments(student);
  const appointments=sortedAppointments(allAppointments).filter(a=>a.studentId===student.id);
  const nextReview=nextStudentReview(allAppointments,student.id);
- const sectionIndex=sections.findIndex(([key])=>key===section);
+ const sectionIndex=journeySections.findIndex(([key])=>key===section);
  function saveAssessment(event:React.FormEvent<HTMLFormElement>) {
   event.preventDefault();
   try {
@@ -89,6 +94,8 @@ export default function DemoStudentHub({view,onViewChange,focusRequest,allAppoin
      <section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Evolução recente</h2><button type="button" className="quiet" onClick={()=>openSection('evolution')}>Consultar evolução →</button></div><ProgressChart responsive records={records.map(r=>({date:r.date,value:r.weight}))} unit="kg"/><button type="button" className="quiet" onClick={()=>openSection('assessments')}>Consultar avaliações →</button></section>
      <section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Agenda e revisão</h2><button type="button" className="quiet" onClick={()=>openSection('agenda')}>Consultar agenda →</button></div><p>{appointments.some(a=>a.status==='scheduled')?`${appointments.filter(a=>a.status==='scheduled').length} marcação de exemplo associada a este aluno.`:'Sem marcações ativas de exemplo para este aluno.'}</p><p>Próxima revisão: {student.care.review||'Sem revisão marcada'}</p><button type="button" className="quiet" onClick={()=>openSection('care')}>Editar acompanhamento →</button></section>
     </>}
+    {section==='overview'&&<section className="aura-preview-panel"><div className="aura-preview-panelhead"><h2>Alimentação do aluno</h2><button type="button" className="quiet" onClick={()=>openSection('nutrition')}>Consultar nutrição →</button></div><p>{nutritionMealCount} {nutritionMealCount===1?'refeição':'refeições'} no plano · {nutritionEntryCount} {nutritionEntryCount===1?'registo simulado':'registos simulados'} no diário.</p><p className="aura-preview-note">Plano e diário separados, sem metas ou interpretação clínica.</p></section>}
+    <DemoNutrition visible={section==='nutrition'} student={student} students={students} state={nutrition} onChange={setNutrition}/>
     <DemoSessionPreparation visible={section==='overview'} student={student} appointments={allAppointments} plan={checkinPlan} actions={actionPlan} onCare={()=>openSection('care')} onAgenda={()=>openSection('agenda')} onAssessments={()=>openSection('assessments')}/>
     {section==='assessments'&&<>
      <section className="aura-preview-panel"><h2>Registar avaliação fictícia</h2><form onSubmit={saveAssessment} className="aura-preview-form" onChange={clearAssessmentFeedback} aria-describedby="demo-assessment-hint">
@@ -109,7 +116,7 @@ export default function DemoStudentHub({view,onViewChange,focusRequest,allAppoin
     </form><p id="demo-care-hint" className="aura-preview-note">Usa apenas exemplos. O cabeçalho e as prioridades refletem o acompanhamento guardado nesta sessão; recarregar repõe os exemplos.</p>{careFeedback&&<p id={careFeedback.error?'demo-care-error':undefined} role={careFeedback.error?'alert':'status'} className="aura-preview-message">{careFeedback.text}</p>}</section>}
     <DemoCheckins visible={section==='care'} student={student} plan={checkinPlan} actions={actionPlan} commands={checkinCommands} sourceRequest={checkinOrigin}/>
     <DemoActions visible={section==='care'} student={student} plan={actionPlan} onSave={onActionSave} onToggle={onActionToggle} onSource={id=>setCheckinOrigin(v=>({id,sequence:(v?.sequence||0)+1}))}/>
-    <nav className="aura-preview-journey" aria-label="Continuar percurso do aluno">{sectionIndex>0&&<button type="button" className="quiet" onClick={()=>openSection(sections[sectionIndex-1][0])}>← Anterior: {sections[sectionIndex-1][1]}</button>}{sectionIndex<sections.length-1?<button type="button" onClick={()=>openSection(sections[sectionIndex+1][0])}>Seguinte: {sections[sectionIndex+1][1]} →</button>:<button type="button" onClick={()=>openSection('overview')}>Voltar ao resumo →</button>}</nav>
+    <nav className="aura-preview-journey" aria-label="Continuar percurso do aluno">{sectionIndex>0&&<button type="button" className="quiet" onClick={()=>openSection(journeySections[sectionIndex-1][0])}>← Anterior: {journeySections[sectionIndex-1][1]}</button>}{sectionIndex>=0&&sectionIndex<journeySections.length-1?<button type="button" onClick={()=>openSection(journeySections[sectionIndex+1][0])}>Seguinte: {journeySections[sectionIndex+1][1]} →</button>:<button type="button" onClick={()=>openSection('overview')}>Voltar ao resumo →</button>}</nav>
    </div>
   </div>
  </>;
