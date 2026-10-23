@@ -15,6 +15,6 @@ export default function DemoStudentDirectory({rows,total,query,status,onQuery,on
   </div>
   <p id="demo-directory-hint" className="aura-preview-note">Pesquisa por nome, com ou sem acentos. O estado reflete o acompanhamento guardado nesta sessão.</p>
   {filtered&&<button className="quiet" type="button" onClick={clear}>Limpar pesquisa e filtros</button>}
-  {rows.length?<ul className="aura-preview-directory-list">{rows.map(s=><li key={s.id}><button type="button" aria-label={`Abrir resumo de ${s.name}`} aria-describedby={`demo-directory-status-${s.id}`} onClick={()=>onOpen(s.id)}><StudentIdentity name={s.name}><strong>{s.name}</strong><span id={`demo-directory-status-${s.id}`}>{demoDirectoryLabels[s.status]}</span></StudentIdentity><span className="aura-preview-directory-action" aria-hidden="true">Ficha 360.º →</span></button></li>)}</ul>:<div className="aura-preview-empty"><h3>Sem alunos encontrados</h3><p>Experimenta outro nome ou limpa os filtros para voltar a ver os alunos de exemplo.</p></div>}
+  {rows.length?<ul className="aura-preview-directory-list">{rows.map(s=><li key={s.id}><button type="button" onClick={()=>onOpen(s.id)}><StudentIdentity name={s.name}><strong>{s.name}</strong><span id={`demo-directory-status-${s.id}`}>{demoDirectoryLabels[s.status]}</span></StudentIdentity><span className="aura-preview-directory-action">Ficha 360.º →</span></button></li>)}</ul>:<div className="aura-preview-empty"><h3>Sem alunos encontrados</h3><p>Experimenta outro nome ou limpa os filtros para voltar a ver os alunos de exemplo.</p></div>}
  </section>;
 }
