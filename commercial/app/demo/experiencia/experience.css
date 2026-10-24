@@ -203,3 +203,5 @@ html:has(.aura-preview){scroll-behavior:auto}
 .aura-demo-training h3[tabindex]{scroll-margin-top:140px}.aura-demo-training h3[tabindex]:focus{outline:2px solid #86dfd3;outline-offset:4px}
 
 .aura-preview .aura-student-agenda button:hover:not(:disabled){background:#143b3a;color:#b2f4e8}.aura-student-agenda .aura-preview-message:focus{outline:2px solid #86dfd3;outline-offset:4px}
+
+.aura-student-agenda label:has(>input[type=checkbox]),.aura-demo-training label:has(>input[type=checkbox]){display:flex;align-items:center;gap:12px;min-height:44px;padding:8px 0}.aura-preview .aura-student-agenda input[type=checkbox],.aura-preview .aura-demo-training input[type=checkbox]{width:22px;height:22px;min-height:22px;flex:0 0 22px;margin:0;accent-color:#72c9b9}
