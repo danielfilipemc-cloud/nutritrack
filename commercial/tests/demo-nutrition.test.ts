@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {blankMeal,createNutritionState,mealDraft,nutritionTotals,optionPortion,recordNutritionEntry,saveNutritionMeal,studentMeals} from '../app/demo/experiencia/nutrition';
+import {blankMeal,publishNutrition,createNutritionState,mealDraft,nutritionTotals,optionPortion,recordNutritionEntry,saveNutritionMeal,studentMeals} from '../app/demo/experiencia/nutrition';
 import {createDemoStudents,demoDate} from '../app/demo/experiencia/model';
 const students=createDemoStudents();const draft={...blankMeal,name:'Lanche fictício',time:'17:00',grams:'125,5',alternativeFood:'fruta',alternativeGrams:'150'};
 test('nutrition state keeps student boundaries and immutable diary snapshots through plan edits',()=>{
- const base=createNutritionState(),before=structuredClone(base);let state=saveNutritionMeal(base,1,draft,students);const meal=state.meals.at(-1)!;
+ const base=createNutritionState(),before=structuredClone(base);let state=saveNutritionMeal(base,1,draft,students);const meal=state.meals.at(-1)!;state=publishNutrition(state,1,state.revisions[1],students);
  state=recordNutritionEntry(state,1,meal.id,demoDate,'alternative',' Nota de exemplo ',students);const entry=structuredClone(state.entries.at(-1));
  state=saveNutritionMeal(state,1,{...draft,name:'Lanche alterado',alternativeFood:'cereal',alternativeGrams:'300'},students,meal.id);
  assert.deepEqual(state.entries.at(-1),entry);assert.equal(entry?.foodName,'Fruta de exemplo');assert.equal(entry?.note,'Nota de exemplo');assert.equal(entry?.source,'simulated-student');assert.equal(state.meals.at(-1)?.name,'Lanche alterado');assert.deepEqual(studentMeals(state,2),studentMeals(base,2));assert.deepEqual(base,before);

@@ -7,7 +7,7 @@ O objetivo acordado desde o início é ligar estabelecimento/equipa, profissiona
 - A demonstração Premium publicada até PR57 liga diretório/ficha, avaliações, evolução, agenda, ações/check-ins e preparação; a nutrição contém plano/diário/vista simulada por aluno, com cálculos puros. É estado fictício em memória, sem transporte NutriTrack.
 - Existe código de importação assistida de peso/cintura de backups NutriTrack v2, descrito em [NUTRITRACK_BRIDGE.md](NUTRITRACK_BRIDGE.md). Isso não liga contas, não importa alimentação e não representa sincronização automática. A documentação conserva validações históricas; verificar o estado efetivo antes de anunciar disponibilidade cloud atual.
 - O incremento de treino fecha o circuito simulado de rascunho/publicação, execução com snapshot, revisão e ação ligada; ver [DEMO_TRAINING_LOOP.md](DEMO_TRAINING_LOOP.md).
-- Continuam por fechar o transporte alimentar AURA–NutriTrack, a experiência final unificada do aluno, reservas com capacidade e os contratos reais de identidade/permissões/persistência. O portal proposto evolui no `/aluno` existente; não presumir uma segunda sessão pessoal NutriTrack.
+- O espaço unificado simulado e o circuito de disponibilização/revisão alimentar estão descritos em [DEMO_STUDENT_SPACE.md](DEMO_STUDENT_SPACE.md). Continuam por fechar o transporte alimentar AURA–NutriTrack, a experiência autenticada final do aluno, reservas com capacidade e os contratos reais de identidade/permissões/persistência. O portal proposto evolui no `/aluno` existente; não presumir uma segunda sessão pessoal NutriTrack.
 
 ## Referências e sequência
 

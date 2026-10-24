@@ -1,3 +1,5 @@
+> Documento da estrutura base do PR #57. Para o comportamento atual com versões, revisão e espaço unificado, consultar [DEMO_STUDENT_SPACE.md](DEMO_STUDENT_SPACE.md).
+
 # Nutrição integrada na demonstração Premium
 
 Âmbito: `/demo/experiencia` → Ficha 360.º → Nutrição. Estado sintético por aluno, em memória; atualizar repõe os exemplos. Não modifica a demonstração clássica, módulos profissionais, Auth/RLS, base real ou NutriTrack pessoal. Nenhum contacto com profissionais nesta fase.
