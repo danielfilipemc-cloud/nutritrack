@@ -11,6 +11,7 @@ export default function DemoStudentAgenda({student,schedule,commands,view,onView
  const patch=(next:Partial<StudentBookingView>)=>onView({...view,...next});
  useEffect(()=>{if(view.message)feedback.current?.focus({preventScroll:true});},[view.feedbackSequence]);
  useEffect(()=>{if(view.cancel!==null)confirm.current?.focus();},[view.cancel]);
+ useEffect(()=>{if(view.editing!==null){selection.current?.focus({preventScroll:true});selection.current?.scrollIntoView({block:'center',behavior:'instant'});}},[view.editing,student.id]);
  const appointments=sortedAppointments(schedule.appointments).filter(a=>a.studentId===student.id&&a.date>=demoDate);
  const slots=availableStudentSlots(schedule,view.editing??undefined);
  function book(e:React.FormEvent){e.preventDefault();try{commands.book(student.id,view.slot,view.editing??undefined);patch({feedbackSequence:view.feedbackSequence+1,slot:'',editing:null,message:view.editing===null?'Sessão fictícia marcada. A agenda profissional foi atualizada.':'Marcação fictícia reagendada. O horário anterior foi libertado.',error:false});}catch(e){patch({feedbackSequence:view.feedbackSequence+1,message:e instanceof Error?e.message:'Escolhe um horário disponível.',error:true});}}

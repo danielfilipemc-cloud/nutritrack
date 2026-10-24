@@ -14,7 +14,7 @@ export type StudentArea='today'|'training'|'nutrition'|'agenda'|'evolution';
 const areas:readonly [StudentArea,string][]=[['today','Hoje'],['training','Treino'],['nutrition','Alimentação'],['agenda','Agenda'],['evolution','Evolução']];
 const indicators={weight:['Peso','kg'],height:['Altura','cm'],waist:['Cintura','cm']} as const;
 export default function DemoStudentPortal({students,onChoose,student,area,onArea,onBack,training,nutrition,appointments,metric,onMetric,schedule,bookingCommands,bookingView,onBookingView,onMeal}:{students:DemoStudent[];onChoose:(id:number)=>void;schedule:DemoSchedule;bookingCommands:StudentBookingCommands;bookingView:StudentBookingView;onBookingView:(view:StudentBookingView)=>void;onMeal:(id:number)=>void;student:DemoStudent;area:StudentArea;onArea:(area:StudentArea)=>void;onBack:()=>void;training:TrainingState;nutrition:NutritionState;appointments:DemoAppointment[];metric:DemoMetric;onMetric:(metric:DemoMetric)=>void}){
- const heading=useRef<HTMLHeadingElement>(null),previous=useRef(`${student.id}:${area}`);
+ const heading=useRef<HTMLHeadingElement>(null),previous=useRef('');
  useEffect(()=>{const key=`${student.id}:${area}`;if(previous.current!==key){heading.current?.focus({preventScroll:true});heading.current?.scrollIntoView({block:'start',behavior:'instant'});previous.current=key;}},[student.id,area]);
  const plan=activeTraining(training,student.id),food=activeNutrition(nutrition,student.id);
  const booked=sortedAppointments(appointments).filter(a=>a.studentId===student.id&&a.status==='scheduled'&&a.date>=demoDate);
