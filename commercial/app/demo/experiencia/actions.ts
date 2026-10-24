@@ -1,7 +1,7 @@
 import {validDate} from '../../../lib/validation';
 import {demoDate,type DemoStudent} from './model';
 
-export type DemoAction={id:number;studentId:number;title:string;due:string;status:'pending'|'done';completedOn:string;sourceCheckinId?:number;sourceTrainingId?:number};
+export type DemoAction={id:number;studentId:number;title:string;due:string;status:'pending'|'done';completedOn:string;sourceCheckinId?:number;sourceTrainingId?:number;sourceNutritionId?:number};
 export type DemoActionPlan={nextId:number;actions:DemoAction[]};
 export type DemoActionDraft={title:string;due:string};
 export type DemoActionFilter='all'|'pending'|'overdue'|'done';
