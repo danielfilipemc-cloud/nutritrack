@@ -9,6 +9,12 @@ export const exercises=[
  {id:'step',name:'Subida de degrau',material:'Degrau',description:'Esquema de passagem do chão para um degrau.',phases:['Apoio no chão','Apoio no degrau']},
  {id:'calf',name:'Elevação de calcanhares',material:'Apoio',description:'Esquema da mudança de apoio do pé.',phases:['Calcanhares apoiados','Calcanhares elevados']},
  {id:'march',name:'Marcha no lugar',material:'Sem material',description:'Esquema de alternância de apoio das pernas.',phases:['Primeiro apoio','Apoio alternado']},
+ {id:'bridge',name:'Ponte de glúteos',material:'Tapete',description:'Esquema da passagem do apoio deitado para a elevação da bacia.',phases:['Bacia apoiada','Bacia elevada']},
+ {id:'bird',name:'Bird dog',material:'Tapete',description:'Esquema de uma posição de quatro apoios e extensão de membros opostos.',phases:['Quatro apoios','Extensão alternada']},
+ {id:'biceps',name:'Curl de bíceps com halteres',material:'Halteres',description:'Esquema de flexão dos cotovelos com os braços próximos do tronco.',phases:['Braços ao lado do tronco','Cotovelos fletidos']},
+ {id:'overhead',name:'Press de ombros sentado',material:'Cadeira e halteres',description:'Esquema de elevação dos braços a partir de uma posição sentada.',phases:['Braços junto aos ombros','Braços elevados']},
+ {id:'hip',name:'Abdução da anca em pé',material:'Apoio estável',description:'Esquema do afastamento lateral de uma perna com o tronco de pé.',phases:['Pés próximos','Perna afastada']},
+ {id:'lunge',name:'Afundo à frente',material:'Sem material',description:'Esquema de uma passada à frente com mudança de altura do corpo.',phases:['Posição inicial','Passada à frente']},
 ] as const;
 export type ExerciseId=typeof exercises[number]['id'];
 export type TrainingItem={id:number;exerciseId:ExerciseId;mode:'reps'|'seconds';target:number};
