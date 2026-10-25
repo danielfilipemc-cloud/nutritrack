@@ -3,10 +3,10 @@ const {fixture,A,B,C,today}=require('./fixtures.cjs');
 const fs=require('node:fs');const directory='.aura-integration/daily-dashboard/after';fs.mkdirSync(directory,{recursive:true});
 const chart=page=>page.getByRole('region',{name:'Evolução individual na dashboard',exact:true});
 const isSeries=route=>new URL(route.request().url()).searchParams.get('select')==='id,assessed_on,weight_kg,height_cm,waist_cm,superseded_at';
-function rows(){return [82,81,80,79].map((weight,i)=>{const date=new Date(today+'T12:00:00Z');date.setUTCDate(date.getUTCDate()-(3-i)*7);return {id:'synthetic-day-'+i,assessed_on:date.toISOString().slice(0,10),weight_kg:weight,height_cm:175,waist_cm:90-i,superseded_at:null};}).reverse();}
-async function rich(page){await fixture(page,{seedAppointments:3,seedObjectives:2});await page.route('**/rest/v1/assessments?*',route=>isSeries(route)?route.fulfill({contentType:'application/json',body:JSON.stringify(rows())}):route.fallback());await page.goto('/');await expect(chart(page).getByRole('img',{name:/Evolução: 4 medições/})).toBeVisible();}
+function rows(referenceDate=today){return [82,81,80,79].map((weight,i)=>{const date=new Date(referenceDate+'T12:00:00Z');date.setUTCDate(date.getUTCDate()-(3-i)*7);return {id:'synthetic-day-'+i,assessed_on:date.toISOString().slice(0,10),weight_kg:weight,height_cm:175,waist_cm:90-i,superseded_at:null};}).reverse();}
+async function rich(page,referenceDate=today){await fixture(page,{seedAppointments:3,seedObjectives:2,referenceDate});await page.route('**/rest/v1/assessments?*',route=>isSeries(route)?route.fulfill({contentType:'application/json',body:JSON.stringify(rows(referenceDate))}):route.fallback());await page.goto('/');await expect(chart(page).getByRole('img',{name:/Evolução: 4 medições/})).toBeVisible();}
 for(const width of [320,375,1280,1440,1536])test(`daily dashboard reference layout ${width}px`,async({page})=>{
- await page.setViewportSize({width,height:1000});await rich(page);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.setViewportSize({width,height:1000});await page.clock.install({time:new Date('2026-10-20T12:00:00Z')});await rich(page,'2026-10-20');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await expect(page.locator('.stat>div')).toHaveCount(4);await expect(page.getByRole('region',{name:'Alunos que precisam de atenção'})).toBeVisible();
  const schedule=page.getByRole('region',{name:'Agenda de hoje',exact:true});await expect(schedule.locator('time').first()).toContainText('10:00');
  if(width>1000)expect((await schedule.boundingBox()).x).toBeGreaterThan((await chart(page).boundingBox()).x);
@@ -37,4 +37,10 @@ test('dashboard preview reports its cap rather than claiming the complete histor
 
 test('detailed priorities open by keyboard and retain their search draft when collapsed',async({page})=>{
  await fixture(page);const details=page.locator('.aura-home-priorities'),summary=details.locator(':scope>summary');await summary.focus();await page.keyboard.press('Enter');const field=details.getByRole('textbox',{name:'Pesquisar aluno nas prioridades',exact:true});await field.fill('Pesquisa fictícia');await summary.focus();await page.keyboard.press('Enter');await expect(field).toBeHidden();await page.keyboard.press('Enter');await expect(field).toHaveValue('Pesquisa fictícia');
+});
+
+// Fixed UTC fixtures must render in the establishment's civil time across DST.
+for(const [date,expected] of [['2026-10-24','10:00'],['2026-10-25','09:00']])test(`dashboard agenda uses Lisbon time on ${date}`,async({page})=>{
+ await page.clock.install({time:new Date(date+'T12:00:00Z')});await fixture(page,{referenceDate:date,seedAppointments:1});
+ await expect(page.getByRole('region',{name:'Agenda de hoje',exact:true}).locator('time').first()).toHaveText(expected);
 });
