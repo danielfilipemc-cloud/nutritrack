@@ -31,9 +31,9 @@ test('quantity revisions recompute immutable source instead of rounded previous 
  assert.equal(nutritionTotals([portion(100, source)]).nutrients.calories, 1.01);
  assert.equal(nutritionTotals(Array.from({length: 3}, () => portion(33.333))).nutrients.protein, 1);
 });
-test('bounded fractional arithmetic agrees with independent integer oracle across 1000 portions', () => {
+test('bounded fractional arithmetic agrees with independent integer oracle across 1600 portions', () => {
  let numerator = BigInt(0);
- const inputs = Array.from({length: 1000}, (_, i) => {
+ const inputs = Array.from({length: 1600}, (_, i) => {
   const milliValue = (i * 997) % 1_000_001, milliGrams = (i * 7919) % 5_000_000 + 1;
   numerator += BigInt(milliValue) * BigInt(milliGrams);
   return portion(milliGrams / 1000, {...composition, nutrients: {...composition.nutrients, calories: milliValue / 1000}});
