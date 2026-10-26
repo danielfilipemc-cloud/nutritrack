@@ -35,10 +35,10 @@ export function parsePortionV1(input: unknown): PortionV1 {
 }
 /** Round once after summation. Unknown composition never silently becomes zero.
  * Bounded three-decimal inputs recover integer 1e-8 numerators from the existing
- * portion calculator; <=1000 portions keep their sum within safe integer limits.
+ * portion calculator; <=1600 portions keep their sum within safe integer limits.
  */
 export function nutritionTotals(input: readonly PortionV1[]) {
- if (!Array.isArray(input) || input.length > 1000) throw new RangeError('Too many portions');
+ if (!Array.isArray(input) || input.length > 1600) throw new RangeError('Too many portions');
  const numerators: Nutrients = {calories: 0, protein: 0, carbs: 0, fat: 0};
  const missing: Nutrients = {calories: 0, protein: 0, carbs: 0, fat: 0};
  for (const item of input) {
