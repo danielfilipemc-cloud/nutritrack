@@ -37,7 +37,8 @@
     "test:nutritrack:staging": "tsx scripts/nutritrack-integration.ts",
     "test:recovery:cloud:prepare": "tsx scripts/cloud-recovery-restore.ts",
     "test:recovery:cloud:verify": "tsx scripts/cloud-recovery-verify.ts",
-    "lint": "eslint app components lib --max-warnings=0"
+    "lint": "eslint app components lib --max-warnings=0",
+    "test:nutritrack-sync:local-security": "tsx scripts/nutritrack-sync-postgres-local.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.3",
