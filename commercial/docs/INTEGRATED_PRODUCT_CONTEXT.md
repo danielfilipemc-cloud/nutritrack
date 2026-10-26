@@ -1,4 +1,6 @@
-# AURA e NutriTrack — objetivo integrado
+# AURA — produto único com nutrição nativa
+
+**Decisão atual, 26-10-2026:** o NutriTrack passa a módulo de nutrição do AURA, sem aplicação ou login separado como destino final. A sincronização entre duas contas deixa de ser o objetivo; referências abaixo a transporte/ponte descrevem fases anteriores. Plano e limites atuais: [Nutrição nativa AURA](AURA_NATIVE_NUTRITION.md). Não migrar contas/dados nem retirar a aplicação antiga sem a etapa explícita de transição.
 
 O objetivo acordado desde o início é ligar estabelecimento/equipa, profissional e aluno: treino, nutrição/NutriTrack, agenda, avaliações/evolução e acompanhamento. Cada módulo deve fechar o percurso profissional → aluno → profissional, preservando identidade, autoria, origem, versão e recuperação. Não declarar a integração concluída só porque existem ecrãs ou funções partilhadas.
 
