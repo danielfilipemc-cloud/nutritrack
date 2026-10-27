@@ -35,3 +35,21 @@ Uma única experiência AURA, funcionalidades e histórico acordados disponívei
 ## Limites atuais
 
 Mantêm-se: apenas dados fictícios, produção/main e NutriTrack pessoal isolados, sem migrations ou alterações Auth/RLS remotas. A autorização para atingir a migração completa define o objetivo; os ensaios e a preparação avançam dentro destes limites. A transferência real e a retirada da app são passos concretos posteriores, não efeitos desta publicação em staging.
+
+## Incremento de migração offline (27 outubro)
+
+Implementados inventário v2 com parser limitado e sem chaves repetidas/reservadas, SHA-256 canónico, preservação integral dos valores de origem, identificação de ocorrências iguais legítimas e pendências explícitas. Metadados de exportação não alteram a identidade do conteúdo. A ordem das coleções não altera o snapshot. A origem é um identificador opaco selecionado, nunca uma associação automática por email/nome.
+
+O ensaio `scripts/native-migration-rehearsal.ts` cria apenas duas tabelas numa PGlite efémera criada pelo teste. Demonstra recibo por organização/aluno/origem, repetição sem duplicados, isolamento de destinos e rollback tardio. Uma origem com snapshot diferente fica bloqueada integralmente: **não é ainda um reconciliador incremental**. As pendências são preservadas no jornal, não consideradas funcionalidades migradas. Não há comando de execução cloud nem SQL adicionado ao instalador.
+
+`lib/nutrition-persistence.ts` prepara o adaptador das quatro RPCs nutricionais existentes, sem segundo cliente/Auth e sem escrita direta em tabelas. Valida comandos/projeções/cursor, invalida respostas após descarte de contexto, não repete mutações incertas automaticamente e oferece consulta do recibo. Exercitado contra as funções SQL existentes numa fixture PGlite, incluindo revogação. **Inativo nas páginas autenticadas; não prova Auth/PostgREST reais.** O contrato existente aceita snapshots por100g manuais; não pode receber totais antigos arredondados, água, modelos ou fotos como se fossem refeições manuais.
+
+O laboratório `/demo/migracao` usa exclusivamente um fixture inventado embutido. Não aceita uploads nem lê storage ou contas. O recibo visual dura apenas até recarregar; o ensaio transacional PGlite corre separadamente nos testes e não é invocado pelo browser. A experiência Premium protegida mantém os componentes anteriores.
+
+### O que ainda impede declarar conclusão
+
+1. Contratos e destinos persistentes para totais legados, receitas, planos, água diária/eventos e pendências; sem reescalar totais antigos para composição por100g.
+2. Confirmar baseline remota e preparar/validar o manifesto de ativação isolada, recuperação e permissões. Nenhuma migration ou alteração Auth/RLS remota autorizada por esta entrega.
+3. Ligar UI autenticada e testar com sessões reais de contas exclusivamente fictícias em ambiente isolado, incluindo revogação, concorrência, recuperação e exportação.
+4. Decidir destino/retenção dos modelos, perfil/metas, hábitos, fotos e desconhecidos. Um campo arquivado não equivale a uma funcionalidade integrada.
+5. Só então preparar e aprovar transição de identidades/dados selecionados, reconciliar e retirar a aplicação anterior. Não executar essa transferência nem desligar NutriTrack nesta fase.
