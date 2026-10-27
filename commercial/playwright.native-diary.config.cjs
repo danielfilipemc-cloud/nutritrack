@@ -1,0 +1,1 @@
+const {defineConfig}=require('@playwright/test');const base=require('./playwright.native-nutrition.config.cjs');module.exports=defineConfig({...base,testMatch:[...base.testMatch,'demo-native-diary.spec.cjs'],outputDir:'.aura-integration/native-diary-devices'});

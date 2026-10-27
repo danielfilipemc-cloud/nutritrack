@@ -243,3 +243,20 @@ html:has(.aura-preview){scroll-behavior:auto}
 .aura-demo-nutrition .aura-food-items span{overflow-wrap:anywhere}
 .aura-demo-nutrition .aura-food-items strong{white-space:nowrap;font-size:.9rem}
 @media(max-width:600px){.aura-demo-nutrition .aura-meal-composer{padding:14px}.aura-demo-nutrition .aura-meal-composer-row{grid-template-columns:minmax(0,1fr)}.aura-demo-nutrition .aura-meal-composer-row button{justify-self:start}}
+
+.aura-demo-nutrition .aura-native-food-grid,.aura-demo-nutrition .aura-native-recipe-list{list-style:none;padding:0;display:grid;gap:18px;margin:20px 0}
+.aura-demo-nutrition .aura-native-food-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.aura-demo-nutrition .aura-native-food-grid>li,.aura-demo-nutrition .aura-native-recipe-list>li{min-width:0;padding:20px;border:1px solid #31534d;border-radius:16px;background:#122d2b}
+.aura-demo-nutrition .aura-native-food-grid .aura-demo-nutrition-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+.aura-demo-nutrition .aura-native-food-grid h4,.aura-demo-nutrition .aura-native-recipe-list h4{margin-top:0;overflow-wrap:anywhere}
+.aura-demo-nutrition .aura-native-library section+section{margin-top:20px}
+.aura-demo-nutrition .aura-native-library input[type=search]{max-width:100%}
+.aura-demo-nutrition .aura-native-diary details>summary{font-size:1.12rem;font-weight:700;cursor:pointer;min-height:44px;line-height:1.5}
+.aura-demo-nutrition .aura-native-diary-block{margin-top:24px;padding-top:20px;border-top:1px solid #31534d;min-width:0}
+.aura-demo-nutrition .aura-native-water-list{list-style:none;display:grid;gap:10px;padding:0}
+.aura-demo-nutrition .aura-native-water-list>li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #31534d;border-radius:12px;flex-wrap:wrap}
+.aura-demo-nutrition .aura-native-recipe-picker{display:flex;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.aura-demo-nutrition .aura-native-recipe-picker label{flex:1;min-width:0}
+.aura-demo-nutrition .aura-native-recipe-list details{margin-top:20px}
+.aura-demo-nutrition .aura-native-recipe-list summary{min-height:44px;cursor:pointer;overflow-wrap:anywhere}
+@media(max-width:650px){.aura-demo-nutrition .aura-native-food-grid{grid-template-columns:minmax(0,1fr)}.aura-demo-nutrition .aura-native-food-grid>li,.aura-demo-nutrition .aura-native-recipe-list>li{padding:16px}.aura-demo-nutrition .aura-native-recipe-picker{display:grid;grid-template-columns:minmax(0,1fr)}}
