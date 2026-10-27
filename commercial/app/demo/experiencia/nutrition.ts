@@ -1,3 +1,4 @@
+import type {NativeNutrition} from './nutrition-library';
 import {nutritionTotals,type PortionV1} from '../../../lib/nutrition-contract';
 import {demoFoods} from '../../../lib/nutrition-demo';
 import {validDate} from '../../../lib/validation';
@@ -16,12 +17,12 @@ export const nutritionFoods:typeof demoFoods=[...demoFoods,
  ].map(([id,name,calories,protein,carbs,fat])=>({id:String(id),name:String(name),composition:{contractVersion:1 as const,basis:{amount:100 as const,unit:'g' as const},nutrients:{calories:Number(calories),protein:Number(protein),carbs:Number(carbs),fat:Number(fat)}}})),
 ];
 export type MealOption={foodId:string;grams:number};
-export type NutritionMeal={id:number;studentId:number;name:string;time:string;option:MealOption;alternative:MealOption|null;additional?:MealOption[]};
-export type MealDraft={name:string;time:string;foodId:string;grams:string;alternativeFood:string;alternativeGrams:string;additional?:{foodId:string;grams:string}[]};
-export type NutritionEntry={id:number;studentId:number;date:string;mealId:number;mealName:string;mealTime:string;foodName:string;portion:PortionV1;note:string;source:'simulated-student';choice:'main'|'alternative';version:number;sourceRecordId:string;reviewedOn:string;reviewer:string;additionalSnapshots?:ReturnType<typeof optionPortion>[]};
+export type NutritionMeal={id:number;studentId:number;name:string;time:string;option:MealOption;alternative:MealOption|null;additional?:MealOption[];recipeSource?:{id:number;version:number}};
+export type MealDraft={name:string;time:string;foodId:string;grams:string;alternativeFood:string;alternativeGrams:string;additional?:{foodId:string;grams:string}[];recipeSource?:{id:number;version:number}};
+export type NutritionEntry={id:number;studentId:number;date:string;mealId:number;mealName:string;mealTime:string;foodName:string;portion:PortionV1;note:string;source:'simulated-student';choice:'main'|'alternative';version:number;sourceRecordId:string;reviewedOn:string;reviewer:string;additionalSnapshots?:ReturnType<typeof optionPortion>[];origin?:'free-diary';recipeSource?:{id:number;version:number}};
 export type PublishedNutritionMeal=NutritionMeal&{mainSnapshot:ReturnType<typeof optionPortion>;alternativeSnapshot:ReturnType<typeof optionPortion>|null;additionalSnapshots?:ReturnType<typeof optionPortion>[]};
 export type NutritionPublication={studentId:number;version:number;revision:number;publishedOn:string;meals:PublishedNutritionMeal[]};
-export type NutritionState={meals:NutritionMeal[];entries:NutritionEntry[];nextMeal:number;nextEntry:number;revisions:Record<number,number>;publications:NutritionPublication[];active:Record<number,number|null>};
+export type NutritionState={meals:NutritionMeal[];entries:NutritionEntry[];nextMeal:number;nextEntry:number;revisions:Record<number,number>;publications:NutritionPublication[];active:Record<number,number|null>;native?:NativeNutrition};
 export const blankMeal:MealDraft={name:'',time:'',foodId:'cereal',grams:'100',alternativeFood:'',alternativeGrams:''};
 function requireStudent(id:number,students:readonly DemoStudent[]){if(!students.some(s=>s.id===id))throw Error('Aluno de exemplo inexistente.');}
 export class NutritionDateError extends Error {}
@@ -45,10 +46,11 @@ export function saveNutritionMeal(state:NutritionState,studentId:number,draft:Me
  const alternative=draft.alternativeFood?parseMealOption(draft.alternativeFood,draft.alternativeGrams):null;
  const additional=draft.additional||[];if(!Array.isArray(additional)||additional.length>7)throw Error('Cada refeição permite até 8 alimentos na opção principal.');
  const items=additional.map(item=>parseMealOption(item.foodId,item.grams));
- const meal:NutritionMeal={id:current?.id??state.nextMeal,studentId,name,time:draft.time,option:main,alternative,...(items.length?{additional:items}:{})};
+ if(draft.recipeSource&&!state.native?.recipes.some(recipe=>recipe.studentId===studentId&&recipe.id===draft.recipeSource!.id&&recipe.version===draft.recipeSource!.version))throw Error('A receita de origem não pertence a este aluno.');
+ const meal:NutritionMeal={id:current?.id??state.nextMeal,studentId,name,time:draft.time,option:main,alternative,...(draft.recipeSource?{recipeSource:{...draft.recipeSource}}:{}),...(items.length?{additional:items}:{})};
  return {...state,revisions:{...state.revisions,[studentId]:(state.revisions[studentId]||0)+1},nextMeal:state.nextMeal+(current?0:1),meals:current?state.meals.map(m=>m.id===current.id?meal:m):[...state.meals,meal]};
 }
-export function mealDraft(meal:NutritionMeal):MealDraft{return {name:meal.name,time:meal.time,foodId:meal.option.foodId,grams:String(meal.option.grams),alternativeFood:meal.alternative?.foodId||'',alternativeGrams:meal.alternative?String(meal.alternative.grams):'',...(meal.additional?.length?{additional:meal.additional.map(item=>({foodId:item.foodId,grams:String(item.grams)}))}:{})};}
+export function mealDraft(meal:NutritionMeal):MealDraft{return {name:meal.name,time:meal.time,foodId:meal.option.foodId,grams:String(meal.option.grams),alternativeFood:meal.alternative?.foodId||'',alternativeGrams:meal.alternative?String(meal.alternative.grams):'',...(meal.recipeSource?{recipeSource:{...meal.recipeSource}}:{}),...(meal.additional?.length?{additional:meal.additional.map(item=>({foodId:item.foodId,grams:String(item.grams)}))}:{})};}
 export function studentMeals(state:NutritionState,id:number){return state.meals.filter(m=>m.studentId===id).slice().sort((a,b)=>a.time.localeCompare(b.time)||a.id-b.id);}
 export function activeNutrition(state:NutritionState,studentId:number){
  return state.publications.find(p=>p.studentId===studentId&&p.version===state.active[studentId]);
@@ -86,7 +88,7 @@ export function recordNutritionEntry(state:NutritionState,studentId:number,mealI
  if(date<publication!.publishedOn)throw new NutritionDateError('Este dia é anterior à disponibilização desta versão.');
  if(state.entries.some(e=>e.studentId===studentId&&e.mealId===mealId&&e.date===date))throw Error('Já existe um registo desta refeição neste dia. O original foi preservado.');
  if(state.entries.filter(e=>e.studentId===studentId).length>=200)throw Error('Limite de 200 registos de exemplo por aluno.');
- const entry:NutritionEntry={id:state.nextEntry,studentId,date,mealId,mealName:meal.name,mealTime:meal.time,foodName:selected.name,portion:structuredClone(selected.portion),note:note.trim(),source:'simulated-student',choice,version:publication!.version,sourceRecordId,reviewedOn:'',reviewer:'',...(choice==='main'&&meal.additionalSnapshots?.length?{additionalSnapshots:structuredClone(meal.additionalSnapshots)}:{})};
+ const entry:NutritionEntry={id:state.nextEntry,studentId,date,mealId,mealName:meal.name,mealTime:meal.time,foodName:selected.name,portion:structuredClone(selected.portion),note:note.trim(),source:'simulated-student',choice,version:publication!.version,sourceRecordId,reviewedOn:'',reviewer:'',...(meal.recipeSource?{recipeSource:{...meal.recipeSource}}:{}),...(choice==='main'&&meal.additionalSnapshots?.length?{additionalSnapshots:structuredClone(meal.additionalSnapshots)}:{})};
  return {...state,nextEntry:state.nextEntry+1,entries:[...state.entries,entry]};
 }
 export function reviewNutritionEntry(state:NutritionState,studentId:number,id:number,students:readonly DemoStudent[]):NutritionState{

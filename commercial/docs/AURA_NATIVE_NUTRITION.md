@@ -27,3 +27,11 @@ O PR #64 recebeu aprovação independente **apenas offline** para o desenho de u
 5. **Auditoria de produto:** testes ponta a ponta, revisão independente, evidências visuais e publicação exclusivamente staging. Sem piloto real ou contactos profissionais nesta fase.
 
 Este documento não autoriza migrations remotas, alterações Auth/RLS, utilização de dados reais, mudanças em main/produção ou no NutriTrack pessoal. O projeto Supabase de staging ter sido reativado não significa que o módulo persistente esteja instalado ou pronto.
+
+## Incremento seguinte — biblioteca, receitas, diário livre e água
+
+O desenvolvimento seguinte acrescenta pesquisa dos alimentos fictícios, receitas por aluno com versões imutáveis, cópia explícita para rascunho do plano/diário e declaração alimentar sem depender de uma publicação. Esses registos regressam à fila/revisão/ação existente, mas não marcam refeições planeadas como consumidas. A água usa eventos em ml, anulação com histórico e nenhuma meta automática.
+
+Rascunhos de criação/edição de receitas, pesquisa, alimentação livre e água são mantidos por aluno entre áreas. A preparação de um plano a partir de receita recusa substituir um rascunho existente. Guardar receita, disponibilizar plano e declarar consumo são três ações distintas.
+
+Todos continuam em memória, com oito composições inventadas; recarregar repõe os exemplos. Este incremento não é migração, persistência autenticada, catálogo real ou ativação de base remota. O [plano de transição](NUTRITRACK_NATIVE_MIGRATION_PLAN.md) fixa os restantes ensaios e a definição de migração completa.
