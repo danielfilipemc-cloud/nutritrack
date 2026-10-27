@@ -47,8 +47,8 @@ export default function MigrationRehearsal() {
     <div className="migration-metrics"><div><strong>{manifest.counts.total}</strong><span>Registos de origem</span></div><div><strong>{manifest.counts.prepared}</strong><span>Mapeamento preparado</span></div><div><strong>{manifest.counts.pending}</strong><span>Pendências preservadas</span></div></div>
     <p>Preparado significa contrato offline validado. As pendências continuam no inventário e exigem uma decisão antes da transição real.</p>
     <div className="migration-categories">{(Object.keys(labels) as MigrationCategory[]).map(category=>{
-     const records=manifest.records.filter(r=>r.category===category);if(!records.length)return null;
-     return <details key={category}><summary>{labels[category]} <span>{records.length} registos · {records.filter(r=>r.disposition==='pending').length} pendentes</span></summary>
+     const records=manifest.records.filter(r=>r.category===category);if(!records.length)return null;const pending=records.filter(r=>r.disposition==='pending').length;
+     return <details key={category}><summary>{labels[category]} <span>{records.length} {records.length===1?'registo':'registos'} · {pending} {pending===1?'pendente':'pendentes'}</span></summary>
       {records.map(r=><article key={r.id}><strong>{r.disposition==='prepared'?'Mapeamento preparado':'Decisão pendente'}</strong><p>{r.reason}</p>
        <p className="migration-origin">Origem: {r.origin} · {r.id.slice(-8)}</p>
        <details><summary>Ver valores de origem e destino</summary><pre>{JSON.stringify({origem:r.raw,destino:r.normalized} as Json,null,2)}</pre></details>
