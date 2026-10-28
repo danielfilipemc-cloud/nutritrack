@@ -19,7 +19,7 @@ export default function DemoStudentPortal({students,onChoose,student,area,onArea
  useEffect(()=>{const key=`${student.id}:${area}`;if(previous.current!==key){heading.current?.focus({preventScroll:true});heading.current?.scrollIntoView({block:'start',behavior:'instant'});previous.current=key;}},[student.id,area]);
  const plan=activeTraining(training,student.id),food=activeNutrition(nutrition,student.id);
  const booked=sortedAppointments(appointments).filter(a=>a.studentId===student.id&&a.status==='scheduled'&&a.date>=demoDate);
- const entries=nutrition.entries.filter(e=>e.studentId===student.id&&e.date===demoDate);
+ const entries=nutrition.entries.filter(e=>!e.voided&&e.studentId===student.id&&e.date===demoDate);
  const executions=training.records.filter(r=>r.studentId===student.id&&r.date===demoDate);
  const series=demoMetricSeries(sortedAssessments(student),metric),[label,unit]=indicators[metric];
  return <div className="aura-demo-portal">

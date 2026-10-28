@@ -8,7 +8,7 @@ Objetivo autorizado: substituir o produto separado por nutrição nativa no AURA
 |---|---|---|
 | Pesquisa e seleção alimentar | Biblioteca e editor AURA | Pesquisa local com oito fixtures inventadas; catálogo real precisa de proveniência/versionamento |
 | Templates do dia | Receitas e modelos versionados | Receitas por aluno nesta demo; não interpretar um template como consumo |
-| Refeições livres | Diário nativo, separado do plano | Declarações por data/hora com snapshots, notas, revisão/ação; correção/anulação alimentar ainda não implementadas |
+| Refeições livres | Diário nativo, separado do plano | Declarações por data/hora com snapshots, notas, revisão/ação; correção/anulação de registos livres com histórico na demo; persistência autenticada ainda pendente |
 | Água | Eventos em ml | Adição/anulação com histórico na demo; sem meta automática |
 | Peso e medidas | Avaliações/evolução existentes | Reutilizar o histórico AURA, sem criar histórico paralelo ou interpretações automáticas |
 | Perfil e identidade | Conta e vínculo do aluno AURA | Não associar por nome ou email, não copiar passwords/sessões; mapear explicitamente identidades com revisão |
@@ -53,3 +53,11 @@ O laboratório `/demo/migracao` usa exclusivamente um fixture inventado embutido
 3. Ligar UI autenticada e testar com sessões reais de contas exclusivamente fictícias em ambiente isolado, incluindo revogação, concorrência, recuperação e exportação.
 4. Decidir destino/retenção dos modelos, perfil/metas, hábitos, fotos e desconhecidos. Um campo arquivado não equivale a uma funcionalidade integrada.
 5. Só então preparar e aprovar transição de identidades/dados selecionados, reconciliar e retirar a aplicação anterior. Não executar essa transferência nem desligar NutriTrack nesta fase.
+
+## Diário livre: correção e anulação (28 outubro)
+
+A demonstração permite corrigir nome, data, hora, alimentos, quantidades e nota de uma refeição livre, ou anulá-la com motivo explícito. Mantém identidade e snapshots das revisões anteriores, incluindo a revisão profissional que incidiu sobre o conteúdo anterior. Uma correção regressa à fila profissional; uma anulação sai dos totais ativos, preparação de sessão, prioridades e indicadores. O histórico continua consultável pelo aluno e na ficha profissional. Ações de acompanhamento existentes são preservadas e não são reescritas automaticamente.
+
+Rascunho de nova refeição e rascunho de alteração são independentes e mantidos por aluno durante a navegação. Cada alteração valida aluno, origem livre, revisão esperada e limites antes de devolver um novo estado. Não altera refeições do plano, publicações, receitas ou registos de outros alunos. Não aceita alterações de registos anulados; máximo de 20 revisões ativas por registo, mantendo disponível uma anulação terminal mesmo no limite.
+
+Tudo continua em memória React, com exemplos fictícios; recarregar repõe o estado. Não ativa o adaptador autenticado nem altera contratos/RPCs, Auth, RLS, produção ou NutriTrack pessoal. A autorização separada das migrations 18/19 mantém a condição de backup e recuperação verificada, ainda pendente; este incremento não depende dessa execução.
