@@ -270,3 +270,16 @@ html:has(.aura-preview){scroll-behavior:auto}
 .aura-demo-nutrition .aura-native-entry-history p{margin:10px 0;font-size:13px}
 .aura-demo-nutrition .aura-native-entry-history ul{display:grid;gap:6px;list-style:none;padding:0;margin:12px 0}
 .aura-demo-nutrition .aura-native-entry-history ul>li{display:block;padding:0;border:0;background:none;font-size:13px}
+
+/* Shopping choices derive only from the selected published plan. */
+.aura-demo-nutrition .aura-native-shopping>details>summary{cursor:pointer;min-height:44px;padding-block:10px;font-weight:700;font-size:1.05rem}
+.aura-demo-nutrition .aura-shopping-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0}
+.aura-demo-nutrition .aura-shopping-items{list-style:none;padding:0;margin:18px 0;display:grid;gap:12px}
+.aura-demo-nutrition .aura-shopping-items>li{display:flex;align-items:start;justify-content:space-between;gap:16px;min-width:0;border:1px solid #31534d;border-radius:12px;padding:16px;background:#102524}
+.aura-demo-nutrition .aura-shopping-items>li>div{min-width:0;overflow-wrap:anywhere}
+.aura-demo-nutrition .aura-shopping-items>li>strong{white-space:nowrap;font-variant-numeric:tabular-nums}
+.aura-demo-nutrition .aura-shopping-items span{display:block;margin-top:8px}
+.aura-demo-nutrition .aura-shopping-items summary{cursor:pointer;padding-block:10px;font-size:13px;min-height:44px;overflow-wrap:anywhere}
+.aura-demo-nutrition .aura-shopping-items ul{padding:0;list-style:none;display:grid;gap:8px}
+.aura-demo-nutrition .aura-shopping-items ul>li{display:block;border:0;padding:0;background:none;font-size:13px}
+@media(max-width:650px){.aura-demo-nutrition .aura-shopping-choices{grid-template-columns:minmax(0,1fr)}}
