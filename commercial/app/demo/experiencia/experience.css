@@ -260,3 +260,13 @@ html:has(.aura-preview){scroll-behavior:auto}
 .aura-demo-nutrition .aura-native-recipe-list details{margin-top:20px}
 .aura-demo-nutrition .aura-native-recipe-list summary{min-height:44px;cursor:pointer;overflow-wrap:anywhere}
 @media(max-width:650px){.aura-demo-nutrition .aura-native-food-grid{grid-template-columns:minmax(0,1fr)}.aura-demo-nutrition .aura-native-food-grid>li,.aura-demo-nutrition .aura-native-recipe-list>li{padding:16px}.aura-demo-nutrition .aura-native-recipe-picker{display:grid;grid-template-columns:minmax(0,1fr)}}
+
+/* Version history has its own reading layout inside both diary presentations. */
+.aura-demo-nutrition .aura-native-entry-history{margin-top:18px;min-width:0}
+.aura-demo-nutrition .aura-native-entry-history>summary{cursor:pointer;min-height:44px;padding-block:10px;overflow-wrap:anywhere}
+.aura-demo-nutrition .aura-native-entry-history>ol{display:grid;gap:12px;list-style:none;padding:0;margin:12px 0}
+.aura-demo-nutrition .aura-native-entry-history>ol>li{display:block;min-width:0;padding:16px;border:1px solid #31534d;border-radius:12px;background:#102524;overflow-wrap:anywhere}
+.aura-demo-nutrition .aura-native-entry-history h5{font-size:14px;margin:0 0 10px;color:#edf6f4}
+.aura-demo-nutrition .aura-native-entry-history p{margin:10px 0;font-size:13px}
+.aura-demo-nutrition .aura-native-entry-history ul{display:grid;gap:6px;list-style:none;padding:0;margin:12px 0}
+.aura-demo-nutrition .aura-native-entry-history ul>li{display:block;padding:0;border:0;background:none;font-size:13px}
