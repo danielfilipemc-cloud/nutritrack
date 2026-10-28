@@ -24,6 +24,7 @@ As fases não autorizam migrações remotas adicionais ou passagem automática a
 
 - Já publicados: refeições compostas, alternativas explícitas, receitas versionadas, diário livre, água, correção/anulação de refeições livres, revisão e histórico sintéticos; ensaio offline de migração e adaptador autenticado inativo.
 - Incremento atual: lista de compras a partir de snapshots do plano disponibilizado, escolhas explícitas por refeição e número declarado de dias iguais. É planeamento de compras, não consumo, nova prescrição ou persistência real.
+- Preparado offline após este roteiro: [contrato transacional de água](AURA_NATIVE_WATER.md), fora do instalador e inativo; não equivale a persistência disponível no staging.
 - Pendentes: persistência nativa para planos/receitas/água/totais legados, UI autenticada, permissões do aluno e reconciliação completa. Não considerar esses itens concluídos por acrescentar uma vista calculada à demo.
 
 ## Regra para integrar cada incremento
