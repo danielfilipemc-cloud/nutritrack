@@ -19,10 +19,11 @@ export const nutritionFoods:typeof demoFoods=[...demoFoods,
 export type MealOption={foodId:string;grams:number};
 export type NutritionMeal={id:number;studentId:number;name:string;time:string;option:MealOption;alternative:MealOption|null;additional?:MealOption[];recipeSource?:{id:number;version:number}};
 export type MealDraft={name:string;time:string;foodId:string;grams:string;alternativeFood:string;alternativeGrams:string;additional?:{foodId:string;grams:string}[];recipeSource?:{id:number;version:number}};
-export type NutritionEntry={id:number;studentId:number;date:string;mealId:number;mealName:string;mealTime:string;foodName:string;portion:PortionV1;note:string;source:'simulated-student';choice:'main'|'alternative';version:number;sourceRecordId:string;reviewedOn:string;reviewer:string;additionalSnapshots?:ReturnType<typeof optionPortion>[];origin?:'free-diary';recipeSource?:{id:number;version:number}};
+export type NutritionEntry={revision?:number;voided?:boolean;freeDraft?:MealDraft;id:number;studentId:number;date:string;mealId:number;mealName:string;mealTime:string;foodName:string;portion:PortionV1;note:string;source:'simulated-student';choice:'main'|'alternative';version:number;sourceRecordId:string;reviewedOn:string;reviewer:string;additionalSnapshots?:ReturnType<typeof optionPortion>[];origin?:'free-diary';recipeSource?:{id:number;version:number}};
 export type PublishedNutritionMeal=NutritionMeal&{mainSnapshot:ReturnType<typeof optionPortion>;alternativeSnapshot:ReturnType<typeof optionPortion>|null;additionalSnapshots?:ReturnType<typeof optionPortion>[]};
 export type NutritionPublication={studentId:number;version:number;revision:number;publishedOn:string;meals:PublishedNutritionMeal[]};
-export type NutritionState={meals:NutritionMeal[];entries:NutritionEntry[];nextMeal:number;nextEntry:number;revisions:Record<number,number>;publications:NutritionPublication[];active:Record<number,number|null>;native?:NativeNutrition};
+export type NutritionEntryChange={entryId:number;studentId:number;revision:number;kind:'correct'|'void';reason:string;before:NutritionEntry};
+export type NutritionState={entryChanges?:NutritionEntryChange[];meals:NutritionMeal[];entries:NutritionEntry[];nextMeal:number;nextEntry:number;revisions:Record<number,number>;publications:NutritionPublication[];active:Record<number,number|null>;native?:NativeNutrition};
 export const blankMeal:MealDraft={name:'',time:'',foodId:'cereal',grams:'100',alternativeFood:'',alternativeGrams:''};
 function requireStudent(id:number,students:readonly DemoStudent[]){if(!students.some(s=>s.id===id))throw Error('Aluno de exemplo inexistente.');}
 export class NutritionDateError extends Error {}
@@ -93,12 +94,12 @@ export function recordNutritionEntry(state:NutritionState,studentId:number,mealI
 }
 export function reviewNutritionEntry(state:NutritionState,studentId:number,id:number,students:readonly DemoStudent[]):NutritionState{
  requireStudent(studentId,students);const entry=state.entries.find(e=>e.id===id&&e.studentId===studentId);
- if(!entry||entry.reviewedOn)throw Error('Escolhe um registo alimentar deste aluno por rever.');
+ if(!entry||entry.voided||entry.reviewedOn)throw Error('Escolhe um registo alimentar deste aluno por rever.');
  const reviewer=students.find(s=>s.id===studentId)!.care.responsible;if(!reviewer)throw Error('Guarda um responsável no acompanhamento antes de rever.');
  return {...state,entries:state.entries.map(e=>e.id===id?{...e,reviewedOn:demoDate,reviewer}:e)};
 }
 export function actionFromNutrition(actions:DemoActionPlan,state:NutritionState,studentId:number,id:number,students:DemoStudent[]):DemoActionPlan{
- const entry=state.entries.find(e=>e.id===id&&e.studentId===studentId);if(!entry?.reviewedOn)throw Error('Revê primeiro o registo alimentar deste aluno.');
+ const entry=state.entries.find(e=>e.id===id&&e.studentId===studentId);if(!entry?.reviewedOn||entry.voided)throw Error('Revê primeiro o registo alimentar deste aluno.');
  if(actions.actions.some(a=>a.studentId===studentId&&a.sourceNutritionId===id))return actions;
  const next=saveDemoAction(actions,studentId,{title:`Preparar seguimento do registo alimentar #${id}`,due:''},students);
  return {...next,actions:next.actions.map(a=>a.id===actions.nextId?{...a,sourceNutritionId:id}:a)};

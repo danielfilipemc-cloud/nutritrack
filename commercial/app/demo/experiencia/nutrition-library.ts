@@ -35,9 +35,9 @@ export function recordFreeEntry(state:NutritionState,studentId:number,draft:Meal
  if(note.trim().length>500)throw Error('A nota permite até 500 caracteres.');
  const identity=`demo-free-${studentId}-${requestId}`,candidate={date,mealName:name,mealTime:time,foodName:snapshots[0].name,portion:snapshots[0].portion,note:note.trim(),additionalSnapshots:snapshots.slice(1),recipeSource:draft.recipeSource?{id:draft.recipeSource.id,version:draft.recipeSource.version}:undefined};
  const existing=state.entries.find(entry=>entry.sourceRecordId===identity);
- if(existing){const prior={date:existing.date,mealName:existing.mealName,mealTime:existing.mealTime,foodName:existing.foodName,portion:existing.portion,note:existing.note,additionalSnapshots:existing.additionalSnapshots||[],recipeSource:existing.recipeSource};if(existing.studentId===studentId&&existing.origin==='free-diary'&&JSON.stringify(prior)===JSON.stringify(candidate))return state;throw Error('Este pedido já tem conteúdo diferente. O original foi preservado.');}
+ if(existing){const original=(state.entryChanges||[]).find(change=>change.studentId===studentId&&change.entryId===existing.id&&change.revision===1)?.before||existing;const prior={date:original.date,mealName:original.mealName,mealTime:original.mealTime,foodName:original.foodName,portion:original.portion,note:original.note,additionalSnapshots:original.additionalSnapshots||[],recipeSource:original.recipeSource};if(existing.studentId===studentId&&existing.origin==='free-diary'&&JSON.stringify(prior)===JSON.stringify(candidate))return state;throw Error('Este pedido já tem conteúdo diferente. O original foi preservado.');}
  if(state.entries.filter(entry=>entry.studentId===studentId).length>=200)throw Error('Limite de 200 registos alimentares por aluno.');
- const entry:NutritionEntry={...structuredClone(candidate),id:state.nextEntry,studentId,mealId:-state.nextEntry,source:'simulated-student',choice:'main',version:0,sourceRecordId:identity,reviewedOn:'',reviewer:'',origin:'free-diary'};
+ const entry:NutritionEntry={...structuredClone(candidate),id:state.nextEntry,studentId,mealId:-state.nextEntry,source:'simulated-student',choice:'main',version:0,sourceRecordId:identity,reviewedOn:'',reviewer:'',origin:'free-diary',revision:1,freeDraft:structuredClone(draft)};
  return {...state,nextEntry:state.nextEntry+1,entries:[...state.entries,entry]};
 }
 export function recordWater(state:NutritionState,studentId:number,date:string,time:string,amount:string,requestId:string,students:readonly DemoStudent[]):NutritionState{
@@ -53,3 +53,21 @@ export function voidWater(state:NutritionState,studentId:number,id:number,studen
  return {...state,native:{...data,water:data.water.map(event=>event.id===id?{...event,voided:true}:event)}};
 }
 export function waterSummary(state:NutritionState,studentId:number,date:string){const events=nativeNutrition(state).water.filter(event=>event.studentId===studentId&&event.date===date);return {events,ml:events.filter(event=>!event.voided).reduce((total,event)=>total+event.ml,0),count:events.filter(event=>!event.voided).length};}
+
+/** Corrections retain the previous projection, including its professional review. */
+export function changeFreeEntry(state:NutritionState,studentId:number,id:number,expectedRevision:number,reason:string,students:readonly DemoStudent[],correction?:{draft:MealDraft;date:string;note:string}):NutritionState{
+ requireStudent(studentId,students);
+ const prior=state.entries.find(entry=>entry.studentId===studentId&&entry.id===id&&entry.origin==='free-diary');
+ if(!prior||prior.voided)throw Error('Escolhe um registo livre ativo deste aluno.');
+ if(!Number.isSafeInteger(expectedRevision)||expectedRevision!==(prior.revision||1))throw Error('O registo mudou. O rascunho foi preservado; consulta a versão atual.');
+ const why=reason.trim();if(why.length<3||why.length>300)throw Error('Indica um motivo com 3 a 300 caracteres.');
+ if(correction&&expectedRevision>=20)throw Error('Limite de 20 revisões ativas por registo livre. A anulação continua disponível.');
+ let next:NutritionEntry;
+ if(correction){
+  // Reuse the same validation and snapshot contract as a new declaration.
+  const validated=recordFreeEntry({...state,entries:[],nextEntry:1},studentId,correction.draft,correction.date,correction.note,'correction',students).entries[0];
+  next={...validated,id:prior.id,mealId:prior.mealId,sourceRecordId:prior.sourceRecordId,revision:expectedRevision+1};
+ }else next={...prior,voided:true,revision:expectedRevision+1};
+ const change={entryId:id,studentId,revision:expectedRevision,kind:correction?'correct' as const:'void' as const,reason:why,before:structuredClone(prior)};
+ return {...state,entries:state.entries.map(entry=>entry.id===id?next:entry),entryChanges:[...(state.entryChanges||[]),change]};
+}
