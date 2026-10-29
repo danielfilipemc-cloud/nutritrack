@@ -1,0 +1,40 @@
+# Fixed existing encrypted backup; no remote database credentials or connection.
+name: AURA staging private recovery rehearsal
+on:
+  push:
+    branches: ['ops/aura-staging-backup']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: aura-staging-private-backup
+  cancel-in-progress: false
+jobs:
+  private-recovery:
+    if: github.repository == 'danielfilipemc-cloud/nutritrack' && github.ref == 'refs/heads/ops/aura-staging-backup' && contains(github.event.head_commit.message, '[recovery-only]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: aura-staging-backup
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify approved recovery source
+        env:
+          APPROVED_SHA: ${{ vars.AURA_BACKUP_APPROVED_SHA }}
+        run: test -n "$APPROVED_SHA" && test "$GITHUB_SHA" = "$APPROVED_SHA"
+      - name: Download the frozen encrypted backup
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          artifact-ids: '12932542971'
+          run-id: '40930304863'
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/aura-recovery-input
+      - name: Restore offline and compare the complete archive
+        env:
+          AURA_BACKUP_APPROVED_SHA: ${{ vars.AURA_BACKUP_APPROVED_SHA }}
+          AURA_BACKUP_PASSPHRASE: ${{ secrets.AURA_BACKUP_PASSPHRASE }}
+        run: python3 commercial/scripts/staging-private-recovery.py
+      - name: Remove downloaded ciphertext
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/aura-recovery-input"
