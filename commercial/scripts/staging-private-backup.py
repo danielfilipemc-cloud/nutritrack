@@ -22,31 +22,95 @@ CONNECTION = ('host=aws-0-eu-west-1.pooler.supabase.com port=5432 dbname=postgre
               'user=postgres.' + PROJECT + ' sslmode=verify-full '
               'sslrootcert=/run/aura-ca.pem connect_timeout=20 application_name=aura_private_backup')
 
+# Public logs receive only one of these constants. Never interpolate exception
+# payloads, stderr, command arguments, secret lengths or values into diagnostics.
+ERRORS = {
+    'BACKUP_CONTEXT_INVALID': 'Run only on the approved staging operations branch and push event.',
+    'BACKUP_SHA_MISMATCH': 'The approved code SHA does not match this run.',
+    'BACKUP_DB_SECRET_INVALID': 'The database secret is missing or contains forbidden line breaks.',
+    'BACKUP_KEY_INVALID': 'Use a separate single-line backup passphrase with at least 32 characters.',
+    'DB_AUTH_FAILED': 'PostgreSQL or the pooler rejected authentication.',
+    'DB_POOLER_ROUTING_FAILED': 'The pooler could not locate the specified tenant or database user.',
+    'DB_AUTH_RATE_LIMIT': 'The server is temporarily refusing authentication attempts; do not retry blindly.',
+    'DB_TLS_FAILED': 'TLS certificate verification failed; keep verification enabled.',
+    'DB_DNS_FAILED': 'The configured database hostname could not be resolved.',
+    'DB_NETWORK_FAILED': 'The configured database endpoint could not be reached.',
+    'DB_PERMISSION_DENIED': 'The database role cannot perform the requested read operation.',
+    'DB_VERSION_UNEXPECTED': 'The server did not report the expected PostgreSQL major version.',
+    'CLIENT_IMAGE_FAILED': 'The pinned PostgreSQL client image could not be prepared.',
+    'LOCAL_TOOL_MISSING': 'A required runner program is unavailable.',
+    'COMMAND_TIMEOUT': 'A bounded command timed out.',
+    'PRIVATE_COMMAND_FAILED': 'A private command failed; its raw output was not published.',
+    'UNEXPECTED_BACKUP_FAILURE': 'The runner could not complete the private backup.',
+}
+
+
+class BackupFailure(RuntimeError):
+    def __init__(self, code):
+        self.code = code if code in ERRORS else 'PRIVATE_COMMAND_FAILED'
+        super().__init__(self.code)
+
+
+def classify_failure(args, private_stderr):
+    if args[:3] == ['docker', '--host=unix:///var/run/docker.sock', 'pull']:
+        return 'CLIENT_IMAGE_FAILED'
+    text = private_stderr.decode('utf-8', errors='replace').lower()
+    # This examines only the private command's bounded error tail; none of that
+    # text is returned. Precedence keeps routing/rate-limit distinct from auth.
+    patterns = [
+        ('DB_AUTH_RATE_LIMIT', ['too many authentication failures', 'circuit breaker open', 'too many login attempts']),
+        ('DB_POOLER_ROUTING_FAILED', ['tenant or user not found', 'tenant not found']),
+        ('DB_AUTH_FAILED', ['password authentication failed', 'sasl authentication failed', 'password is incorrect']),
+        ('DB_TLS_FAILED', ['certificate verify failed', 'root certificate file', 'server certificate for', 'ssl error', 'server does not support ssl']),
+        ('DB_DNS_FAILED', ['could not translate host name', 'name or service not known', 'temporary failure in name resolution']),
+        ('DB_NETWORK_FAILED', ['connection timed out', 'timeout expired', 'network is unreachable', 'no route to host', 'connection refused']),
+        ('DB_PERMISSION_DENIED', ['permission denied', 'must be superuser']),
+    ]
+    for code, needles in patterns:
+        if any(needle in text for needle in needles):
+            return code
+    return 'PRIVATE_COMMAND_FAILED'
+
+
+def report_failure(error):
+    code = error.code if isinstance(error, BackupFailure) and error.code in ERRORS else 'UNEXPECTED_BACKUP_FAILURE'
+    print('Backup stopped [' + code + ']: ' + ERRORS[code])
+    print('No recovery or remote schema change was performed.')
+
 
 def guard(env):
     if (env.get('GITHUB_ACTIONS') != 'true' or env.get('GITHUB_REPOSITORY') != REPOSITORY
             or env.get('GITHUB_REF') != BRANCH or env.get('GITHUB_EVENT_NAME') != 'push'):
-        raise ValueError('This job only runs on the approved staging operations branch.')
+        raise BackupFailure('BACKUP_CONTEXT_INVALID')
     approved = env.get('AURA_BACKUP_APPROVED_SHA', '')
     if len(approved) != 40 or any(c not in '0123456789abcdef' for c in approved) or approved != env.get('GITHUB_SHA'):
-        raise ValueError('Approved source SHA is missing or differs from this job.')
+        raise BackupFailure('BACKUP_SHA_MISMATCH')
     password = env.get('AURA_STAGING_DB_PASSWORD', '')
     passphrase = env.get('AURA_BACKUP_PASSPHRASE', '')
     if not password or any(c in password for c in '\x00\r\n'):
-        raise ValueError('Staging database password is missing or malformed.')
+        raise BackupFailure('BACKUP_DB_SECRET_INVALID')
     if len(passphrase) < 32 or any(c in passphrase for c in '\x00\r\n') or passphrase == password:
-        raise ValueError('Use a separate backup passphrase of at least 32 characters.')
+        raise BackupFailure('BACKUP_KEY_INVALID')
 
 
 def safe_process(args, env, log, *, stdin=None, output=None, timeout=300):
     # Never emit raw subprocess errors: connection failures can contain secrets.
     with log.open('ab') as errors:
+        error_start = errors.tell()
         target = output.open('wb') if output else errors
         try:
             result = subprocess.run(args, env=env, input=stdin, stdout=target, stderr=errors,
                                     timeout=timeout, check=False)
             if result.returncode:
-                raise RuntimeError('Private backup phase failed; no migration was run.')
+                errors.flush()
+                with log.open('rb') as private:
+                    private.seek(max(error_start, log.stat().st_size - 65536))
+                    tail = private.read(65536)
+                raise BackupFailure(classify_failure(args, tail))
+        except FileNotFoundError:
+            raise BackupFailure('LOCAL_TOOL_MISSING') from None
+        except subprocess.TimeoutExpired:
+            raise BackupFailure('COMMAND_TIMEOUT') from None
         finally:
             if output:
                 target.close()
@@ -88,7 +152,7 @@ def main():
                                  '-c', 'show server_version_num'], child_env, log, output=root / 'version.txt')
             version = (root / 'version.txt').read_text().strip()
             if not version.isdigit() or not 170000 <= int(version) < 180000:
-                raise RuntimeError('Unexpected staging PostgreSQL major version.')
+                raise BackupFailure('DB_VERSION_UNEXPECTED')
             print('Phase: database dump', flush=True)
             safe_process(base + ['pg_dump', '--dbname=' + CONNECTION, '--no-password', '--format=custom',
                                  '--lock-wait-timeout=10s', '--file=/backup/staging.dump'], child_env, log)
@@ -125,7 +189,7 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except BaseException:
-        # No traceback or exception payload: runner logs are public in this repo.
-        print('Backup not completed. No remote schema change or recovery was performed.')
+    except BaseException as error:
+        # Only allowlisted constants, never raw errors or traceback, are public.
+        report_failure(error)
         raise SystemExit(1)

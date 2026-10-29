@@ -1,4 +1,5 @@
 import importlib.util
+import contextlib
 import io
 import json
 import os
@@ -32,8 +33,52 @@ class BackupTests(unittest.TestCase):
                             'AURA_BACKUP_APPROVED_SHA': ['', 'b' * 40], 'AURA_BACKUP_PASSPHRASE': ['', env['AURA_STAGING_DB_PASSWORD']],
                             'AURA_STAGING_DB_PASSWORD': ['', 'bad\npassword']}.items():
             for value in values:
-                with self.assertRaises(ValueError):
+                with self.assertRaises(backup.BackupFailure):
                     backup.guard({**env, key: value})
+
+    def test_safe_failure_codes_distinguish_configuration_tls_auth_routing_and_network(self):
+        args = ['docker', '--host=unix:///var/run/docker.sock', 'run', 'psql']
+        cases = {'password authentication failed for user "private"': 'DB_AUTH_FAILED',
+                 'SASL authentication failed': 'DB_AUTH_FAILED',
+                 'FATAL: Tenant or user not found': 'DB_POOLER_ROUTING_FAILED',
+                 'Too many authentication failures': 'DB_AUTH_RATE_LIMIT',
+                 'SSL error: certificate verify failed': 'DB_TLS_FAILED',
+                 'root certificate file is not accessible': 'DB_TLS_FAILED',
+                 'could not translate host name': 'DB_DNS_FAILED',
+                 'connection refused': 'DB_NETWORK_FAILED',
+                 'permission denied for table': 'DB_PERMISSION_DENIED',
+                 'unrecognized arbitrary secret payload': 'PRIVATE_COMMAND_FAILED'}
+        for private, code in cases.items():
+            self.assertEqual(backup.classify_failure(args, private.encode()), code)
+        self.assertEqual(backup.classify_failure(['docker', '--host=unix:///var/run/docker.sock', 'pull', 'image'], b'anything'), 'CLIENT_IMAGE_FAILED')
+        env = environment('/tmp')
+        for key, value, expected in [('AURA_STAGING_DB_PASSWORD', '', 'BACKUP_DB_SECRET_INVALID'),
+                                     ('AURA_BACKUP_PASSPHRASE', 'short', 'BACKUP_KEY_INVALID')]:
+            with self.assertRaises(backup.BackupFailure) as raised:
+                backup.guard({**env, key: value})
+            self.assertEqual(raised.exception.code, expected)
+
+    def test_public_diagnostics_never_include_raw_errors_or_secret_values(self):
+        private = 'do-not-print-password-123'
+        errors = [RuntimeError(private), backup.BackupFailure(private),
+                  backup.BackupFailure('DB_AUTH_FAILED'), subprocess.TimeoutExpired(private, 1)]
+        for error in errors:
+            with contextlib.redirect_stdout(io.StringIO()) as capture:
+                backup.report_failure(error)
+            self.assertNotIn(private, capture.getvalue())
+            self.assertNotIn('Traceback', capture.getvalue())
+
+    def test_process_classifies_only_its_error_tail_and_does_not_echo_it(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            log = Path(tmp) / 'private.log'
+            log.write_text('password authentication failed from a previous command\n')
+            script = 'import sys;sys.stderr.write("FATAL: Tenant or user not found private-canary");sys.exit(1)'
+            with contextlib.redirect_stdout(io.StringIO()) as capture:
+                with self.assertRaises(backup.BackupFailure) as raised:
+                    backup.safe_process([sys.executable, '-c', script], dict(os.environ), log)
+                backup.report_failure(raised.exception)
+            self.assertEqual(raised.exception.code, 'DB_POOLER_ROUTING_FAILED')
+            self.assertNotIn('private-canary', capture.getvalue())
 
     def test_real_encryption_roundtrip_and_cleanup_with_synthetic_remote_commands(self):
         with tempfile.TemporaryDirectory() as tmp:
