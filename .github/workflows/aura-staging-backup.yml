@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   private-backup:
-    if: github.repository == 'danielfilipemc-cloud/nutritrack' && github.ref == 'refs/heads/ops/aura-staging-backup'
+    if: github.repository == 'danielfilipemc-cloud/nutritrack' && github.ref == 'refs/heads/ops/aura-staging-backup' && !contains(github.event.head_commit.message, '[recovery-only]')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: aura-staging-backup

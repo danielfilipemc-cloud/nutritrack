@@ -1,0 +1,22 @@
+name: AURA offline recovery fixture
+on:
+  push:
+    branches: ['feat/aura-**']
+    paths: ['commercial/scripts/staging-*recovery*.py', 'commercial/tests/staging*recovery*', '.github/workflows/aura-recovery-fixture.yml']
+  pull_request:
+    branches: ['ops/aura-staging-backup']
+    paths: ['commercial/scripts/staging-*recovery*.py', 'commercial/tests/staging*recovery*', '.github/workflows/aura-recovery-fixture.yml']
+permissions:
+  contents: read
+jobs:
+  offline-fixture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Guard and archive unit tests
+        run: python3 commercial/tests/staging_recovery_test.py
+      - name: Full synthetic restore using pinned compatible image
+        run: python3 commercial/scripts/staging-recovery-fixture.py
