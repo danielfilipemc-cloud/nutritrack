@@ -22,7 +22,7 @@ spec.loader.exec_module(backup)
 
 BACKUP_SHA = 'a72b72db0d903e35e025f5bef2ba11584ba6a919'
 CIPHER_SHA = 'd38fc10b5147af9e18121a513c1cad47dad6918cbe0f88d66fbf56bbb363a70a'
-SERVER_IMAGE = 'public.ecr.aws/supabase/postgres@sha256:5a213ad5fa0885bade074ce9c2835970a5ed59a813fb9019550041736d1bb85b'
+SERVER_IMAGE = 'docker.io/supabase/postgres@sha256:5a213ad5fa0885bade074ce9c2835970a5ed59a813fb9019550041736d1bb85b'
 BOOTSTRAP = 'aura_recovery_operator'
 LABEL = 'aura.private-recovery'
 FILES = {'staging.dump', 'roles.sql', 'archive-list.txt', 'manifest.json'}
