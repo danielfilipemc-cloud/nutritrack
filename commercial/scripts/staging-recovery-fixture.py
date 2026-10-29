@@ -28,8 +28,12 @@ def main():
         try:
             source.docker('pull',image)
             source.start()
+            if image == r.SERVER_IMAGE:
+                source.sql('create schema extensions; create extension pgcrypto schema extensions; create extension "uuid-ossp" schema extensions; create extension pg_stat_statements schema extensions; create extension supabase_vault;')
+            else:
+                source.sql('create schema vault; create table vault.secrets(id int);')
             source.sql("""create role postgres superuser login; create role anon;
-              create schema auth; create schema app_private; create schema storage; create schema vault;
+              create schema auth; create schema app_private; create schema storage;
               create table auth.users(id int primary key, encrypted_password text);
               insert into auth.users values (1,'fictional-hash');
               create table public.samples(id int primary key,note text);
@@ -37,7 +41,6 @@ def main():
               alter table public.samples enable row level security;
               create policy no_anonymous on public.samples for select to anon using(false);
               create table storage.objects(id int); create table storage.buckets(id int);
-              create table vault.secrets(id int);
               create table app_private.aura_migrations(name text primary key,checksum text);
               create function public.fixture_text() returns text language sql as $$
               -- preserved function body
@@ -47,6 +50,7 @@ def main():
             baseline=json.loads(Path(__file__).with_name('staging-recovery-baseline.json').read_text())
             values=','.join("('"+row['name']+"','"+row['checksum']+"')" for row in baseline)
             source.sql('insert into app_private.aura_migrations values '+values+';')
+            source.sql("alter database postgres owner to postgres; revoke connect on database postgres from public; grant connect on database postgres to anon; alter database postgres set statement_timeout='45s'; alter schema public owner to postgres;")
             source.docker('exec',source.cid,'pg_dump','-h','/tmp','-U',r.BOOTSTRAP,'-d','postgres','--format=custom',output=root/'staging.dump')
             source.docker('exec',source.cid,'pg_dumpall','-h','/tmp','-U',r.BOOTSTRAP,'--roles-only','--no-role-passwords',output=root/'roles.full.sql')
             roles=(root/'roles.full.sql').read_text()
@@ -58,6 +62,19 @@ def main():
             target=r.Cluster(root,env,image=image)
             target.start()
             target.restore()
+            target.verify()
+            for change, repair, expected in [
+                ('alter database postgres owner to '+r.BOOTSTRAP+';', 'alter database postgres owner to postgres;', 'SCHEMA_ROUNDTRIP_MISMATCH'),
+                ("alter database postgres set statement_timeout='40s';", "alter database postgres set statement_timeout='45s';", 'SCHEMA_ROUNDTRIP_MISMATCH'),
+                ('grant connect on database postgres to public;', 'revoke connect on database postgres from public;', 'SCHEMA_ROUNDTRIP_MISMATCH'),
+                ('alter role anon login;', 'alter role anon nologin;', 'ROLES_ROUNDTRIP_MISMATCH')]:
+                target.sql(change)
+                try:
+                    target.verify()
+                    raise AssertionError('Changed authorization metadata was accepted')
+                except r.RecoveryFailure as error:
+                    assert str(error)==expected
+                target.sql(repair)
             target.verify()
             try:
                 target.restore()
@@ -72,11 +89,15 @@ def main():
                 assert str(error)=='DATA_ROUNDTRIP_MISMATCH'
             print(json.dumps({'fictionalFixture':True,'fullRestore':True,'schemaDataRoundtrip':True,
                               'populatedTargetRefused':True,'changedDataRefused':True,
+                              'changedDatabaseOwnerAclSettingsRefused':True,'changedRoleRefused':True,
                               'supabaseImage':image==r.SERVER_IMAGE,'cloudRecoveryVerified':False}))
         except BaseException:
             # This harness creates only the hard-coded fictional fixture above;
             # it never reads a private backup or accepts credentials.
             print((root/'restore.private.log').read_text()[-4000:], file=sys.stderr)
+            toc=root/'restore-toc.txt'
+            if toc.exists():
+                print('\n'.join(line for line in toc.read_text().splitlines() if 'DATABASE' in line),file=sys.stderr)
             raise
         finally:
             source.close()

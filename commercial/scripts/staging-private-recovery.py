@@ -153,9 +153,10 @@ class Cluster:
     def docker(self, *args, **kwargs):
         return self.call(['docker', '--host=unix:///var/run/docker.sock', *args], **kwargs)
 
-    def sql(self, sql, *, output=None):
+    def sql(self, sql, *, output=None, database='postgres'):
+        require(database in ['postgres', 'template1'], 'CONTEXT_INVALID')
         return self.docker('exec', '-i', self.cid, 'psql', '-XAt', '-v', 'ON_ERROR_STOP=1',
-                           '-h', '/tmp', '-U', BOOTSTRAP, '-d', 'postgres', stdin=sql.encode(), output=output)
+                           '-h', '/tmp', '-U', BOOTSTRAP, '-d', database, stdin=sql.encode(), output=output)
 
     def start(self):
         # Bare initdb: none of the image's platform initialization SQL runs.
@@ -197,13 +198,17 @@ class Cluster:
         self.sql((self.root / 'roles.sql').read_text())
         self.docker('exec', '-i', self.cid, '/bin/sh', '-ec', 'umask 077; cat > /tmp/staging.dump',
                     stdin=(self.root / 'staging.dump').read_bytes())
-        self.docker('exec', self.cid, 'pg_restore', '--list', '/tmp/staging.dump', output=self.root / 'restore-toc.txt')
-        # pg_dump omits initdb's standard public schema unless it was changed.
-        # Remove ONLY the empty initdb schema when this archive recreates it.
-        if re.search(r'^\d+; \d+ \d+ SCHEMA - public \S+', (self.root / 'restore-toc.txt').read_text(), re.MULTILINE):
-            self.sql('drop schema public;')
-        self.docker('exec', self.cid, 'pg_restore', '--exit-on-error', '--single-transaction',
-                    '--verbose', '-h', '/tmp', '-U', BOOTSTRAP, '-d', 'postgres', '/tmp/staging.dump')
+        self.docker('exec', self.cid, 'pg_restore', '--create', '--list', '/tmp/staging.dump', output=self.root / 'restore-toc.txt')
+        toc = (self.root / 'restore-toc.txt').read_text()
+        databases = re.findall(r'^\d+; \d+ \d+ DATABASE - (\S+) \S+', toc, re.MULTILINE)
+        require(databases == ['postgres'], 'ARCHIVE_DATABASE_INVALID')
+        # Only the just-created, verified-empty local database is removed. Its
+        # replacement gets ORIGINAL DB owner, ACL, locale and settings from TOC.
+        # --create cannot be single-transaction: the offline disposable container
+        # is the rollback boundary; ANY command failure removes it without PASS.
+        self.sql('drop database postgres;', database='template1')
+        self.docker('exec', self.cid, 'pg_restore', '--create', '--exit-on-error',
+                    '--verbose', '-h', '/tmp', '-U', BOOTSTRAP, '-d', 'template1', '/tmp/staging.dump')
 
     def verify(self):
         self.docker('exec', self.cid, 'pg_dumpall', '-h', '/tmp', '-U', BOOTSTRAP,
@@ -213,11 +218,12 @@ class Cluster:
         require(canonical_dump((self.root / 'roles.sql').read_bytes()) == canonical_dump(actual_roles.encode()),
                 'ROLES_ROUNDTRIP_MISMATCH')
         for section in ['schema', 'data']:
-            self.docker('exec', self.cid, 'pg_restore', '--' + section + '-only', '--file=-', '/tmp/staging.dump',
+            database_options = ['--create'] if section == 'schema' else []
+            self.docker('exec', self.cid, 'pg_restore', *database_options, '--' + section + '-only', '--file=-', '/tmp/staging.dump',
                         output=self.root / (section + '.expected.sql'))
             # Both original and restored output use PostgreSQL17.11 clients;
             # version comments and random psql guards are the only omissions.
-            self.docker('exec', self.cid, 'pg_dump', '--' + section + '-only', '-h', '/tmp', '-U', BOOTSTRAP,
+            self.docker('exec', self.cid, 'pg_dump', *database_options, '--' + section + '-only', '-h', '/tmp', '-U', BOOTSTRAP,
                         '-d', 'postgres', output=self.root / (section + '.actual.sql'))
             require(canonical_dump((self.root / (section + '.expected.sql')).read_bytes()) ==
                     canonical_dump((self.root / (section + '.actual.sql')).read_bytes()), section.upper() + '_ROUNDTRIP_MISMATCH')
@@ -277,7 +283,7 @@ if __name__ == '__main__':
                    'ARCHIVE_HASH_MISMATCH', 'BOOTSTRAP_ROLE_COLLISION', 'CONTAINER_ID_INVALID',
                    'DESTINATION_NOT_ISOLATED', 'LOCAL_DATABASE_NOT_READY', 'DESTINATION_NOT_EMPTY',
                    'SCHEMA_ROUNDTRIP_MISMATCH', 'DATA_ROUNDTRIP_MISMATCH', 'EXTERNAL_RECOVERY_REQUIRED',
-                   'BASELINE_NOT_SEVENTEEN', 'DUMP_SQL_UNTERMINATED', 'ROLES_ROUNDTRIP_MISMATCH'}
+                   'BASELINE_NOT_SEVENTEEN', 'DUMP_SQL_UNTERMINATED', 'ROLES_ROUNDTRIP_MISMATCH', 'ARCHIVE_DATABASE_INVALID'}
         code = str(error) if isinstance(error, RecoveryFailure) and str(error) in allowed else 'PRIVATE_RECOVERY_FAILED'
         print('Recovery stopped [' + code + ']. No remote SQL or migration was performed.')
         raise SystemExit(1)
