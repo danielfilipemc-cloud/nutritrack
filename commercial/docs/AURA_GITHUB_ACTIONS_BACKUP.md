@@ -40,6 +40,8 @@ O workflow usa push numa branch isolada porque workflow_dispatch exige que o wor
 
 Fases visíveis: imagem fixada, ligação/versão, dump, roles sem passwords, catálogo e cifragem. Erros brutos não são impressos porque os logs deste repositório são públicos. Uma falha não publica um backup parcial nem executa SQL remoto de instalação.
 
+O diagnóstico usa apenas códigos fixos: BACKUP_DB_SECRET_INVALID/BACKUP_KEY_INVALID para formato dos segredos; DB_AUTH_FAILED para autenticação; DB_POOLER_ROUTING_FAILED para encaminhamento do tenant; DB_TLS_FAILED para certificados; DB_DNS_FAILED/DB_NETWORK_FAILED para rede. Uma causa desconhecida permanece genérica. Não imprime erros brutos, valores ou comprimentos dos segredos e não repete a ligação automaticamente. Um código de autenticação não autoriza trocar endpoints, abrir rede ou desligar TLS.
+
 ## Depois de terminar
 
 1. Descarregar o artifact cifrado do run aprovado e guardá-lo num local privado antes dos7dias de retenção. Guardar a passphrase no gestor de passwords, separada do ficheiro. Não anexar o backup a este repositório público.
