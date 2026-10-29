@@ -1,0 +1,25 @@
+# Public TLS handshake only. No environment, secrets, DB login or SQL.
+name: AURA staging backup TLS verification
+on:
+  push:
+    branches: ['feat/aura-backup-tls']
+  pull_request:
+    branches: ['ops/aura-staging-backup']
+    paths:
+      - 'commercial/scripts/staging-private-backup.py'
+      - 'commercial/scripts/staging-backup-tls-check.py'
+      - 'commercial/scripts/certificates/**'
+      - '.github/workflows/aura-staging-tls-check.yml'
+permissions:
+  contents: read
+jobs:
+  tls-without-credentials:
+    if: github.repository == 'danielfilipemc-cloud/nutritrack' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify staging pooler TLS without login or SQL
+        run: python3 commercial/scripts/staging-backup-tls-check.py

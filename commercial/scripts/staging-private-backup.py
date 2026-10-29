@@ -18,7 +18,10 @@ PROJECT = 'vgbwmamntjmhzrpvhxzb'
 REPOSITORY = 'danielfilipemc-cloud/nutritrack'
 BRANCH = 'refs/heads/ops/aura-staging-backup'
 IMAGE = 'postgres@sha256:eee6c6e1b0894fa4fe0075eb054af9fd1cf39a35321c2d4110626cfe506411fb'
-CONNECTION = ('host=aws-0-eu-west-1.pooler.supabase.com port=5432 dbname=postgres '
+HOST = 'aws-0-eu-west-1.pooler.supabase.com'
+SUPABASE_CA = Path(__file__).resolve().parent / 'certificates/supabase-root-2021.crt'
+SUPABASE_CA_SHA256 = '700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7'
+CONNECTION = ('host=' + HOST + ' port=5432 dbname=postgres '
               'user=postgres.' + PROJECT + ' sslmode=verify-full '
               'sslrootcert=/run/aura-ca.pem connect_timeout=20 application_name=aura_private_backup')
 
@@ -42,6 +45,7 @@ ERRORS = {
     'COMMAND_TIMEOUT': 'A bounded command timed out.',
     'PRIVATE_COMMAND_FAILED': 'A private command failed; its raw output was not published.',
     'UNEXPECTED_BACKUP_FAILURE': 'The runner could not complete the private backup.',
+    'CA_CERTIFICATE_INVALID': 'The reviewed Supabase root certificate is missing or differs from its pinned hash.',
 }
 
 
@@ -49,6 +53,17 @@ class BackupFailure(RuntimeError):
     def __init__(self, code):
         self.code = code if code in ERRORS else 'PRIVATE_COMMAND_FAILED'
         super().__init__(self.code)
+
+
+def build_ca_bundle(destination, system_bundle=Path('/etc/ssl/certs/ca-certificates.crt')):
+    try:
+        certificate = SUPABASE_CA.read_bytes()
+    except OSError:
+        raise BackupFailure('CA_CERTIFICATE_INVALID') from None
+    if hashlib.sha256(certificate).hexdigest() != SUPABASE_CA_SHA256:
+        raise BackupFailure('CA_CERTIFICATE_INVALID')
+    destination.write_bytes(system_bundle.read_bytes() + b'\n' + certificate)
+    return destination
 
 
 def classify_failure(args, private_stderr):
@@ -139,13 +154,15 @@ def main():
         with tempfile.TemporaryDirectory(prefix='aura-private-', dir=env['RUNNER_TEMP']) as tmp:
             root = Path(tmp)
             log = root / 'private-errors.log'
+            print('Phase: reviewed Supabase and system CA trust bundle', flush=True)
+            ca_bundle = build_ca_bundle(root / 'trusted-ca.pem')
             # Use the ephemeral runner's local daemon only. No configurable host,
             # database, connection URL, project, image or output destination.
             docker = ['docker', '--host=unix:///var/run/docker.sock']
             print('Phase: pinned PostgreSQL client image', flush=True)
             safe_process(docker + ['pull', IMAGE], child_env, log)
             base = docker + ['run', '--rm', '--network', 'bridge', '-e', 'PGPASSWORD',
-                             '--mount', 'type=bind,src=/etc/ssl/certs/ca-certificates.crt,dst=/run/aura-ca.pem,readonly',
+                             '--mount', 'type=bind,src=' + str(ca_bundle) + ',dst=/run/aura-ca.pem,readonly',
                              '--mount', 'type=bind,src=' + str(root) + ',dst=/backup', IMAGE]
             print('Phase: staging connection and PostgreSQL version', flush=True)
             safe_process(base + ['psql', '--dbname=' + CONNECTION, '-XAt', '--no-password',
@@ -165,6 +182,7 @@ def main():
             files = ['staging.dump', 'roles.sql', 'archive-list.txt']
             manifest = {'project': PROJECT, 'createdAt': datetime.now(timezone.utc).isoformat(),
                         'sourceCodeSha': env['GITHUB_SHA'], 'serverVersion': version, 'clientImage': IMAGE,
+                        'supabaseRootCertificateSha256': SUPABASE_CA_SHA256,
                         'archiveCatalogueVerified': True, 'recoveryVerified': False,
                         'limitations': ['Storage objects are separate', 'Role passwords are excluded',
                                         'Vault recovery and platform configuration not verified',

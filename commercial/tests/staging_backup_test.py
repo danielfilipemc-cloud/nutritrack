@@ -15,6 +15,9 @@ sys.dont_write_bytecode = True
 spec = importlib.util.spec_from_file_location('backup', Path(__file__).resolve().parents[1] / 'scripts/staging-private-backup.py')
 backup = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(backup)
+tls_spec = importlib.util.spec_from_file_location('tlscheck', Path(__file__).resolve().parents[1] / 'scripts/staging-backup-tls-check.py')
+tlscheck = importlib.util.module_from_spec(tls_spec)
+tls_spec.loader.exec_module(tlscheck)
 
 
 def environment(tmp):
@@ -25,6 +28,71 @@ def environment(tmp):
 
 
 class BackupTests(unittest.TestCase):
+    def test_tls_probe_sends_only_ssl_request_and_checks_fixed_hostname(self):
+        import ssl
+        import struct
+        sent = []
+
+        class Stream:
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def sendall(self, value): sent.append(value)
+            def recv(self, size): return b'S'
+            def version(self): return 'TLSv1.3'
+
+        class Context:
+            check_hostname = True
+            verify_mode = ssl.CERT_REQUIRED
+            minimum_version = None
+
+            def wrap_socket(self, stream, *, server_hostname):
+                self.hostname = server_hostname
+                return Stream()
+
+        context = Context()
+        with patch.object(tlscheck.ssl, 'create_default_context', return_value=context), patch.object(tlscheck.socket, 'create_connection', return_value=Stream()) as connect:
+            result = tlscheck.probe(Path('/fictional-ca.pem'))
+        connect.assert_called_once_with((backup.HOST, 5432), timeout=20)
+        self.assertEqual(sent, [struct.pack('!II', 8, 80877103)])
+        self.assertEqual(context.hostname, backup.HOST)
+        self.assertEqual(context.minimum_version, ssl.TLSVersion.TLSv1_2)
+        self.assertFalse(result['authenticationAttempted'])
+        self.assertFalse(result['sqlExecuted'])
+
+    def test_tls_probe_refuses_unverified_context_before_network(self):
+        import ssl
+        context = type('Context', (), {'check_hostname': False, 'verify_mode': ssl.CERT_REQUIRED})()
+        with patch.object(tlscheck.ssl, 'create_default_context', return_value=context), patch.object(tlscheck.socket, 'create_connection') as connect:
+            with self.assertRaises(RuntimeError):
+                tlscheck.probe(Path('/fictional-ca.pem'))
+        connect.assert_not_called()
+
+    def test_tls_probe_has_no_local_or_private_secret_execution(self):
+        for env in [{}, {'GITHUB_ACTIONS': 'true', 'GITHUB_REPOSITORY': backup.REPOSITORY, 'AURA_STAGING_DB_PASSWORD': 'private-canary'}]:
+            with patch.dict(os.environ, env, clear=True), patch.object(tlscheck, 'probe') as probe, contextlib.redirect_stdout(io.StringIO()) as capture:
+                self.assertEqual(tlscheck.main(), 1)
+            probe.assert_not_called()
+            self.assertNotIn('private-canary', capture.getvalue())
+
+    def test_reviewed_certificate_bundle_preserves_system_roots_and_rejects_tampering(self):
+        import ssl
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            system = root / 'system.pem'
+            system.write_bytes(b'# synthetic system root sentinel\n')
+            combined = backup.build_ca_bundle(root / 'combined.pem', system)
+            self.assertTrue(combined.read_bytes().startswith(system.read_bytes()))
+            context = ssl.create_default_context(cafile=str(combined))
+            self.assertTrue(context.check_hostname)
+            self.assertEqual(context.verify_mode, ssl.CERT_REQUIRED)
+            corrupted = root / 'changed.pem'
+            corrupted.write_bytes(backup.SUPABASE_CA.read_bytes() + b'changed')
+            with patch.object(backup, 'SUPABASE_CA', corrupted):
+                with self.assertRaises(backup.BackupFailure) as raised:
+                    backup.build_ca_bundle(root / 'bad.pem', system)
+            self.assertEqual(raised.exception.code, 'CA_CERTIFICATE_INVALID')
+            self.assertFalse((root / 'bad.pem').exists())
+
     def test_rejects_other_repository_refs_events_missing_secret_and_unapproved_code(self):
         env = environment('/tmp')
         backup.guard(env)
@@ -97,6 +165,10 @@ class BackupTests(unittest.TestCase):
                     mount = next(a for a in args if a.startswith('type=bind,src=') and a.endswith(',dst=/backup'))
                     root = Path(mount.removeprefix('type=bind,src=').removesuffix(',dst=/backup'))
                     (root / 'staging.dump').write_bytes(b'PGDMP-synthetic-private-data')
+                if 'run' in args:
+                    ca = next(a for a in args if a.endswith(',dst=/run/aura-ca.pem,readonly'))
+                    self.assertIn('trusted-ca.pem', ca)
+                    self.assertNotIn('src=/etc/ssl/', ca)
                 if kwargs.get('output'):
                     output = kwargs['output']
                     output.write_text('170011\n' if 'psql' in args else '-- synthetic metadata\n')
@@ -117,6 +189,7 @@ class BackupTests(unittest.TestCase):
                 manifest = json.load(archive.extractfile('manifest.json'))
                 self.assertFalse(manifest['recoveryVerified'])
                 self.assertEqual(manifest['project'], backup.PROJECT)
+                self.assertEqual(manifest['supabaseRootCertificateSha256'], backup.SUPABASE_CA_SHA256)
                 self.assertEqual(archive.extractfile('staging.dump').read(), b'PGDMP-synthetic-private-data')
             remote = [a for a in commands if '--dbname=' + backup.CONNECTION in a]
             self.assertEqual(len(remote), 3)
