@@ -29,6 +29,7 @@ jobs:
           artifact-ids: '12932542971'
           run-id: '40930304863'
           github-token: ${{ github.token }}
+          merge-multiple: true
           path: ${{ runner.temp }}/aura-recovery-input
       - name: Restore offline and compare the complete archive
         env:
