@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location('recovery', Path(__file__).with_name('staging-private-recovery.py'))
 r = importlib.util.module_from_spec(spec)
@@ -23,16 +24,29 @@ def main():
     image = r.backup.IMAGE if '--portable' in sys.argv else r.SERVER_IMAGE
     with tempfile.TemporaryDirectory(prefix='aura-recovery-fiction-') as tmp:
         root=Path(tmp)
+        with patch.object(r,'BOOTSTRAP','aura_recovery_operator'):
+            wrong=r.Cluster(root,env,image=image)
+            try:
+                wrong.docker('pull',image)
+                wrong.start()
+                try:
+                    wrong.sql('create role supabase_admin superuser; grant pg_read_all_settings to pg_monitor with inherit true granted by supabase_admin;')
+                    raise AssertionError('Alternate bootstrap unexpectedly preserved grantor authority')
+                except r.RecoveryFailure as error:
+                    assert str(error)=='RESTORE_PERMISSION_DENIED'
+            finally:
+                wrong.close()
         source=r.Cluster(root,env,image=image)
         target=None
         try:
             source.docker('pull',image)
             source.start()
+            source.sql('grant pg_read_all_settings to pg_monitor with inherit true granted by supabase_admin;')
             if image == r.SERVER_IMAGE:
                 source.sql('create schema extensions; create extension pgcrypto schema extensions; create extension "uuid-ossp" schema extensions; create extension pg_stat_statements schema extensions; create extension supabase_vault;')
             else:
                 source.sql('create schema vault; create table vault.secrets(id int);')
-            source.sql("""create role postgres superuser login; create role anon;
+            source.sql("""create role postgres nosuperuser login createrole createdb replication bypassrls; create role anon;
               create schema auth; create schema app_private; create schema storage;
               create table auth.users(id int primary key, encrypted_password text);
               insert into auth.users values (1,'fictional-hash');
@@ -54,10 +68,7 @@ def main():
             source.docker('exec',source.cid,'pg_dump','-h','/tmp','-U',r.BOOTSTRAP,'-d','postgres','--format=custom',output=root/'staging.dump')
             source.docker('exec',source.cid,'pg_dumpall','-h','/tmp','-U',r.BOOTSTRAP,'--roles-only','--no-role-passwords',output=root/'roles.full.sql')
             roles=(root/'roles.full.sql').read_text()
-            # Only this synthetic fixture was authored by the bootstrap role.
-            # The actual recovery script refuses this role in the source archive.
-            (root/'roles.sql').write_text('\n'.join(l for l in roles.splitlines() if not l.startswith((
-                'CREATE ROLE '+r.BOOTSTRAP+';', 'ALTER ROLE '+r.BOOTSTRAP+' WITH')))+'\n')
+            (root/'roles.sql').write_text(roles)
             source.close()
             target=r.Cluster(root,env,image=image)
             target.start()
@@ -90,6 +101,7 @@ def main():
             print(json.dumps({'fictionalFixture':True,'fullRestore':True,'schemaDataRoundtrip':True,
                               'populatedTargetRefused':True,'changedDataRefused':True,
                               'changedDatabaseOwnerAclSettingsRefused':True,'changedRoleRefused':True,
+                              'alternateBootstrapGrantorRefused':True,'providerBootstrapGrantorRestored':True,
                               'supabaseImage':image==r.SERVER_IMAGE,'cloudRecoveryVerified':False}))
         except BaseException:
             # This harness creates only the hard-coded fictional fixture above;

@@ -23,7 +23,7 @@ spec.loader.exec_module(backup)
 BACKUP_SHA = 'a72b72db0d903e35e025f5bef2ba11584ba6a919'
 CIPHER_SHA = 'd38fc10b5147af9e18121a513c1cad47dad6918cbe0f88d66fbf56bbb363a70a'
 SERVER_IMAGE = 'docker.io/supabase/postgres@sha256:5a213ad5fa0885bade074ce9c2835970a5ed59a813fb9019550041736d1bb85b'
-BOOTSTRAP = 'aura_recovery_operator'
+BOOTSTRAP = 'supabase_admin'
 LABEL = 'aura.private-recovery'
 FILES = {'staging.dump', 'roles.sql', 'archive-list.txt', 'manifest.json'}
 
@@ -74,8 +74,21 @@ def unpack(archive, destination):
     require(set(manifest.get('files', {})) == FILES - {'manifest.json'}, 'MANIFEST_FILES_INVALID')
     for name, expected in manifest['files'].items():
         require(hashlib.sha256((destination / name).read_bytes()).hexdigest() == expected, 'ARCHIVE_HASH_MISMATCH')
-    require(not re.search(r'\b' + BOOTSTRAP + r'\b', (destination / 'roles.sql').read_text()), 'BOOTSTRAP_ROLE_COLLISION')
+    restore_roles_sql((destination / 'roles.sql').read_text())
     return manifest
+
+
+def restore_roles_sql(original):
+    # The provider's bootstrap role has OID10. A different bootstrap changes
+    # builtin membership grantor authority, even if a later role is SUPERUSER.
+    # Account for exactly this role's creation by initdb, assert its identity,
+    # then replay ALL original ALTER ROLE/settings/membership commands unchanged.
+    create = 'CREATE ROLE supabase_admin;'
+    require(original.split('\n').count(create) == 1 and len(re.findall(
+        r'^ALTER ROLE supabase_admin WITH SUPERUSER\b.*;$', original, re.MULTILINE)) == 1,
+        'BOOTSTRAP_ROLE_INVALID')
+    assertion = "DO $$BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE oid=10 AND rolname='supabase_admin' AND rolsuper) THEN RAISE EXCEPTION 'Bootstrap identity mismatch'; END IF; END$$;"
+    return '\n'.join(assertion if line == create else line for line in original.split('\n'))
 
 
 def canonical_dump(data):
@@ -148,19 +161,33 @@ class Cluster:
         self.log = root / 'restore.private.log'
 
     def call(self, args, *, stdin=None, output=None, timeout=300):
-        backup.safe_process(args, self.env, self.log, stdin=stdin, output=output, timeout=timeout)
+        offset = self.log.stat().st_size if self.log.exists() else 0
+        try:
+            backup.safe_process(args, self.env, self.log, stdin=stdin, output=output, timeout=timeout)
+        except backup.BackupFailure:
+            with self.log.open('rb') as log:
+                log.seek(max(offset, self.log.stat().st_size - 65536))
+                private = log.read(65536)
+            # Only fixed codes escape this method; never return raw SQL/errors.
+            state = re.search(rb'(?:ERROR|FATAL):\s+([A-Z0-9]{5})(?:\s|$)', private)
+            codes = {b'42501':'RESTORE_PERMISSION_DENIED', b'42710':'RESTORE_DUPLICATE_OBJECT',
+                     b'42704':'RESTORE_DEPENDENCY_MISSING', b'42601':'RESTORE_SYNTAX_INVALID',
+                     b'0LP01':'RESTORE_GRANTOR_INVALID', b'22023':'RESTORE_PARAMETER_INVALID'}
+            if state and state[1] in codes:
+                raise RecoveryFailure(codes[state[1]]) from None
+            raise
 
     def docker(self, *args, **kwargs):
         return self.call(['docker', '--host=unix:///var/run/docker.sock', *args], **kwargs)
 
     def sql(self, sql, *, output=None, database='postgres'):
         require(database in ['postgres', 'template1'], 'CONTEXT_INVALID')
-        return self.docker('exec', '-i', self.cid, 'psql', '-XAt', '-v', 'ON_ERROR_STOP=1',
+        return self.docker('exec', '-i', self.cid, 'psql', '-XAt', '-v', 'ON_ERROR_STOP=1', '-v', 'VERBOSITY=sqlstate',
                            '-h', '/tmp', '-U', BOOTSTRAP, '-d', database, stdin=sql.encode(), output=output)
 
     def start(self):
         # Bare initdb: none of the image's platform initialization SQL runs.
-        # A unique bootstrap role allows the original roles.sql to run unchanged.
+        # Preserve the provider's bootstrap role name and OID10 grantor identity.
         self.docker('run', '-d', '--network=none', '--read-only', '--user=postgres',
                     '--cap-drop=ALL', '--security-opt=no-new-privileges', '--pids-limit=128',
                     '--memory=2g', '--cpus=2', '--label', LABEL + '=true',
@@ -182,26 +209,30 @@ class Cluster:
             try:
                 self.sql('select 1;', output=self.root / 'ready.txt')
                 ready = (self.root / 'ready.txt').read_text().strip() == '1'
-            except backup.BackupFailure:
+            except (backup.BackupFailure, RecoveryFailure):
                 pass
             if ready: break
             time.sleep(0.5)
         require(ready, 'LOCAL_DATABASE_NOT_READY')
 
     def restore(self):
+        print('Phase: verify newly-created empty local destination', flush=True)
         self.sql("""select not exists(select 1 from pg_namespace where nspname not like 'pg_%'
                  and nspname not in ('public','information_schema'))
                  and not exists(select 1 from pg_class where relnamespace='public'::regnamespace)
                  and not exists(select 1 from pg_proc where pronamespace='public'::regnamespace)
                  and not exists(select 1 from pg_type where typnamespace='public'::regnamespace);""", output=self.root / 'empty.txt')
         require((self.root / 'empty.txt').read_text().strip() == 't', 'DESTINATION_NOT_EMPTY')
-        self.sql((self.root / 'roles.sql').read_text())
+        print('Phase: restore original roles and membership grantors', flush=True)
+        self.sql(restore_roles_sql((self.root / 'roles.sql').read_text()))
+        print('Phase: transfer frozen archive to offline tmpfs', flush=True)
         self.docker('exec', '-i', self.cid, '/bin/sh', '-ec', 'umask 077; cat > /tmp/staging.dump',
                     stdin=(self.root / 'staging.dump').read_bytes())
         self.docker('exec', self.cid, 'pg_restore', '--create', '--list', '/tmp/staging.dump', output=self.root / 'restore-toc.txt')
         toc = (self.root / 'restore-toc.txt').read_text()
         databases = re.findall(r'^\d+; \d+ \d+ DATABASE - (\S+) \S+', toc, re.MULTILINE)
         require(databases == ['postgres'], 'ARCHIVE_DATABASE_INVALID')
+        print('Phase: recreate full local database from archive', flush=True)
         # Only the just-created, verified-empty local database is removed. Its
         # replacement gets ORIGINAL DB owner, ACL, locale and settings from TOC.
         # --create cannot be single-transaction: the offline disposable container
@@ -213,8 +244,7 @@ class Cluster:
     def verify(self):
         self.docker('exec', self.cid, 'pg_dumpall', '-h', '/tmp', '-U', BOOTSTRAP,
                     '--roles-only', '--no-role-passwords', output=self.root / 'roles.actual.sql')
-        actual_roles = '\n'.join(line for line in (self.root / 'roles.actual.sql').read_text().split('\n')
-                                  if not line.startswith(('CREATE ROLE ' + BOOTSTRAP + ';', 'ALTER ROLE ' + BOOTSTRAP + ' WITH')))
+        actual_roles = (self.root / 'roles.actual.sql').read_text()
         require(canonical_dump((self.root / 'roles.sql').read_bytes()) == canonical_dump(actual_roles.encode()),
                 'ROLES_ROUNDTRIP_MISMATCH')
         for section in ['schema', 'data']:
@@ -280,10 +310,12 @@ if __name__ == '__main__':
         allowed = {'CONTEXT_INVALID', 'SOURCE_NOT_APPROVED', 'KEY_INVALID', 'UNNECESSARY_DB_SECRET',
                    'ARTIFACT_FILES_INVALID', 'CIPHER_INVALID', 'CIPHER_HASH_MISMATCH', 'CHECKSUM_FILE_INVALID',
                    'ARCHIVE_FILES_INVALID', 'ARCHIVE_MEMBER_INVALID', 'MANIFEST_INVALID', 'MANIFEST_FILES_INVALID',
-                   'ARCHIVE_HASH_MISMATCH', 'BOOTSTRAP_ROLE_COLLISION', 'CONTAINER_ID_INVALID',
+                   'ARCHIVE_HASH_MISMATCH', 'BOOTSTRAP_ROLE_INVALID', 'CONTAINER_ID_INVALID',
                    'DESTINATION_NOT_ISOLATED', 'LOCAL_DATABASE_NOT_READY', 'DESTINATION_NOT_EMPTY',
                    'SCHEMA_ROUNDTRIP_MISMATCH', 'DATA_ROUNDTRIP_MISMATCH', 'EXTERNAL_RECOVERY_REQUIRED',
-                   'BASELINE_NOT_SEVENTEEN', 'DUMP_SQL_UNTERMINATED', 'ROLES_ROUNDTRIP_MISMATCH', 'ARCHIVE_DATABASE_INVALID'}
+                   'BASELINE_NOT_SEVENTEEN', 'DUMP_SQL_UNTERMINATED', 'ROLES_ROUNDTRIP_MISMATCH', 'ARCHIVE_DATABASE_INVALID',
+                   'RESTORE_PERMISSION_DENIED', 'RESTORE_DUPLICATE_OBJECT', 'RESTORE_DEPENDENCY_MISSING',
+                   'RESTORE_SYNTAX_INVALID', 'RESTORE_GRANTOR_INVALID', 'RESTORE_PARAMETER_INVALID'}
         code = str(error) if isinstance(error, RecoveryFailure) and str(error) in allowed else 'PRIVATE_RECOVERY_FAILED'
         print('Recovery stopped [' + code + ']. No remote SQL or migration was performed.')
         raise SystemExit(1)
