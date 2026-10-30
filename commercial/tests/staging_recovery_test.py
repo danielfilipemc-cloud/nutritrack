@@ -87,5 +87,31 @@ class RecoveryTests(unittest.TestCase):
         with self.assertRaises(recovery.RecoveryFailure):
             recovery.canonical_dump(b"COMMENT ON TABLE t IS 'unterminated")
 
+    def test_bootstrap_reconciliation_preserves_every_other_role_statement(self):
+        source = '-- CREATE ROLE supabase_admin; in a comment\nCREATE ROLE supabase_admin;\nALTER ROLE supabase_admin WITH SUPERUSER LOGIN;\nCREATE ROLE anon;\nGRANT pg_read_all_settings TO pg_monitor WITH INHERIT TRUE GRANTED BY supabase_admin;\n'
+        actual = recovery.restore_roles_sql(source)
+        self.assertIn("oid=10 AND rolname='supabase_admin' AND rolsuper",actual)
+        self.assertEqual(source.split('\n')[:1]+source.split('\n')[2:],actual.split('\n')[:1]+actual.split('\n')[2:])
+        for bad in [source.replace('CREATE ROLE supabase_admin;\n',''),
+                    source+'CREATE ROLE supabase_admin;\n',source.replace('WITH SUPERUSER','WITH NOSUPERUSER')]:
+            with self.assertRaises(recovery.RecoveryFailure): recovery.restore_roles_sql(bad)
+
+    def test_sqlstate_diagnostics_are_fixed_codes_and_do_not_reuse_previous_errors(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cluster=recovery.Cluster(Path(tmp),{})
+            cluster.log.write_bytes(b'ERROR: 42710 previous-secret\n')
+            def failure(*args,**kwargs):
+                with cluster.log.open('ab') as out: out.write(b'ERROR: 42501 private-canary-not-for-logs\n')
+                raise recovery.backup.BackupFailure('PRIVATE_COMMAND_FAILED')
+            with patch.object(recovery.backup,'safe_process',side_effect=failure):
+                with self.assertRaises(recovery.RecoveryFailure) as error: cluster.call(['fictional'])
+            self.assertEqual(str(error.exception),'RESTORE_PERMISSION_DENIED')
+            self.assertNotIn('private-canary',str(error.exception))
+            def unknown(*args,**kwargs):
+                with cluster.log.open('ab') as out: out.write(b'ERROR: XX000 another-private-canary\n')
+                raise recovery.backup.BackupFailure('PRIVATE_COMMAND_FAILED')
+            with patch.object(recovery.backup,'safe_process',side_effect=unknown):
+                with self.assertRaises(recovery.backup.BackupFailure): cluster.call(['fictional'])
+
 
 if __name__ == '__main__': unittest.main()
