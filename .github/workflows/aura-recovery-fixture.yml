@@ -8,6 +8,7 @@ on:
     paths: ['commercial/scripts/staging-*recovery*.py', 'commercial/tests/staging*recovery*', '.github/workflows/aura-recovery-fixture.yml']
 permissions:
   contents: read
+  actions: read
 jobs:
   offline-fixture:
     runs-on: ubuntu-24.04
@@ -18,5 +19,29 @@ jobs:
           persist-credentials: false
       - name: Guard and archive unit tests
         run: python3 commercial/tests/staging_recovery_test.py
+      - name: Download frozen ciphertext with the recovery layout
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          artifact-ids: '12932542971'
+          run-id: '40930304863'
+          github-token: ${{ github.token }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/aura-recovery-input
+      - name: Verify actual downloaded layout and frozen ciphertext hash without decryption
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          python3 - <<'PY'
+          import importlib.util, os
+          from pathlib import Path
+          spec = importlib.util.spec_from_file_location('recovery', 'commercial/scripts/staging-private-recovery.py')
+          recovery = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(recovery)
+          recovery.verify_cipher(Path(os.environ['RUNNER_TEMP']) / 'aura-recovery-input')
+          print('PASS: actual download layout and frozen ciphertext checksum; no decryption or source connection.')
+          PY
       - name: Full synthetic restore using pinned compatible image
         run: python3 commercial/scripts/staging-recovery-fixture.py
+      - name: Remove downloaded ciphertext
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/aura-recovery-input"

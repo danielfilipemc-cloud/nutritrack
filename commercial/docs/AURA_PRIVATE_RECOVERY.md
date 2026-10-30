@@ -12,6 +12,8 @@ Este incremento prepara um ensaio do backup real já criado; não conclui a migr
 
 O workflow `aura-staging-recovery.yml` aceita apenas push em `ops/aura-staging-backup` com marcador `[recovery-only]`, SHA exato aprovado em `AURA_BACKUP_APPROVED_SHA` e a revisão do environment `aura-staging-backup`. A execução de backup habitual ignora esse marcador; o ensaio não gera outra exportação nem precisa da password da base. Não alterar as proteções para evitar a aprovação do titular.
 
+Com `artifact-ids`, o download-artifact cria uma subpasta por artifact por omissão, mesmo selecionando apenas um. O workflow fixa `merge-multiple: true` para entregar os dois ficheiros diretamente em `aura-recovery-input`; o validador continua a rejeitar outros nomes, subpastas ou hashes. O CI testa agora o download do ciphertext real com a mesma configuração e verifica nomes/hash sem decifrar ou receber secrets. A tentativa2 do run40971508506 parou antes da decifragem por essa diferença de layout; não foi uma falha de password ou restauro.
+
 Ao integrar o PR operacional, o **título do merge commit tem de incluir `[recovery-only]`**. Confirmar depois que o run elegível se chama `AURA staging private recovery rehearsal`, com o SHA integrado, e que o backup habitual ficou skipped. Um merge sem esse marcador seleciona a tarefa errada; não aprovar uma nova exportação por engano nem substituir o artifact congelado.
 
 ## O que é verificado
