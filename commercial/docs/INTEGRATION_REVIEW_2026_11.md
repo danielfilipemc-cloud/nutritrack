@@ -10,7 +10,7 @@
 | #41 | design/aura-premium-experience | a3f23bf3aa8777de165d09860f2ae0754dbf36e7 | Aberto, sem merge |
 | #42 | design/aura-daily-dashboard | a60186683f67c078726f47f74eaf3173b90ca120 | Aberto, sem merge |
 
-São incrementos empilhados; a integração futura depende desta ordem e de nova verificação de cada base/head/CI. Não foram alterados os três heads aprovados nesta revisão. A correção adicional deve ser revista depois deles, não confundida com uma revisão já aprovada.
+São incrementos empilhados; a integração futura depende desta ordem e de nova verificação de cada base/head/CI. Não foram alterados os três heads identificados nesta revisão. A correção adicional deve ser revista depois deles, não confundida com uma revisão já aprovada.
 
 ## Achado confirmado: contexto guardado ao regressar à ficha
 
