@@ -11,6 +11,7 @@ async function fixture(
   page,
   {
     role = "owner",
+    referenceDate = today,
     dashboardError = false,
     slowA = false,
     archived = false,
@@ -24,6 +25,7 @@ async function fixture(
     seedTimeline = 0, bridgeDropAck = false,
   } = {},
 ) {
+  const today = referenceDate;
   let failures = dashboardError ? 1 : 0,
     calls = 0,
     revocations = 0,

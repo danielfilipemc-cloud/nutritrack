@@ -1,0 +1,1 @@
+const {defineConfig}=require('@playwright/test');const base=require('./playwright.demo-journey.config.cjs');module.exports=defineConfig({...base,testMatch:['demo-continuity.spec.cjs','demo-actions.spec.cjs','demo-final-audit.spec.cjs'],outputDir:'.aura-integration/continuity-device-results'});

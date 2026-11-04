@@ -1,0 +1,49 @@
+# Espaço do aluno e circuito alimentar — demonstração
+
+Apenas `/demo/experiencia`, dados inventados em memória e staging. Entrada pela Ficha 360.º → Experiência do aluno, ou pelo botão no Resumo. Hoje, Treino, Alimentação, Agenda e Evolução partilham o aluno e os dados da ficha. Não é conta real, autorização, portal profissional publicado ao aluno, nem sincronização NutriTrack. Sem alterações ao `/aluno` autenticado, módulos profissionais, produção/main, Auth/RLS, migrations, base real ou NutriTrack pessoal.
+
+## Uma instância e dois contextos
+
+Treino e Nutrição mantêm uma única instância montada. O modo de pré-visualização seleciona a apresentação do aluno sem criar formulários/IDs duplicados. Rascunhos profissionais, seleções, notas e temporizador sobrevivem ao regresso à ficha e à navegação entre áreas. O contexto de cada aluno é separado. Feedback profissional e feedback do formulário do aluno têm canais independentes; mensagens de revisão/publicação não aparecem no modo aluno. Abrir um exercício e regressar ao treino recupera foco no título da área depois do commit. Reload repõe os exemplos.
+
+O espaço do aluno só mostra o plano disponibilizado; não permite publicar, editar planos, rever registos ou alterar acompanhamento. A biblioteca continua acessível a partir do exercício e permite regressar ao treino. Agenda partilha as marcações ativas futuras e o histórico de cancelamentos com a ficha; permite reservar e alterar sessões individuais fictícias com capacidade de uma pessoa, conforme o contrato descrito no final deste documento. Evolução reutiliza o gráfico e tabela de medições, sem formulários profissionais, interpretações ou pontuações clínicas. As contagens de Hoje descrevem registos, não metas nem adesão.
+
+## Rascunho, disponibilização e composição alimentar
+
+`NutritionState.meals` é o rascunho guardado. Alterar uma refeição incrementa a revisão e preserva todas as publicações e entradas. Disponibilizar exige a revisão esperada e pelo menos uma refeição. O editor bloqueia a ação enquanto houver alterações locais, mesmo numa edição fechada ou só na quantidade de criação; é possível recuperar, guardar ou descartar explicitamente o rascunho de uma refeição.
+
+Cada publicação copia refeições, opções, quantidades e composição original por 100 g. Guardar não altera a vista do aluno. A publicação não é envio real. Retirar desativa novas gravações dessa versão, sem apagar histórico ou rascunhos. Até 12 refeições e 20 versões por aluno; repor uma versão retirada cria um novo número, sem reescrever o anterior.
+
+Os exemplos iniciais têm versão disponibilizada em 18/10/2026; a entrada de 19/10 é historicamente coerente e já revista. Novas publicações usam a referência 20/10/2026. Novos registos exigem data válida até essa referência e não anterior à disponibilização da versão utilizada. Escolher uma data não reconstrói um plano histórico.
+
+## Registo, replay e revisão
+
+Respostas são separadas por aluno, versão, refeição e dia. Uma versão antiga ou retirada conserva a nota e seleção; a gravação fica bloqueada. Selecionar a atual usa outro contexto sem apagar os rascunhos antigos. A alternativa de uma publicação é imutável: removê-la do rascunho não invalida silenciosamente a resposta antiga. A publicação nova tem o seu próprio contexto de resposta.
+
+Cada entrada guarda versão, origem sintética, ID de origem estável, nome/hora da refeição, composição/quantidade/nota e escolha. A chave de origem e a regra de negócio preservam uma entrada por aluno+refeição+dia mesmo mudando a versão, para evitar duplicar o total do dia. Replay da mesma versão/escolha/nota normalizada é idempotente após revisão ou retirada; conteúdo divergente é recusado, preservando o original. Não é contrato autenticado de transporte nem aceitação de payloads arbitrários de terceiros.
+
+O profissional revê uma entrada pendente com o responsável guardado no acompanhamento. A revisão não altera nota ou composição. Só depois pode criar explicitamente uma ação interna ligada, deduplicada inclusive depois de concluída/editada. A origem na ação abre a entrada exata, repõe filtros e recupera foco. A fila tem motivo alimentar separado; Resumo, preparação e alerta de novos registos na dashboard derivam do mesmo estado. O alerta só existe quando há entradas/execuções por rever e não altera as prioridades por data de acompanhamento.
+
+Até 200 entradas por aluno, sem apagamento de histórico. Uma opção principal e uma alternativa por refeição; não representam equivalência nutricional. Quantidades em g, energia em kcal e macros em g. Desconhecido continua null; zero conhecido permanece zero. Composição incompleta usa subtotal conhecido, diário incompleto não significa consumo zero, e não há metas, prescrição ou avaliação clínica.
+
+## Validação e próxima fronteira
+
+Testes de domínio cobrem versões/snapshots, ownership, revisão, origem, replay após retirada, divergência, unicidade entre versões, datas, limites e null/zero. Browser cobre profissional→aluno→fila→revisão→ação/origem, versões antigas, rascunhos, timer entre áreas, agenda/evolução sem edição, isolamento I/O/storage, reload e mobile/teclado/reflow/cores forçadas. Repetir CI completo, Chromium/WebKit emulados, capturas protegidas, axe e revisão independente antes de integrar/publicar.
+
+O objetivo AURA–NutriTrack permanece explícito, mas transporte alimentar real e identidade/permissões/persistência exigem fase própria. Este incremento não usa nem altera o storage, sessão ou base pessoais NutriTrack e não inventa uma ligação real com um envelope fictício. Sem consultas/contactos a profissionais. Dispositivos emulados, axe e capturas não equivalem a aparelhos físicos, leitores de ecrã ou certificação WCAG; contraste em gradientes continua a exigir revisão manual.
+
+## Treino por série e biblioteca explicativa
+
+Cada bloco pode usar os valores comuns anteriores ou ativar uma grelha de séries individuais. Numa ronda de circuito, a checkbox representa a ronda completa e cada exercício tem os seus resultados. Desmarcar uma série conserva os campos no rascunho, mas exclui-os do snapshot; Concluído exige todas as séries, Parcial permite omissões. Repetições são inteiras positivas, duração em segundos, carga opcional 0–500 kg e esforço declarado opcional 0–10. Null não é zero. Sem estimativas de carga, recomendações ou interpretação de esforço. Não se misturam resultados individuais com médias ou totais calculados.
+
+A extensão opcional `blocks[].sets` do contrato interno sintético mantém os registos anteriores com valores comuns. Snapshots individuais conservam o número original da série, incluindo omissões, valores e unidades da sessão publicada; a revisão não os altera. Replay ignora campos de rascunho excluídos e mantém os resultados normalizados imutáveis. Histórico do aluno filtrado por exercício conserva a seleção em navegação e separa as duas modalidades. Blocos não realizados são explícitos também no histórico profissional.
+
+A biblioteca acrescenta preparação, sequência e variantes a discutir com o profissional, com texto original e seis esquemas existentes. Consultar uma variante não troca exercícios no plano. Não é catálogo completo, vídeo ou prescrição personalizada. Instâncias, armazenamento em memória e isolamento da demonstração mantêm-se.
+
+## Alimentação diária, Hoje e reservas individuais fictícias
+
+O plano disponibilizado apresenta hora, alimentos, gramas e alternativa por refeição, estado de registo no dia e composição planeada das opções principais num detalhe. O diário do mesmo dia apresenta snapshots e composição dos registos, separadamente do plano, sem calcular diferenças face a metas ou considerar ausência como zero. Registos de uma versão anterior continuam identificados. O atalho em Hoje abre a refeição e o dia de referência na versão ativa, preservando as respostas por aluno/versão/dia/refeição e focando a seleção. A lista factual de refeições sem registo não é uma recomendação de adesão.
+
+A agenda do aluno permite marcar sessões de treino individuais em cinco horários fictícios, reagendar marcações próprias e cancelar com confirmação. Capacidade estrita de uma pessoa por horário; não são aulas de grupo. A disponibilidade deriva dos intervalos ativos da mesma `DemoSchedule` profissional e bloqueia sobreposições, mesmo quando criadas pelo profissional. Os comandos voltam a validar aluno, origem/estado da marcação e disponibilidade; cancelar preserva o histórico e liberta capacidade, reagendar conserva ID/tipo e só altera o intervalo. Datas/horas em Lisboa e referência fixa da demonstração, sem política real de antecedência, pagamentos ou notificações. O modelo profissional não mudou e as marcações feitas pelo aluno aparecem imediatamente na mesma ficha/agenda/dashboard. A seleção e o modo de reagendamento são preservados por aluno em navegação. Reload repõe tudo.
+
+A vista da agenda deixou de ser apenas consulta neste incremento. Não existe reserva real, autenticação de aluno ou garantia multiutilizador/persistência; o isolamento aqui verifica apenas os comandos e os alunos fictícios em memória. Auth/RLS, módulos profissionais, produção/main, base real e NutriTrack pessoal continuam fora do âmbito.

@@ -1,0 +1,42 @@
+# Opt-in operations branch only; never runs on PRs, main or staging publication.
+name: AURA staging private backup
+on:
+  push:
+    branches: ['ops/aura-staging-backup']
+permissions:
+  contents: read
+concurrency:
+  group: aura-staging-private-backup
+  cancel-in-progress: false
+jobs:
+  private-backup:
+    if: github.repository == 'danielfilipemc-cloud/nutritrack' && github.ref == 'refs/heads/ops/aura-staging-backup'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: aura-staging-backup
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify approved source
+        env:
+          APPROVED_SHA: ${{ vars.AURA_BACKUP_APPROVED_SHA }}
+        run: test -n "$APPROVED_SHA" && test "$GITHUB_SHA" = "$APPROVED_SHA"
+      - name: Create private encrypted backup (not recovery proof)
+        env:
+          AURA_BACKUP_APPROVED_SHA: ${{ vars.AURA_BACKUP_APPROVED_SHA }}
+          AURA_STAGING_DB_PASSWORD: ${{ secrets.AURA_STAGING_DB_PASSWORD }}
+          AURA_BACKUP_PASSPHRASE: ${{ secrets.AURA_BACKUP_PASSPHRASE }}
+        run: python3 commercial/scripts/staging-private-backup.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: aura-staging-encrypted-backup-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/aura-encrypted-backup/aura-staging-private-backup.tar.gpg
+            ${{ runner.temp }}/aura-encrypted-backup/SHA256.txt
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+      - name: Remove runner copy
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/aura-encrypted-backup"

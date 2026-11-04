@@ -27,7 +27,7 @@ test('premium login retains busy, failure feedback and the existing real destina
  await page.getByLabel('Email',{exact:true}).fill('fictional@example.invalid');await page.getByLabel('Palavra-passe',{exact:true}).fill('FictitiousOnly!234');await page.getByRole('button',{name:'Entrar na plataforma',exact:true}).click();await expect.poll(()=>started).toBe(true);
  await expect(page.getByRole('button',{name:'Entrar na plataforma',exact:true})).toBeDisabled();await expect(page.locator('form')).toHaveAttribute('aria-busy','true');release();
  await expect(page.getByRole('status')).toContainText('Credenciais inválidas ou acesso indisponível.');await expect(page.getByLabel('Palavra-passe',{exact:true})).toHaveValue('');await expect(page.getByLabel('Email',{exact:true})).toHaveValue('fictional@example.invalid');
- await expect(page.getByRole('link',{name:/Explorar demonstração/})).toHaveAttribute('href','/demo');await expect(page.getByRole('link',{name:'Acede à tua área',exact:true})).toHaveAttribute('href','/aluno');
+ await expect(page.getByRole('link',{name:/Explorar demonstração/})).toHaveAttribute('href','/demo/experiencia');await expect(page.getByRole('link',{name:'Acede à tua área',exact:true})).toHaveAttribute('href','/aluno');
 });
 test('compact mobile navigation keeps eight real modules keyboard reachable',async({page})=>{
  await page.setViewportSize({width:320,height:812});await fixture(page);await page.goto('/');
@@ -47,7 +47,7 @@ test('reduced motion keeps the decorative environment static and focus visible',
 
 test('decorative photograph failure does not prevent login controls or real links',async({page})=>{
  await page.setViewportSize({width:1440,height:1000});await page.route('**/visual/aura-professional-environment.webp',route=>route.abort('failed'));await login(page);
- await expect(page.getByRole('heading',{level:1})).toBeVisible();await page.getByLabel('Email',{exact:true}).fill('fictional@example.invalid');await expect(page.getByRole('button',{name:'Entrar na plataforma',exact:true})).toBeEnabled();await expect(page.getByRole('link',{name:/Explorar demonstração/})).toHaveAttribute('href','/demo');
+ await expect(page.getByRole('heading',{level:1})).toBeVisible();await page.getByLabel('Email',{exact:true}).fill('fictional@example.invalid');await expect(page.getByRole('button',{name:'Entrar na plataforma',exact:true})).toBeEnabled();await expect(page.getByRole('link',{name:/Explorar demonstração/})).toHaveAttribute('href','/demo/experiencia');
 });
 test('branding read failure remains usable and bounded in the compact desktop heading',async({page})=>{
  await page.setViewportSize({width:1024,height:900});await fixture(page);let failed=false;
