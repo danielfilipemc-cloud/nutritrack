@@ -10,7 +10,8 @@ permissions:
   contents: read
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    # Playwright 1.58.2 supports Ubuntu 24.04; do not follow runner OS upgrades implicitly.
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: commercial
@@ -26,7 +27,7 @@ jobs:
       - run: npm audit --audit-level=moderate
 
   local-browser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: commercial
