@@ -41,12 +41,15 @@ async function main(){
   const fixture=await privateFile(report.browser_fixture);
   const account=JSON.parse(await readFile(fixture,'utf8'));assert.equal(account.scope,'synthetic-local-security');assert.equal(account.base_url,'http://127.0.0.1:3187');assert.ok(account.email.endsWith('@example.invalid'));
   const env={...process.env,NEXT_PUBLIC_SUPABASE_URL:localAuthTarget,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:key,NEXT_TELEMETRY_DISABLED:'1',AURA_E2E_AUTH:'1',AURA_LOCAL_SECURITY_FILE:fixture};
+  const browserEvidence=reportFile+'.browser-'+randomUUID()+'.json';
+  const browserReport={scope:'synthetic-local-auth-browser',status:'RUNNING',started_at:new Date().toISOString(),completed_at:''};
+  const saveBrowser=()=>writeFile(browserEvidence,JSON.stringify(browserReport,null,2),{mode:0o600});await saveBrowser();
   try{
    execFileSync(process.execPath,[fileURLToPath(new URL('../node_modules/next/dist/bin/next',import.meta.url)),'build'],{env,cwd:fileURLToPath(new URL('../',import.meta.url)),stdio:'pipe',timeout:180000});
    execFileSync(process.execPath,[fileURLToPath(new URL('../node_modules/@playwright/test/cli.js',import.meta.url)),'test','--config','playwright.auth-local.config.cjs','--workers=1'],{env,cwd:fileURLToPath(new URL('../',import.meta.url)),stdio:'pipe',timeout:120000});
-   await writeFile(reportFile+'.browser.json',JSON.stringify({scope:'synthetic-local-auth-browser',status:'PASS',completed_at:new Date().toISOString()},null,2),{mode:0o600});
+   browserReport.status='PASS';browserReport.completed_at=new Date().toISOString();await saveBrowser();
    console.log('PASS: real local browser MFA; no screenshots, traces or videos');return;
-  }catch{await writeFile(reportFile+'.browser.json',JSON.stringify({scope:'synthetic-local-auth-browser',status:'FAIL'},null,2),{mode:0o600});throw new Error('Local Auth browser failed; credentials and process output omitted');}
+  }catch{browserReport.status='FAIL';browserReport.completed_at=new Date().toISOString();await saveBrowser();throw new Error('Local Auth browser failed; credentials and process output omitted');}
  }
  const directory=new URL('../.aura-integration/local-auth-'+randomUUID()+'/',import.meta.url);await mkdir(directory,{recursive:true});
  const report={scope:'synthetic-local-auth-validation',started_at:new Date().toISOString(),api_url:localAuthTarget,status:'RUNNING',checks:[] as string[],browser_fixture:''};
