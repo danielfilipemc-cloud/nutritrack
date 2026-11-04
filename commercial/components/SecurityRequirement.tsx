@@ -17,8 +17,11 @@ export default function SecurityRequirement({org}:{org:string}){
    }catch{if(alive&&current===version)setResult({org,state:'error'});}
   }
   void load();
+  // Policies can change in another window without issuing a new JWT.
+  const revalidate=()=>{if(alive)void load();};
+  window.addEventListener('focus',revalidate);
   const sub=db?.auth.onAuthStateChange(()=>{setTimeout(()=>{if(alive)void load();},0);});
-  return()=>{alive=false;version++;sub?.data.subscription.unsubscribe();};
+  return()=>{alive=false;version++;window.removeEventListener('focus',revalidate);sub?.data.subscription.unsubscribe();};
  },[org,attempt]);
  const state=result.org===org?result.state:'loading';
  if(state==='clear')return null;
