@@ -46,3 +46,17 @@ test('MFA session change rechecks the requirement and a failed recheck never cle
  await page.getByRole('button',{name:'Confirmar segundo fator',exact:true}).click();await expect(page.getByRole('button',{name:'Tentar verificar novamente'})).toBeVisible();
  phase='clear';await page.getByRole('button',{name:'Tentar verificar novamente'}).click();await expect(page.getByRole('button',{name:'Tentar verificar novamente'})).toHaveCount(0);await expect(page.getByRole('link',{name:'Confirmar em Segurança'})).toHaveCount(0);
 });
+
+test('returning to the window rechecks an externally changed MFA policy and fails explicitly on network loss',async({page})=>{
+ await fixture(page);let phase='clear',reads=0;
+ await page.route('**/rpc/aura_security_requirement',r=>{reads++;return phase==='error'?r.abort('failed'):reply(r,{required:phase==='blocked',satisfied:phase==='clear'});});
+ await page.goto('/alunos');await expect.poll(()=>reads).toBeGreaterThan(0);
+ await expect(page.getByText('A verificar os requisitos de segurança…',{exact:true})).toHaveCount(0);
+ phase='blocked';const firstReads=reads;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+ await expect.poll(()=>reads).toBeGreaterThan(firstReads);await expect(page.getByRole('link',{name:'Confirmar em Segurança'})).toBeVisible();
+ phase='error';await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
+ await expect(page.getByRole('button',{name:'Tentar verificar novamente'})).toBeVisible();
+ phase='clear';await page.getByRole('button',{name:'Tentar verificar novamente'}).click();
+ await expect(page.getByRole('button',{name:'Tentar verificar novamente'})).toHaveCount(0);
+ await expect(page.getByRole('link',{name:'Confirmar em Segurança'})).toHaveCount(0);
+});
