@@ -11,6 +11,11 @@ export default function StudentContext({org,userId,clientId}:{org:string;userId:
  useEffect(()=>{const media=window.matchMedia('(min-width:901px)');const update=()=>{if(disclosure.current)disclosure.current.open=media.matches;};update();media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
  const [revision,setRevision]=useState(0);
  const [result,setResult]=useState<{key:string;followup:Context|null;responsible:string;error:boolean}|null>(null);
+ useEffect(()=>{
+  const refresh=()=>{setResult(null);setRevision(n=>n+1);};
+  window.addEventListener('focus',refresh);
+  return()=>window.removeEventListener('focus',refresh);
+ },[]);
  const key=`${org}:${userId}:${clientId}:${revision}`;
  useEffect(()=>{
   const client=db;let active=true;setResult(null);if(!client)return;

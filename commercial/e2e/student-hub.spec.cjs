@@ -48,3 +48,15 @@ test('revocation while the header read is pending withholds its private context'
 test('empty student overview distinguishes absent measurements from a measured zero',async({page})=>{
  await page.setViewportSize({width:375,height:900});await fixture(page);await page.route('**/rest/v1/assessments?*',r=>r.fulfill({contentType:'application/json',headers:{'content-range':'*/0'},body:'[]'}));await page.goto(url('overview'));const overview=page.locator('.aura-student-overview');await expect(overview.getByText('Sem medição',{exact:true})).toHaveCount(3);await expect(overview.getByRole('img')).toHaveCount(0);await expect(overview.getByText('Regista avaliações para visualizar a evolução.',{exact:true})).toBeVisible();await page.screenshot({path:`${directory}/overview-empty-375.png`,fullPage:true});
 });
+
+test('returning to the student window revalidates and hides revoked saved context',async({page})=>{
+ await setup(page);await expect(context(page)).toContainText('Profissional Segundo');let denied=true;
+ await page.route('**/rpc/aura_client_permissions',r=>denied?r.fulfill({contentType:'application/json',body:JSON.stringify({assessments_read:true,followup_read:false,schedule_read:true})}):r.fallback());
+ await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(context(page).getByRole('status')).toContainText('Contexto indisponível ou sem acesso');await expect(context(page).locator('dd')).toHaveCount(0);
+ denied=false;await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(context(page)).toContainText('Profissional Segundo');
+});
+
+test('refreshing saved context on window return preserves the accompaniment draft',async({page})=>{
+ await fixture(page);await page.goto(url('care'));const draft=page.getByRole('textbox',{name:'Objetivo do acompanhamento',exact:true});await draft.fill('Rascunho fictício que deve permanecer');await expect(page.getByRole('button',{name:'Guardar acompanhamento',exact:true})).toBeEnabled();
+ await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(context(page)).toHaveAttribute('aria-busy','false');await expect(draft).toHaveValue('Rascunho fictício que deve permanecer');await expect(page.getByRole('button',{name:'Guardar acompanhamento',exact:true})).toBeEnabled();
+});

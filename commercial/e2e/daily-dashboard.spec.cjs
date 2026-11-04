@@ -4,11 +4,11 @@ const fs=require('node:fs');const directory='.aura-integration/daily-dashboard/a
 const chart=page=>page.getByRole('region',{name:'Evolução individual na dashboard',exact:true});
 const isSeries=route=>new URL(route.request().url()).searchParams.get('select')==='id,assessed_on,weight_kg,height_cm,waist_cm,superseded_at';
 function rows(){return [82,81,80,79].map((weight,i)=>{const date=new Date(today+'T12:00:00Z');date.setUTCDate(date.getUTCDate()-(3-i)*7);return {id:'synthetic-day-'+i,assessed_on:date.toISOString().slice(0,10),weight_kg:weight,height_cm:175,waist_cm:90-i,superseded_at:null};}).reverse();}
-async function rich(page){await fixture(page,{seedAppointments:3,seedObjectives:2});await page.route('**/rest/v1/assessments?*',route=>isSeries(route)?route.fulfill({contentType:'application/json',body:JSON.stringify(rows())}):route.fallback());await page.goto('/');await expect(chart(page).getByRole('img',{name:/Evolução: 4 medições/})).toBeVisible();}
+async function rich(page){const state=await fixture(page,{seedAppointments:3,seedObjectives:2});await page.route('**/rest/v1/assessments?*',route=>isSeries(route)?route.fulfill({contentType:'application/json',body:JSON.stringify(rows())}):route.fallback());await page.goto('/');await expect(chart(page).getByRole('img',{name:/Evolução: 4 medições/})).toBeVisible();return state;}
 for(const width of [320,375,1280,1440,1536])test(`daily dashboard reference layout ${width}px`,async({page})=>{
- await page.setViewportSize({width,height:1000});await rich(page);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.setViewportSize({width,height:1000});const state=await rich(page);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  await expect(page.locator('.stat>div')).toHaveCount(4);await expect(page.getByRole('region',{name:'Alunos que precisam de atenção'})).toBeVisible();
- const schedule=page.getByRole('region',{name:'Agenda de hoje',exact:true});await expect(schedule.locator('time').first()).toContainText('10:00');
+ const schedule=page.getByRole('region',{name:'Agenda de hoje',exact:true});await expect(schedule.locator('time').first()).toContainText(new Intl.DateTimeFormat('pt-PT',{timeZone:'Europe/Lisbon',timeStyle:'short'}).format(new Date(state.appointments()[0].starts_at)));
  if(width>1000)expect((await schedule.boundingBox()).x).toBeGreaterThan((await chart(page).boundingBox()).x);
  await chart(page).getByRole('combobox',{name:'Indicador da dashboard',exact:true}).selectOption('waist_cm');await expect(chart(page).getByRole('img',{name:/de 90 a 87 cm/})).toBeVisible();await chart(page).getByRole('combobox',{name:'Indicador da dashboard',exact:true}).selectOption('weight_kg');
  await page.screenshot({path:`${directory}/dashboard-${width}.png`,fullPage:true});
