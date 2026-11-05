@@ -12,6 +12,7 @@ import {businessToday} from "../lib/care";
 import DashboardOverview from "../components/DashboardOverview";
 export default function Home(){
  const recovery=useSyncExternalStore(passwordRecovery.subscribe,passwordRecovery.getSnapshot,()=>recoveryChecking);
+ if(recovery.phase==='checking')return <main className="shell" id="main-content" tabIndex={-1}><p role="status">A verificar sessão...</p></main>;
  if(recovery.phase!=='none')return <PasswordRecovery state={recovery}/>;
  return <ProfessionalHome/>;
 }
