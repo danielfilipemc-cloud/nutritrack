@@ -6,12 +6,16 @@ const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 export const passwordRecovery=createRecoveryState(typeof window!=='undefined'&&isRecoveryCallback(window.location.href));
 export const db=url&&key?createClient(url,key):null;
 if(db&&typeof window!=='undefined'&&passwordRecovery.getSnapshot().phase==='checking'){
+ // The pinned SDK captures callback parameters synchronously during initialize.
+ // Replace the original history entry before its later hash cleanup can add one.
+ const initialization=db.auth.initialize();
+ window.history.replaceState(null,'','/?recuperacao=1');
  // Subscribe before SDK initialization completes; React mounting must not miss the event.
  db.auth.onAuthStateChange((event,session)=>{
   passwordRecovery.observe(event,session?.user.id);
   if(event==='PASSWORD_RECOVERY')window.history.replaceState(null,'','/?recuperacao=1');
  });
- void db.auth.initialize().then(()=>{setTimeout(()=>{
+ void initialization.then(()=>{setTimeout(()=>{
   passwordRecovery.settle();
   // Remove invalid callback details too, without ever displaying provider payloads.
   if(passwordRecovery.getSnapshot().phase==='invalid')window.history.replaceState(null,'','/?recuperacao=1');
