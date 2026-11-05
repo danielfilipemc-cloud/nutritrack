@@ -2,6 +2,7 @@ export type RecoveryState={phase:'none'|'checking'|'ready'|'invalid'|'complete';
 export const recoveryChecking:RecoveryState={phase:'checking'};
 export function isRecoveryCallback(href:string){
  const url=new URL(href),fragment=new URLSearchParams(url.hash.slice(1));
+ if(url.pathname!=='/')return false; // Do not reinterpret invitation/provider errors on other routes.
  return fragment.get('type')==='recovery'||fragment.has('error')||fragment.has('error_code')||url.searchParams.has('error')||url.searchParams.has('error_code')||url.searchParams.get('recuperacao')==='1';
 }
 // Holds only state/identity, never callback tokens, passwords or a persisted grant.

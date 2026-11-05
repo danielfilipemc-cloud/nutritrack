@@ -4,6 +4,7 @@ import {createRecoveryState,isRecoveryCallback,recoveryPasswordError} from '../l
 test('recovery callback recognizes error/recovery intent without retaining tokens or trusting redirect parameters',()=>{
  for(const suffix of ['#type=recovery&access_token=synthetic','#error_code=otp_expired','?error=access_denied','?recuperacao=1'])assert.equal(isRecoveryCallback('https://app.example.invalid/'+suffix),true);
  for(const suffix of ['','?next=https://evil.invalid','?type=recovery','#type=signup'])assert.equal(isRecoveryCallback('https://app.example.invalid/'+suffix),false);
+ assert.equal(isRecoveryCallback('https://app.example.invalid/convite#error_code=otp_expired'),false);
 });
 test('ordinary cached sessions never grant a recovery form after a failed callback',()=>{
  const s=createRecoveryState(true);s.observe('INITIAL_SESSION','old-user');s.observe('SIGNED_IN','old-user');s.settle();assert.deepEqual(s.getSnapshot(),{phase:'invalid'});
