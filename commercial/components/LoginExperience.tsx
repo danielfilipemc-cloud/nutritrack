@@ -2,8 +2,8 @@ import type {ReactNode} from 'react';
 import AuraBrand from './AuraBrand';
 import AuraIcon from './AuraIcon';
 
-/** Presentation only: the existing Home component owns all authentication state. */
-export default function LoginExperience({children,status}: {children:ReactNode;status:string}) {
+/** Presentation only: callers own authentication and recovery state. */
+export default function LoginExperience({children,status,title,description}: {children:ReactNode;status:string;title?:string;description?:string}) {
  return <main className="aura-entry" id="main-content" tabIndex={-1}>
   <picture className="aura-entry-environment" aria-hidden="true"><source media="(min-width:801px)" srcSet="/visual/aura-professional-environment.webp"/><img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" width={1600} height={900} alt="" decoding="async"/></picture>
   <header className="aura-entry-header"><AuraBrand/><span className="aura-entry-context">Plataforma profissional</span></header>
@@ -21,7 +21,7 @@ export default function LoginExperience({children,status}: {children:ReactNode;s
    </section>
    <section className="aura-entry-access" aria-labelledby="aura-entry-access-title">
     <div className="aura-entry-form-card"><div className="aura-entry-form-heading"><img className="aura-login-icon" src="/brand/aura-app-icon.svg" width={48} height={48} alt="" aria-hidden="true"/><span className="eyebrow">ACESSO PROFISSIONAL</span></div>
-     <h2 id="aura-entry-access-title">Bem-vindo à<br/><em>AURA</em> Business</h2><p>Entra com a tua conta e continua a gerir<br/>o teu acompanhamento.</p>
+     <h2 id="aura-entry-access-title">{title||<>Bem-vindo à<br/><em>AURA</em> Business</>}</h2><p>{description||<>Entra com a tua conta e continua a gerir<br/>o teu acompanhamento.</>}</p>
      {children}
      <p role="status" className="aura-entry-status">{status}</p>
      <div className="aura-entry-divider"><span>Conhece a plataforma</span></div>
