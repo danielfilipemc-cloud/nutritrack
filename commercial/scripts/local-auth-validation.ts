@@ -48,7 +48,7 @@ async function main(){
    execFileSync(process.execPath,[fileURLToPath(new URL('../node_modules/next/dist/bin/next',import.meta.url)),'build'],{env,cwd:fileURLToPath(new URL('../',import.meta.url)),stdio:'pipe',timeout:180000});
    execFileSync(process.execPath,[fileURLToPath(new URL('../node_modules/@playwright/test/cli.js',import.meta.url)),'test','--config','playwright.auth-local.config.cjs','--workers=1'],{env,cwd:fileURLToPath(new URL('../',import.meta.url)),stdio:'pipe',timeout:120000});
    browserReport.status='PASS';browserReport.completed_at=new Date().toISOString();await saveBrowser();
-   console.log('PASS: real local browser MFA; no screenshots, traces or videos');return;
+   console.log('PASS: real local browser MFA and password recovery; no screenshots, traces or videos');return;
   }catch{browserReport.status='FAIL';browserReport.completed_at=new Date().toISOString();await saveBrowser();throw new Error('Local Auth browser failed; credentials and process output omitted');}
  }
  const directory=new URL('../.aura-integration/local-auth-'+randomUUID()+'/',import.meta.url);await mkdir(directory,{recursive:true});

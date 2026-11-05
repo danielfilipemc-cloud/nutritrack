@@ -1,7 +1,9 @@
 "use client";
 import LoginExperience from '../components/LoginExperience';
-import {useEffect,useState,type FormEvent} from "react";
-import {db} from "../lib/supabase";
+import {useEffect,useState,useSyncExternalStore,type FormEvent} from "react";
+import {db,passwordRecovery} from "../lib/supabase";
+import {recoveryChecking} from '../lib/password-recovery';
+import PasswordRecovery from '../components/PasswordRecovery';
 import {useProfessional} from "../lib/use-professional";
 import ProfessionalShell from "../components/ProfessionalShell";
 import OrganizationSelect from "../components/OrganizationSelect";
@@ -9,6 +11,11 @@ import TenantBrand from "../components/TenantBrand";
 import {businessToday} from "../lib/care";
 import DashboardOverview from "../components/DashboardOverview";
 export default function Home(){
+ const recovery=useSyncExternalStore(passwordRecovery.subscribe,passwordRecovery.getSnapshot,()=>recoveryChecking);
+ if(recovery.phase!=='none')return <PasswordRecovery state={recovery}/>;
+ return <ProfessionalHome/>;
+}
+function ProfessionalHome(){
  const {user,org,orgs,setOrg,status,authLoading,refreshOrganizations}=useProfessional();
  const [email,setEmail]=useState(""),[password,setPassword]=useState(""),[busy,setBusy]=useState(false),[message,setMessage]=useState("");
  useEffect(()=>{if(new URLSearchParams(window.location.search).get('sessao')==='revogacao-pendente'){
@@ -18,7 +25,7 @@ export default function Home(){
  async function login(event:FormEvent){event.preventDefault();if(!db||busy)return;setBusy(true);setMessage("A autenticar...");
  try{const {error}=await db.auth.signInWithPassword({email:email.trim(),password});setPassword("");setMessage(error?"Credenciais inválidas ou acesso indisponível.":"");}catch{setMessage("Não foi possível iniciar sessão.");}finally{setBusy(false);}}
  if(authLoading)return <main className="shell" id="main-content" tabIndex={-1}><p role="status">A verificar sessão...</p></main>;
- if(!user)return <LoginExperience status={message||status}><form onSubmit={login} aria-busy={busy}><label>Email<input type="email" autoComplete="username" value={email} onChange={e=>setEmail(e.target.value)} required/></label><label>Palavra-passe<input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/></label><button disabled={!db||busy}>Entrar na plataforma</button></form></LoginExperience>;
+ if(!user)return <LoginExperience status={message||status}><form onSubmit={login} aria-busy={busy}><label>Email<input type="email" autoComplete="username" value={email} onChange={e=>setEmail(e.target.value)} required/></label><label>Palavra-passe<input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/></label><button disabled={!db||busy}>Entrar na plataforma</button></form><p className="aura-entry-student-link"><a href="/recuperar">Recuperar palavra-passe</a></p></LoginExperience>;
  return <ProfessionalShell title="Gestão de acompanhamento profissional" context={<OrganizationSelect organizations={orgs} value={org} onChange={setOrg}/>}><div className="aura-home-dashboard"><div className="heading aura-overview-heading aura-day-hero"><div><span className="eyebrow">O TEU DIA, MAIS PRÓXIMO.</span><h1>Visão geral</h1><p>Acompanha cada aluno.<br/><strong>Dá espaço à evolução.</strong></p><a className="link" href={`/agenda?org=${encodeURIComponent(org)}`}>Organizar agenda →</a></div><div className="aura-day-context"><time dateTime={businessToday()}>{new Intl.DateTimeFormat("pt-PT",{dateStyle:"long",timeZone:"Europe/Lisbon"}).format(new Date(businessToday()+"T12:00:00Z"))}</time>{org&&<TenantBrand key={`brand:${user.id}:${org}`} org={org} name={orgs.find(o=>o.id===org)?.name||"AURA"} subtitle="Painel do estabelecimento"/>}</div></div>
  {org?<DashboardOverview key={`dashboard:${user.id}:${org}`} org={org} userId={user.id} role={orgs.find(o=>o.id===org)?.role||"coach"}/>:<section className="panel"><p role="status">{status}</p><button className="outline" onClick={refreshOrganizations}>Atualizar estabelecimentos</button><p><a href="/convite">Aceitar convite</a> · <a href="/aluno">Área do aluno</a></p></section>}
  <p role="status" className="status">{message}</p></div></ProfessionalShell>;
