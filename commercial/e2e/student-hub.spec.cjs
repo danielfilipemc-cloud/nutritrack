@@ -42,7 +42,11 @@ test('delayed context from the prior organization cannot appear after switching'
 test('revocation while the header read is pending withholds its private context',async({page})=>{
  await fixture(page);let release,started=false,revoked=false;const gate=new Promise(r=>release=r);
  await page.route('**/rpc/aura_client_permissions',r=>revoked?r.fulfill({contentType:'application/json',body:JSON.stringify({assessments_read:true,followup_read:false,schedule_read:true})}):r.fallback());
- await page.route('**/rest/v1/client_followups?*',async r=>{started=true;await gate;await r.fulfill({contentType:'application/json',body:JSON.stringify([{status:'active',responsible_id:null,next_review:'2091-06-15'}])});});await page.goto(url('overview'));await expect.poll(()=>started).toBe(true);revoked=true;release();await expect(context(page).getByRole('status')).toContainText('Contexto indisponível ou sem acesso');await expect(page.getByText('2091-06-15',{exact:true})).toHaveCount(0);
+ await page.route('**/rest/v1/client_followups?*',async r=>{started=true;await gate;await r.fulfill({contentType:'application/json',body:JSON.stringify([{status:'active',responsible_id:null,next_review:'2091-06-15'}])});});await page.goto(url('overview'));await expect.poll(()=>started).toBe(true);
+ // Finish the parent's assessment permission recheck first. Otherwise it may
+ // correctly unmount the header on revocation, instead of its own read showing an error.
+ await expect(page.getByRole('heading',{name:'Evolução recente',exact:true})).toBeVisible();
+ revoked=true;release();await expect(context(page).getByRole('status')).toContainText('Contexto indisponível ou sem acesso');await expect(page.getByText('2091-06-15',{exact:true})).toHaveCount(0);
 });
 
 test('empty student overview distinguishes absent measurements from a measured zero',async({page})=>{
