@@ -75,6 +75,14 @@ async function main(){
   assert.equal(await sql("select has_table_privilege('authenticated','public.nutrition_meal_items','INSERT');"),'f');
   // Hold the same organization lock used by the RPC. An old identity must wait
   // and see the committed assignment revocation, not a pre-lock snapshot.
+  // Local proof for a future producer, not an installed export endpoint. Pin
+  // one snapshot while another connection inserts and moves a meal's date.
+  const snapshotQuery=`select jsonb_build_object('count',count(*),'grams',coalesce(sum(i.grams),0)) from nutrition_meal_versions v join nutrition_meal_items i using(meal_id,revision,organization_id,client_id) where v.organization_id='${id(10)}' and v.client_id='${id(100)}' and v.consumed_on=app_private.business_today();`;
+  const snapshotRead=sql('begin isolation level repeatable read read only;'+actor(2)+snapshotQuery+'select pg_advisory_xact_lock(180021);select pg_sleep(1.5);'+snapshotQuery+'commit;');
+  let capturing=false;for(let i=0;i<60;i++){if(await sql("select exists(select 1 from pg_locks where locktype='advisory' and objid=180021 and granted);")==='t'){capturing=true;break;}await new Promise(resolve=>setTimeout(resolve,20));}assert.ok(capturing,'Reader snapshot must be pinned');
+  await sql(actor(2)+call(command(860))+call({...command(861,id(10002),1),consumedOn:'2000-01-01'}));
+  const captured=(await snapshotRead).split('\n').filter(line=>line.startsWith('{')).map(line=>JSON.parse(line));assert.equal(captured.length,2);assert.deepEqual(captured[0],captured[1]);
+  const fresh=await json(actor(2)+snapshotQuery);assert.notDeepEqual(fresh,captured[0],'Fresh transaction must observe the changed source set');
   const revocation=sql(`begin;${actor(1)}select aura_assignment_save('${id(10)}','${id(100)}','${id(2)}',false);select pg_advisory_xact_lock(180019);select pg_sleep(1.5);commit;`);
   let marker=false;for(let i=0;i<60;i++){if(await sql("select exists(select 1 from pg_locks where locktype='advisory' and objid=180019 and granted);")==='t'){marker=true;break;}await new Promise(resolve=>setTimeout(resolve,20));}assert.ok(marker,'Revocation must hold lock before writer starts');
   const pending=sql(actor(2)+call(command(804)));await assert.rejects(pending,/42501/);await revocation;
@@ -82,7 +90,7 @@ async function main(){
   await assert.rejects(sql(actor(2)+`select aura_nutrition_request_status('${id(10)}','${id(100)}','${id(800)}');`),/42501/);
   await assert.rejects(sql(actor(2)+diary(firstPage.nextCursor)),/42501/);
   await assert.rejects(sql('set role anon;'+call(command(805))),/42501/);
-  console.log(JSON.stringify({postgres:await sql('show server_version;'),imageId,baselineMigrations:17,candidateMigrations:Number(await sql('select count(*) from app_private.aura_migrations;')),upgradeAndReplay:'passed',independentSessionCAS:'passed',concurrentIdempotency:'passed',concurrentPagination:'statement-consistent; no cross-request snapshot',publicInvokersAndGrants:'passed',revocationWhileWriterWaits:'passed',revokedReceipt:'denied',revokedCursor:'denied',anonymousRPC:'denied',auth:'simulated claims; not GoTrue/PostgREST',network:'none',hostMounts:false}));
+  console.log(JSON.stringify({postgres:await sql('show server_version;'),imageId,baselineMigrations:17,candidateMigrations:Number(await sql('select count(*) from app_private.aura_migrations;')),upgradeAndReplay:'passed',independentSessionCAS:'passed',concurrentIdempotency:'passed',consistentExportSnapshot:'passed-local-repeatable-read; no remote producer',concurrentPagination:'statement-consistent; no cross-request snapshot',publicInvokersAndGrants:'passed',revocationWhileWriterWaits:'passed',revokedReceipt:'denied',revokedCursor:'denied',anonymousRPC:'denied',auth:'simulated claims; not GoTrue/PostgREST',network:'none',hostMounts:false}));
  }finally{
   const label=await docker(['inspect',container,'--format','{{index .Config.Labels "aura.local-test"}}']);
   if(label!=='nutrition-p4')throw Error('Refusing to stop an unrecognized container');
