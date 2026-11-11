@@ -44,3 +44,9 @@ O Render de staging continua independente e a demonstração em memória pode ev
 6. Depois da autorização aplicável e revisão positiva, ativar só nesse staging e executar os mesmos percursos entre contas fictícias. Só declarar ligação automática concluída quando publicação, receção pelo aluno e retorno à ficha forem provados nesse ambiente.
 
 As restrições anteriores do utilizador dizem não alterar Auth/RLS nem executar migrations remotas. O pedido de sincronização automática define o objetivo, mas esta entrega não presume que tenha revogado esses limites específicos. Por isso, a ativação permanece separada da publicação da biblioteca de treino e da aprovação do núcleo local.
+
+## Atualização após autorização — preparação das permissões
+
+O utilizador autorizou, depois do PR #63, reativar somente o Supabase de staging e preparar localmente as permissões, sem migrations remotas. `restore_project` foi aceite e `get_project` confirmou ACTIVE_HEALTHY em 25/10/2026. Não foi executado SQL remoto nem consultada qualquer conta/dado/chave. O estado atual do registo de migrations e catálogo cloud continua por verificar.
+
+A proposta offline e os respetivos limites estão em [NUTRITRACK_SYNC_PERMISSIONS.md](NUTRITRACK_SYNC_PERMISSIONS.md). Inclui consentimento por aluno, RLS, sessão viva, invalidação terminal após revogação do vínculo e competências independentes de medições. Está fora do instalador automático e não ativa rotas, transporte, persistência alimentar ou sincronização entre contas. Produção/main/NutriTrack pessoal mantêm-se isolados. O limite remoto anterior continua em vigor.
