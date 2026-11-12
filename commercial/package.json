@@ -31,6 +31,7 @@
     "test:foundations:staging": "tsx scripts/foundations-staging.ts",
     "test:auth:local-security": "tsx scripts/auth-local-security.cjs",
     "test:auth:local": "tsx scripts/local-auth-validation.ts",
+    "test:nutrition:auth:local": "tsx scripts/nutrition-auth-local.ts",
     "test:recovery:supabase:prepare": "node scripts/local-baseline-fixture.cjs",
     "test:recovery:supabase:verify": "node scripts/local-baseline-fixture.cjs --verify-restored",
     "test:evolution:local": "tsx scripts/evolution-local.ts",

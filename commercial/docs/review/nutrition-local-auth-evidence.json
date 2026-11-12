@@ -1,0 +1,78 @@
+{
+  "scope": "public-synthetic-local-nutrition-auth-evidence",
+  "environment": "AURA-Dev / aura-nutrition-local",
+  "apiUrl": "http://127.0.0.1:61321",
+  "result": "PASS",
+  "startedAt": "2026-11-12T18:54:15.584Z",
+  "completedAt": "2026-11-12T18:54:18.331Z",
+  "runnerSha256": "c4c88e276b24ce87f4d2f4ee369786278a03b459a8f9a5727be0e2a4b959c0cb",
+  "sources": {
+    "baseline": "c1ba6ba353bde58f9dc737efdb2eddcacca0f5324ea2fa5506d2636f29742ebd",
+    "upgrade": "8e2abbe4e1693e726e62c363b6a6697bc42994ccbcb5ebf9c0c6709b2ab53fc5",
+    "candidates": [
+      "a135d3c21582c112476173ca846fc113807f94437873ac071e513fae2937c45b",
+      "ddb9dda0cdc3b814802251692bf3170f3eeaafaa09895a55039af4bfe1b02816"
+    ]
+  },
+  "privateReportSha256": "0e2b022ea0d558a5d9482b661bbef2b668787086a366f4ddb7557741efd24366",
+  "baselineOriginalMigrationCount": 17,
+  "nutritionSandboxMigrationCount": 19,
+  "preparedCandidates": 2,
+  "checks": [
+    {
+      "name": "provision confirmed synthetic actors and two isolated organizations",
+      "result": "PASS"
+    },
+    {
+      "name": "membership and owner role do not confer implicit nutrition access",
+      "result": "PASS"
+    },
+    {
+      "name": "explicit owner grants and assignments; admin cannot grant nutrition",
+      "result": "PASS"
+    },
+    {
+      "name": "anonymous/student/unassigned/foreign actors and cross-scope requests are denied",
+      "result": "PASS"
+    },
+    {
+      "name": "meal idempotency and concurrent CAS preserve versions and receipt",
+      "result": "PASS"
+    },
+    {
+      "name": "water idempotency, correction, void and original unknown time survive transport",
+      "result": "PASS"
+    },
+    {
+      "name": "recipe publication, immutable plan composition and withdrawal do not declare consumption",
+      "result": "PASS"
+    },
+    {
+      "name": "read-only staff can consult every resource but cannot write",
+      "result": "PASS"
+    },
+    {
+      "name": "nutrition revocation takes effect with the existing access JWT",
+      "result": "PASS"
+    },
+    {
+      "name": "installed grants, invoker wrappers, definer search paths and private schemas are bounded",
+      "result": "PASS"
+    },
+    {
+      "name": "organization AAL2 policy rejects old AAL1 JWTs for nutritional reads and writes",
+      "result": "PASS"
+    },
+    {
+      "name": "live AAL2 succeeds; global sign-out invalidates sensitive reads with the old AAL2 JWT",
+      "result": "PASS"
+    }
+  ],
+  "limitations": [
+    "Real local API validation, separate from Chromium fixture tests",
+    "No real authenticated nutrition browser journey",
+    "No cloud migration, deploy or production operation",
+    "No account/MFA recovery or operational cloud restore proof",
+    "Student professional RPC denial is not a student portal implementation"
+  ]
+}
