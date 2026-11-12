@@ -3,6 +3,7 @@
 import {NutritionPersistenceError,type NutritionRpcClient} from './nutrition-persistence';
 import {parseWaterCommandV1,waterId,waterObject,waterRevision,type WaterEntryV1} from './nutrition-water-command';
 import {validDate} from './validation';
+import {nutritionRequest} from './nutrition-request';
 export type PersistedWater={waterId:string;revision:number;entry:WaterEntryV1;status:'recorded'|'voided';reason:string|null;recordedBy:string};
 export type WaterReceipt={waterId:string;revision:number;replayed?:boolean};
 const invalid=():never=>{throw new NutritionPersistenceError('invalid-response');};
@@ -22,7 +23,7 @@ export function createNutritionWaterPersistence(client:NutritionRpcClient,contex
  const active=()=>{if(controller.signal.aborted)throw new NutritionPersistenceError('stale');};
  async function call(name:string,args:Record<string,unknown>,mutation=false){
   active();let result;
-  try{result=await client.rpc(name,{p_org:org,p_client:pupil,...args}).abortSignal(controller.signal);}catch{active();throw new NutritionPersistenceError(mutation?'uncertain':'unavailable');}
+  try{result=await nutritionRequest(controller.signal,signal=>client.rpc(name,{p_org:org,p_client:pupil,...args}).abortSignal(signal));}catch{active();throw new NutritionPersistenceError(mutation?'uncertain':'unavailable');}
   active();
   if(!result||typeof result!=='object'||!Object.hasOwn(result,'data')||!Object.hasOwn(result,'error'))throw new NutritionPersistenceError(mutation?'uncertain':'invalid-response');
   if(result.error){const code=result.error.code;throw new NutritionPersistenceError(code==='42501'||code==='PT403'?'denied':code==='PT409'||code==='23514'?'conflict':code==='42883'||code==='PGRST202'?'unavailable':mutation?'uncertain':'unavailable');}

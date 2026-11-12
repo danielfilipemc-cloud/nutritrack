@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {db} from './supabase';
 import {NutritionPersistenceError,type NutritionRpcClient} from './nutrition-persistence';
+import {nutritionRequest} from './nutrition-request';
 export type NutritionContext={org:string;clientId:string;userId:string;archived?:boolean};
 export function useNutritionResource<R extends {dispose:()=>void},D>(context:NutritionContext,key:string,factory:(db:NutritionRpcClient)=>R,load:(repo:R)=>Promise<D>){
  const [revision,setRevision]=useState(0),[busy,setBusy]=useState(false);
@@ -11,13 +12,13 @@ export function useNutritionResource<R extends {dispose:()=>void},D>(context:Nut
  const ref=useRef<{repo:R;key:string;epoch:number}|null>(null),epoch=useRef(0),pending=useRef(false);
  useEffect(()=>{
   const client=db;if(!client){setResult({key:currentKey,data:null,write:false,message:'Serviço indisponível.'});return;}
-  const e=++epoch.current,{factory,load}=current.current,repo=factory(client);ref.current={repo,key:currentKey,epoch:e};pending.current=false;setBusy(false);setResult(null);
+  const e=++epoch.current,{factory,load}=current.current,repo=factory(client),controller=new AbortController();ref.current={repo,key:currentKey,epoch:e};pending.current=false;setBusy(false);setResult(null);
   void(async()=>{try{
-   const cap=await client.from('nutrition_capabilities').select('can_write').eq('organization_id',context.org).eq('user_id',context.userId).maybeSingle();
-   if(epoch.current!==e)return;if(cap.error||!cap.data)throw new NutritionPersistenceError(cap.error?.code==='42P01'||cap.error?.code==='PGRST205'?'unavailable':'denied');
+   const cap=await nutritionRequest(controller.signal,signal=>client.from('nutrition_capabilities').select('can_write').eq('organization_id',context.org).eq('user_id',context.userId).abortSignal(signal).maybeSingle()).catch(()=>{throw new NutritionPersistenceError('unavailable');});
+   if(epoch.current!==e)return;if(cap.error||!cap.data)throw new NutritionPersistenceError(!cap.error||['42501','PT403'].includes(cap.error.code)?'denied':'unavailable');
    const data=await load(repo);if(epoch.current===e)setResult({key:currentKey,data,write:cap.data.can_write===true,message:''});
   }catch(error){if(epoch.current===e)setResult({key:currentKey,data:null,write:false,message:nutritionError(error)});}})();
-  return()=>{epoch.current++;repo.dispose();if(ref.current?.repo===repo)ref.current=null;};
+  return()=>{epoch.current++;controller.abort();repo.dispose();if(ref.current?.repo===repo)ref.current=null;};
  },[context.org,context.clientId,context.userId,currentKey]);
  useEffect(()=>{const focus=()=>{if(!pending.current)setRevision(n=>n+1);};window.addEventListener('focus',focus);return()=>window.removeEventListener('focus',focus);},[]);
  async function run<T>(operation:(repo:R)=>Promise<T>,write=false){

@@ -2,6 +2,7 @@
 import {NutritionPersistenceError,type NutritionRpcClient} from './nutrition-persistence';
 import {parseDocumentBody,parseDocumentCommand,documentText,type DocumentKind,type RecipeBody,type PlanBody,type FrozenDish} from './nutrition-document-command';
 import {waterObject as object,waterId as uuid,waterRevision as revision} from './nutrition-water-command';
+import {nutritionRequest} from './nutrition-request';
 export type DocumentVersion={documentId:string;kind:DocumentKind;revision:number;status:'draft'|'published'|'withdrawn';body:RecipeBody|PlanBody<FrozenDish>;reason:string|null;recordedBy:string};
 const invalid=():never=>{throw new NutritionPersistenceError('invalid-response');};
 function receipt(value:unknown,saved=false){try{const v=object(value,saved?['documentId','revision','replayed']:['documentId','revision']);if(saved&&typeof v.replayed!=='boolean')return invalid();return {documentId:uuid(v.documentId),revision:revision(v.revision),...(saved?{replayed:v.replayed as boolean}:{})};}catch{return invalid();}}
@@ -15,7 +16,7 @@ export function createNutritionDocumentPersistence(client:NutritionRpcClient,con
  const org=uuid(context.organizationId),pupil=uuid(context.clientId),controller=new AbortController();
  const active=()=>{if(controller.signal.aborted)throw new NutritionPersistenceError('stale');};
  async function call(name:string,args:Record<string,unknown>,mutation=false){
-  active();let result;try{result=await client.rpc(name,{p_org:org,p_client:pupil,...args}).abortSignal(controller.signal);}catch{active();throw new NutritionPersistenceError(mutation?'uncertain':'unavailable');}active();
+  active();let result;try{result=await nutritionRequest(controller.signal,signal=>client.rpc(name,{p_org:org,p_client:pupil,...args}).abortSignal(signal));}catch{active();throw new NutritionPersistenceError(mutation?'uncertain':'unavailable');}active();
   if(!result||typeof result!=='object'||!Object.hasOwn(result,'data')||!Object.hasOwn(result,'error'))throw new NutritionPersistenceError(mutation?'uncertain':'invalid-response');
   if(result.error){const c=result.error.code;throw new NutritionPersistenceError(c==='42501'||c==='PT403'?'denied':c==='PT409'||c==='23514'?'conflict':c==='42883'||c==='PGRST202'?'unavailable':mutation?'uncertain':'unavailable');}return result.data;
  }
