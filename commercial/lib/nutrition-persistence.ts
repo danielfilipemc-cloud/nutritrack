@@ -40,7 +40,7 @@ export function createNutritionPersistence(client:NutritionRpcClient,context:{or
  }
  return {
   dispose(){controller.abort();},
-  async save(input:unknown){const command=parseNutritionCommandV1(input,today());return receipt(await call('aura_nutrition_meal_save',{p_command:command},true),true);},
+  async save(input:unknown){active();const command=parseNutritionCommandV1(input,today());const data=await call('aura_nutrition_meal_save',{p_command:command},true);try{return receipt(data,true);}catch{throw new NutritionPersistenceError('uncertain');}},
   async requestStatus(requestId:string){const data=await call('aura_nutrition_request_status',{p_request:uuid(requestId)});return data===null?null:receipt(data);},
   async diary(date:string,after:string|null=null){
    if(!validDate(date))throw new TypeError('Dia inválido.');const r=object(await call('aura_nutrition_diary',{p_date:date,p_after:after===null?null:uuid(after)}),['meals','nextCursor']);
