@@ -3,6 +3,7 @@
  * Must be disposed on identity/organization/student change. No demo fallback. */
 import {parseNutritionCommandV1,type NutritionCommandV1} from './nutrition-command';
 import {validDate} from './validation';
+import {nutritionRequest} from './nutrition-request';
 type RpcResult = {data:unknown;error:{code?:string}|null};
 export type NutritionRpcClient = {rpc(name:string,args:Record<string,unknown>):{abortSignal(signal:AbortSignal):PromiseLike<RpcResult>}};
 export type NutritionReceipt = {mealId:string;revision:number;replayed?:boolean};
@@ -33,7 +34,7 @@ export function createNutritionPersistence(client:NutritionRpcClient,context:{or
  const active=()=>{if(controller.signal.aborted)throw new NutritionPersistenceError('stale');};
  async function call(name:string,args:Record<string,unknown>,mutation=false){
   active();let result:RpcResult;
-  try{result=await client.rpc(name,{p_org:org,p_client:pupil,...args}).abortSignal(controller.signal);}catch{active();throw new NutritionPersistenceError(mutation?'uncertain':'unavailable');}
+  try{result=await nutritionRequest(controller.signal,signal=>client.rpc(name,{p_org:org,p_client:pupil,...args}).abortSignal(signal));}catch{active();throw new NutritionPersistenceError(mutation?'uncertain':'unavailable');}
   active();
   if(!result||typeof result!=='object'||!Object.hasOwn(result,'data')||!Object.hasOwn(result,'error'))throw new NutritionPersistenceError(mutation?'uncertain':'invalid-response');
   if(result.error){const code=result.error.code;throw new NutritionPersistenceError(code==='42501'||code==='PT403'?'denied':code==='PT409'?'conflict':code==='42883'||code==='PGRST202'?'unavailable':mutation?'uncertain':'unavailable');}

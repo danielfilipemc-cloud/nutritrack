@@ -1,21 +1,23 @@
 const {test,expect}=require('@playwright/test');const {fixture,A,C,U,today}=require('./fixtures.cjs');
 test.skip(process.env.NEXT_PUBLIC_AURA_NATIVE_NUTRITION!=='1','Dedicated opt-in native build only');
 const reply=(r,data,status=200)=>r.fulfill({status,contentType:'application/json',body:JSON.stringify(data)});
-async function setup(page,{write=true,missing=false,uncertain=false,archived=false,noReceipt=false,waterUncertain=false}={}){
+async function setup(page,{write=true,missing=false,uncertain=false,archived=false,noReceipt=false,waterUncertain=false,waterStall=false}={}){
  await fixture(page,{archived});let rows=[],saved=0,receipt=null,water=[],waterSaved=0,waterReceipt=null,documents=[],documentSaved=0,revoked=false;
  const history=new Map(),waterHistory=new Map(),documentHistory=new Map();
+ let releaseWater=()=>{};
  await page.route('**/rest/v1/nutrition_capabilities?*',r=>{const q=new URL(r.request().url()).searchParams;expect(q.get('organization_id')).toBe('eq.'+A);expect(q.get('user_id')).toBe('eq.'+U);return reply(r,{can_write:write});});
  await page.route('**/rpc/aura_nutrition_diary',r=>missing?reply(r,{code:'PGRST202'},404):reply(r,{meals:rows,nextCursor:null}));
  await page.route('**/rpc/aura_nutrition_meal_save',r=>{const c=r.request().postDataJSON();expect(c.p_org).toBe(A);expect(c.p_client).toBe(C);expect(c.p_command).not.toHaveProperty('actorId');saved++;receipt={mealId:'00000000-0000-0000-0000-000000009000',revision:saved};const row={...receipt,consumedOn:today,mealKind:c.p_command.mealKind,status:c.p_command.operation==='void'?'voided':'recorded',items:c.p_command.operation==='void'?rows[0].items:c.p_command.items};rows=[row];history.set(row.mealId,[row,...(history.get(row.mealId)||[])]);return uncertain?r.abort('failed'):reply(r,{...receipt,replayed:false});});
  await page.route('**/rpc/aura_nutrition_request_status',r=>reply(r,noReceipt?null:receipt));
  await page.route('**/rpc/aura_nutrition_history',r=>reply(r,{versions:history.get(r.request().postDataJSON().p_meal)||[],nextCursor:null}));
  await page.route('**/rpc/aura_nutrition_water_diary',r=>revoked?reply(r,{code:'42501'},403):reply(r,{entries:water,nextCursor:null,summary:{activeCount:water.filter(e=>e.status==='recorded').length,voidedCount:water.filter(e=>e.status==='voided').length,declaredMl:water.some(e=>e.status==='recorded')?water.filter(e=>e.status==='recorded').reduce((s,e)=>s+e.entry.quantity.amount,0):null}}));
- await page.route('**/rpc/aura_nutrition_water_save',r=>{
+ await page.route('**/rpc/aura_nutrition_water_save',async r=>{
   if(revoked)return reply(r,{code:'42501'},403);
   const {p_org,p_client,p_command:c}=r.request().postDataJSON();expect(p_org).toBe(A);expect(p_client).toBe(C);expect(c).not.toHaveProperty('actorId');
   const previous=water.find(e=>e.waterId===c.waterId);if(c.expectedRevision!==(previous?.revision||0))return reply(r,{code:'PT409'},409);
   waterSaved++;waterReceipt={waterId:c.waterId||'00000000-0000-0000-0000-000000009010',revision:c.expectedRevision+1};
   const row={...waterReceipt,entry:c.entry||previous.entry,status:c.operation==='void'?'voided':'recorded',reason:c.reason,recordedBy:U};water=[row];waterHistory.set(row.waterId,[row,...(waterHistory.get(row.waterId)||[])]);
+  if(waterStall){await new Promise(resolve=>{releaseWater=resolve;});try{return await reply(r,{...waterReceipt,replayed:false});}catch{return;}}
   return waterUncertain?r.abort('failed'):reply(r,{...waterReceipt,replayed:false});
  });
  await page.route('**/rpc/aura_nutrition_water_request_status',r=>reply(r,noReceipt?null:waterReceipt));
@@ -33,7 +35,7 @@ async function setup(page,{write=true,missing=false,uncertain=false,archived=fal
   documentHistory.set(documentId,[current,...(documentHistory.get(documentId)||[])]);return reply(r,{documentId,revision:current.revision,replayed:false});
  });
  await page.route('**/rpc/aura_nutrition_document_history',r=>reply(r,{versions:documentHistory.get(r.request().postDataJSON().p_document)||[],nextCursor:null}));
- await page.goto(`/alunos/${C}?org=${A}&section=nutrition`);return {saved:()=>saved,waterSaved:()=>waterSaved,documentSaved:()=>documentSaved,revoke:()=>{revoked=true;},restore:()=>{revoked=false;},documents:()=>documents};
+ await page.goto(`/alunos/${C}?org=${A}&section=nutrition`);return {saved:()=>saved,waterSaved:()=>waterSaved,documentSaved:()=>documentSaved,releaseWater:()=>releaseWater(),revoke:()=>{revoked=true;},restore:()=>{revoked=false;},documents:()=>documents};
 }
 test('native diary saves a snapshot, reloads it and distinguishes unknown composition from zero',async({page})=>{
  const state=await setup(page);await page.getByLabel('Nome do alimento',{exact:true}).fill('Alimento fictício');await page.getByRole('button',{name:'Guardar refeição',exact:true}).click();await expect(page.getByRole('cell',{name:/Alimento fictício.*— kcal/})).toBeVisible();expect(state.saved()).toBe(1);await page.getByRole('button',{name:'Atualizar registos',exact:true}).click();await expect(page.getByRole('cell',{name:/Alimento fictício.*— kcal/})).toBeVisible();
@@ -51,7 +53,7 @@ test('lost acknowledgement preserves draft, prevents duplicate save and resolves
  const state=await setup(page,{uncertain:true});await page.getByLabel('Nome do alimento',{exact:true}).fill('Rascunho fictício');await page.getByRole('button',{name:'Guardar refeição',exact:true}).click();await expect(page.getByRole('region',{name:'Nutrição persistente'}).getByRole('alert')).toContainText('Resultado por confirmar');expect(state.saved()).toBe(1);await expect(page.getByRole('button',{name:'Guardar refeição'})).toHaveCount(0);await page.getByRole('button',{name:'Consultar recibo'}).click();await expect(page.getByRole('cell',{name:/Rascunho fictício/})).toBeVisible();expect(state.saved()).toBe(1);
 });
 test('cancelling section navigation preserves the native meal draft on mobile',async({page})=>{
- await page.setViewportSize({width:375,height:900});await setup(page);await page.getByLabel('Nome do alimento',{exact:true}).fill('Rascunho preservado');page.once('dialog',d=>d.dismiss());await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption('overview');await expect(page.getByLabel('Nome do alimento',{exact:true})).toHaveValue('Rascunho preservado');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);await page.screenshot({path:'.aura-integration/native-nutrition-375.png',fullPage:true});
+ await page.setViewportSize({width:375,height:900});await setup(page);await page.getByLabel('Nome do alimento',{exact:true}).fill('Rascunho preservado');page.once('dialog',d=>d.dismiss());await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption('overview');await expect(page.getByLabel('Nome do alimento',{exact:true})).toHaveValue('Rascunho preservado');expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'.aura-integration/native-nutrition-375.png',fullPage:true});
 });
 
 test('water create, correction, void and immutable history preserve unknown time and never imply zero',async({page})=>{
@@ -104,12 +106,22 @@ test('late capability response from a previous organization cannot restore nutri
 
 test('native nutrition navigation and disclosures are keyboard discoverable with mobile layouts and visual evidence',async({page})=>{
  await setup(page);const nav=page.getByRole('navigation',{name:'Áreas da nutrição'});await nav.getByRole('button',{name:'Refeições',exact:true}).focus();await page.keyboard.press('Tab');await expect(nav.getByRole('button',{name:'Água',exact:true})).toBeFocused();await page.keyboard.press('Enter');await expect(page.getByRole('region',{name:'Água persistente'})).toBeVisible();
- await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:'.aura-integration/native-water-desktop.png',fullPage:true});
- await nav.getByRole('button',{name:'Receitas e planos',exact:true}).click();const panel=page.getByRole('region',{name:'Documentos nutricionais'});const summary=panel.locator('summary').filter({hasText:'Preparar receita'});await expect(summary).toBeVisible();await summary.focus();await page.keyboard.press('Enter');await expect(panel.getByLabel('Título do documento')).toBeVisible();await page.screenshot({path:'.aura-integration/native-recipe-desktop.png',fullPage:true});
- for(const width of [375,320]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);await page.screenshot({path:`.aura-integration/native-recipe-${width}.png`,fullPage:true});}
- await panel.getByRole('button',{name:'Planos',exact:true}).click();await panel.getByText('Preparar plano',{exact:true}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);expect((await panel.getByLabel('Nome do alimento',{exact:true}).boundingBox()).width).toBeGreaterThanOrEqual(190);await page.screenshot({path:'.aura-integration/native-plan-320.png',fullPage:true});
+ await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'.aura-integration/native-water-desktop.png',fullPage:true});
+ await nav.getByRole('button',{name:'Receitas e planos',exact:true}).click();const panel=page.getByRole('region',{name:'Documentos nutricionais'});const summary=panel.locator('summary').filter({hasText:'Preparar receita'});await expect(summary).toBeVisible();await summary.focus();await page.keyboard.press('Enter');await expect(panel.getByLabel('Título do documento')).toBeVisible();await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'.aura-integration/native-recipe-desktop.png',fullPage:true});
+ for(const width of [375,320]){await page.setViewportSize({width,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:`.aura-integration/native-recipe-${width}.png`,fullPage:true});}
+ await panel.getByRole('button',{name:'Planos',exact:true}).click();await panel.getByText('Preparar plano',{exact:true}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);expect((await panel.getByLabel('Nome do alimento',{exact:true}).boundingBox()).width).toBeGreaterThanOrEqual(190);await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:'.aura-integration/native-plan-320.png',fullPage:true});
 });
 
 test('read-only and archived nutrition never expose water or document mutation controls',async({page})=>{
  await setup(page,{archived:true});await page.getByRole('button',{name:'Água',exact:true}).click();await expect(page.getByRole('button',{name:'Guardar água',exact:true})).toHaveCount(0);await page.getByRole('button',{name:'Receitas e planos',exact:true}).click();await expect(page.getByText('Preparar receita',{exact:true})).toHaveCount(0);
+});
+
+test('a stalled accepted save stops waiting and recovers through its receipt without another mutation',async({page})=>{
+ const state=await setup(page,{waterStall:true});await page.getByRole('button',{name:'Água',exact:true}).click();const panel=page.getByRole('region',{name:'Água persistente'});await panel.getByLabel('Quantidade de água (ml)',{exact:true}).fill('300');await panel.getByRole('button',{name:'Guardar água',exact:true}).click();
+ try{await expect(panel.getByRole('alert')).toContainText('Resultado por confirmar',{timeout:12000});await expect(panel).toHaveAttribute('aria-busy','false');expect(state.waterSaved()).toBe(1);await expect(panel.getByRole('button',{name:'Guardar água',exact:true})).toHaveCount(0);await panel.getByRole('button',{name:'Consultar recibo'}).click();await expect(panel.getByRole('cell',{name:/300 ml/})).toBeVisible();expect(state.waterSaved()).toBe(1);}finally{state.releaseWater();}
+});
+
+test('a stalled capability lookup ends as unavailable and its late response cannot enable editing',async({page})=>{
+ await setup(page);let release,delivered=false;const gate=new Promise(resolve=>{release=resolve;});await page.route('**/rest/v1/nutrition_capabilities?*',async r=>{await gate;try{await reply(r,{can_write:true});}catch{}finally{delivered=true;}});
+ await page.getByRole('button',{name:'Água',exact:true}).click();const panel=page.getByRole('region',{name:'Água persistente'});try{await expect(panel).toHaveAttribute('aria-busy','false',{timeout:12000});await expect(panel).toContainText('persistência nutricional ainda não está disponível');await expect(panel.getByRole('button',{name:'Guardar água',exact:true})).toHaveCount(0);}finally{release();}await expect.poll(()=>delivered).toBe(true);await expect(panel.getByRole('button',{name:'Guardar água',exact:true})).toHaveCount(0);
 });

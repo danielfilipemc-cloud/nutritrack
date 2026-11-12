@@ -6,6 +6,7 @@ import {createNutritionPersistence,NutritionPersistenceError,type PersistedNutri
 import {type NutritionCommandV1} from '../lib/nutrition-command';
 import {nutritionTotals,nutrientKeys} from '../lib/nutrition-contract';
 import NutritionUncertain from './NutritionUncertain';
+import {nutritionRequest} from '../lib/nutrition-request';
 type Item={label:string;grams:string;calories:string;protein:string;carbs:string;fat:string};
 const empty=():Item=>({label:'',grams:'100',calories:'',protein:'',carbs:'',fat:''});
 const kinds={breakfast:'Pequeno-almoço',lunch:'Almoço',dinner:'Jantar',snack:'Lanche',other:'Outra refeição'};
@@ -22,15 +23,15 @@ export default function NutritionWorkspace({org,clientId,userId,archived=false,o
 
  const error=(e:unknown)=>e instanceof NutritionPersistenceError?e.message:'Não foi possível concluir. Confirma os dados e tenta novamente.';
  useEffect(()=>{
-  if(!db)return;const transport=db,version=++epoch.current,adapter=createNutritionPersistence(transport,{organizationId:org,clientId},businessToday);repo.current=adapter;
+  if(!db)return;const transport=db,version=++epoch.current,adapter=createNutritionPersistence(transport,{organizationId:org,clientId},businessToday),controller=new AbortController();repo.current=adapter;
   setReady(false);setWritable(false);setRows([]);setHistory([]);setHistoryId('');setHistoryCursor(null);setCursor(null);setLoading(true);
   void(async()=>{try{
    const result=await adapter.diary(day);
-   const permission=await transport.from('nutrition_capabilities').select('can_write').eq('organization_id',org).eq('user_id',userId).maybeSingle();
-   if(epoch.current!==version)return;if(permission.error||!permission.data)throw new NutritionPersistenceError('denied');
+   const permission=await nutritionRequest(controller.signal,signal=>transport.from('nutrition_capabilities').select('can_write').eq('organization_id',org).eq('user_id',userId).abortSignal(signal).maybeSingle()).catch(()=>{throw new NutritionPersistenceError('unavailable');});
+   if(epoch.current!==version)return;if(permission.error||!permission.data)throw new NutritionPersistenceError(!permission.error||['42501','PT403'].includes(permission.error.code)?'denied':'unavailable');
    setRows(result.meals);setCursor(result.nextCursor);setWritable(permission.data.can_write===true);setReady(true);setMessage('');
   }catch(e){if(epoch.current===version)setMessage(error(e));}finally{if(epoch.current===version)setLoading(false);}})();
-  return()=>{epoch.current++;adapter.dispose();if(repo.current===adapter)repo.current=null;};
+  return()=>{epoch.current++;controller.abort();adapter.dispose();if(repo.current===adapter)repo.current=null;};
  },[org,clientId,userId,day,revision]);
  useEffect(()=>{const refresh=()=>{if(!pending.current)setRevision(n=>n+1);};window.addEventListener('focus',refresh);return()=>window.removeEventListener('focus',refresh);},[]);
  const reset=()=>{setItems([empty()]);setEditing(null);setDirty(false);};
