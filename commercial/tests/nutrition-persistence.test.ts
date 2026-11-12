@@ -39,3 +39,7 @@ test('adapter validates projections and cursors instead of displaying malformed 
   await assert.rejects(()=>createNutritionPersistence(client,context,businessToday).diary(businessToday()),(e:NutritionPersistenceError)=>e.kind==='invalid-response');
  }
 });
+test('a malformed acknowledgement after a save is uncertain, not a confirmed rejection',async()=>{
+ let calls=0;const client:NutritionRpcClient={rpc(){calls++;return {async abortSignal(){return {data:{revision:1},error:null};}}}};
+ await assert.rejects(()=>createNutritionPersistence(client,context,businessToday).save(command()),(e:NutritionPersistenceError)=>e.kind==='uncertain');assert.equal(calls,1);
+});

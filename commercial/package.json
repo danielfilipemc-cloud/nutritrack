@@ -25,7 +25,7 @@
     "test:auth:staging:readiness": "tsx scripts/staging-auth-readiness.ts",
     "test:team:api": "tsx scripts/team-integration.ts",
     "test:clients:api": "tsx scripts/clients-integration.ts",
-    "test:e2e": "playwright test",
+    "test:e2e": "node scripts/browser-regression.cjs",
     "test:care:api": "tsx scripts/care-integration.ts",
     "test:recovery:local": "tsx scripts/local-recovery-demo.ts",
     "test:foundations:staging": "tsx scripts/foundations-staging.ts",
