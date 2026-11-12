@@ -35,6 +35,7 @@ export function createNutritionPersistence(client:NutritionRpcClient,context:{or
   active();let result:RpcResult;
   try{result=await client.rpc(name,{p_org:org,p_client:pupil,...args}).abortSignal(controller.signal);}catch{active();throw new NutritionPersistenceError(mutation?'uncertain':'unavailable');}
   active();
+  if(!result||typeof result!=='object'||!Object.hasOwn(result,'data')||!Object.hasOwn(result,'error'))throw new NutritionPersistenceError(mutation?'uncertain':'invalid-response');
   if(result.error){const code=result.error.code;throw new NutritionPersistenceError(code==='42501'||code==='PT403'?'denied':code==='PT409'?'conflict':code==='42883'||code==='PGRST202'?'unavailable':mutation?'uncertain':'unavailable');}
   return result.data;
  }
@@ -53,7 +54,11 @@ export function createNutritionPersistence(client:NutritionRpcClient,context:{or
    const id=uuid(mealId);if(before!==null)revision(before);
    const r=object(await call('aura_nutrition_history',{p_meal:id,p_before:before}),['versions','nextCursor']);
    if(!Array.isArray(r.versions)||r.versions.length>20)return invalid();const versions=r.versions.map(v=>projection(v,today()));const nextCursor=r.nextCursor===null?null:revision(r.nextCursor);
-   if(versions.some((m,i)=>m.mealId!==id||(before!==null&&m.revision>=before)||(i>0&&m.revision>=versions[i-1].revision)) || (nextCursor!==null&&(versions.length!==20||nextCursor!==versions.at(-1)?.revision)))return invalid();
+   if(versions.some((m,i)=>m.mealId!==id||(i>0&&m.revision!==versions[i-1].revision-1))
+    ||before!==null&&versions.length>0&&versions[0].revision!==before-1
+    ||versions.length===0&&(before===null||before>1)
+    ||nextCursor!==null&&(versions.length!==20||nextCursor!==versions.at(-1)?.revision||nextCursor<=1)
+    ||nextCursor===null&&versions.length>0&&versions.at(-1)?.revision!==1)return invalid();
    return {versions,nextCursor};
   },
  };
