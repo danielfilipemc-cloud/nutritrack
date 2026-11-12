@@ -42,4 +42,18 @@ test('adapter validates projections and cursors instead of displaying malformed 
 test('a malformed acknowledgement after a save is uncertain, not a confirmed rejection',async()=>{
  let calls=0;const client:NutritionRpcClient={rpc(){calls++;return {async abortSignal(){return {data:{revision:1},error:null};}}}};
  await assert.rejects(()=>createNutritionPersistence(client,context,businessToday).save(command()),(e:NutritionPersistenceError)=>e.kind==='uncertain');assert.equal(calls,1);
+ const broken:NutritionRpcClient={rpc(){calls++;return {async abortSignal(){return null as never;}}}};
+ await assert.rejects(()=>createNutritionPersistence(broken,context,businessToday).save(command()),(e:NutritionPersistenceError)=>e.kind==='uncertain');assert.equal(calls,2);
+});
+
+test('meal history rejects skipped versions and false completion, and pages down to the original immutable version',async()=>{
+ const mealId=id(9200),version=(revision:number)=>({mealId,revision,consumedOn:businessToday(),mealKind:'other',status:'recorded',items:command().items});
+ let data:unknown;
+ const client:NutritionRpcClient={rpc(){return {async abortSignal(){return {data,error:null};}}}};
+ const repo=createNutritionPersistence(client,context,businessToday);
+ for(data of [{versions:[],nextCursor:null},{versions:[version(3),version(1)],nextCursor:null},{versions:[version(3),version(2)],nextCursor:null}])await assert.rejects(()=>repo.history(mealId),(e:NutritionPersistenceError)=>e.kind==='invalid-response');
+ data={versions:[version(1)],nextCursor:null};await assert.rejects(()=>repo.history(mealId,3),(e:NutritionPersistenceError)=>e.kind==='invalid-response');
+ data={versions:Array.from({length:20},(_,i)=>version(23-i)),nextCursor:4};assert.equal((await repo.history(mealId)).nextCursor,4);
+ data={versions:[version(3),version(2),version(1)],nextCursor:null};assert.equal((await repo.history(mealId,4)).versions.at(-1)?.revision,1);
+ repo.dispose();
 });
