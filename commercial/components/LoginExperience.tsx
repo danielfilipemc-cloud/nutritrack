@@ -26,7 +26,7 @@ export default function LoginExperience({children,status,title,description}: {ch
      <p role="status" className="aura-entry-status">{status}</p>
      <div className="aura-entry-divider"><span>Conhece a plataforma</span></div>
      <a href="/demo/experiencia" className="outline link aura-entry-demo-link">Explorar demonstração <AuraIcon name="arrow"/></a>
-     <p className="aura-entry-student-link">És aluno? <a href="/aluno">Acede à tua área</a></p>
+     <p className="aura-entry-student-link">És aluno? <a href="/aluno">Acede à tua área</a> · <a href="/instalar">Instalar no telemóvel</a></p>
     </div>
     <p className="aura-entry-access-note">A tua marca. O teu acompanhamento.<br/>Uma experiência AURA Business.</p>
    </section>
