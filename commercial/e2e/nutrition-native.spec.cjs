@@ -40,6 +40,65 @@ async function setup(page,{write=true,missing=false,uncertain=false,archived=fal
 test('native diary saves a snapshot, reloads it and distinguishes unknown composition from zero',async({page})=>{
  const state=await setup(page);await page.getByLabel('Nome do alimento',{exact:true}).fill('Alimento fictício');await page.getByRole('button',{name:'Guardar refeição',exact:true}).click();await expect(page.getByRole('cell',{name:/Alimento fictício.*— kcal/})).toBeVisible();expect(state.saved()).toBe(1);await page.getByRole('button',{name:'Atualizar registos',exact:true}).click();await expect(page.getByRole('cell',{name:/Alimento fictício.*— kcal/})).toBeVisible();
 });
+
+async function openPlanning(page){const panel=page.getByRole('region',{name:'Planeamento e rótulos'});await panel.getByText('Planear quantidades e preparar um produto',{exact:true}).click();return panel;}
+async function fillProduct(panel){await panel.getByLabel('Nome do produto',{exact:true}).fill('Produto inventado');await panel.getByLabel('Marca do produto (opcional)',{exact:true}).fill('Marca fictícia');await panel.getByLabel('Rótulo: energia por 100 g (kcal)',{exact:true}).fill('200');await panel.getByLabel('Rótulo: proteína por 100 g (g)',{exact:true}).fill('10');await panel.getByLabel('Rótulo: hidratos por 100 g (g)',{exact:true}).fill('30');await panel.getByLabel('Rótulo: gordura por 100 g (g)',{exact:true}).fill('5');await panel.getByLabel('Porção do produto (g)',{exact:true}).fill('150');}
+
+test('branded label calculates a portion and adds a manual immutable snapshot only after explicit diary save',async({page})=>{
+ const state=await setup(page),panel=await openPlanning(page);await fillProduct(panel);
+ const preview=panel.getByRole('group',{name:'Composição da porção'});await expect(preview).toContainText('300');await expect(preview).toContainText('7,5');
+ await panel.getByRole('button',{name:'Adicionar produto à refeição',exact:true}).click();expect(state.saved()).toBe(0);
+ await expect(page.getByLabel('Nome do alimento',{exact:true})).toHaveValue('Produto inventado · Marca fictícia · como vendido');await expect(page.getByLabel('Quantidade (g)',{exact:true})).toHaveValue('150');
+ await page.getByRole('button',{name:'Guardar refeição',exact:true}).click();await expect(page.getByRole('cell',{name:/Produto inventado.*Marca fictícia.*300 kcal/})).toBeVisible();expect(state.saved()).toBe(1);
+ const disclosure=page.locator('details.aura-nutrition-reuse summary');await disclosure.focus();await page.keyboard.press('Enter');await page.getByRole('combobox',{name:'Alimento a reutilizar',exact:true}).selectOption('0');await expect(page.getByLabel('Nome do alimento',{exact:true})).toHaveValue('');await page.getByRole('button',{name:'Adicionar alimento selecionado',exact:true}).click();
+ await expect(page.getByLabel('Nome do alimento',{exact:true})).toHaveValue('Produto inventado · Marca fictícia · como vendido');expect(state.saved()).toBe(1);
+});
+
+test('quantity solver is explicit and refuses unknown or zero label values',async({page})=>{
+ await setup(page);const panel=await openPlanning(page);await fillProduct(panel);
+ await panel.getByLabel('Quantidade pretendida de proteína (g)',{exact:true}).fill('25');await panel.getByRole('button',{name:'Calcular quantidade',exact:true}).click();await expect(panel.getByLabel('Porção do produto (g)',{exact:true})).toHaveValue('250');
+ await panel.getByLabel('Rótulo: proteína por 100 g (g)',{exact:true}).fill('');await panel.getByRole('button',{name:'Calcular quantidade',exact:true}).click();await expect(panel.getByRole('status')).toContainText('não está disponível ou é zero');
+ await expect(panel.getByRole('group',{name:'Composição da porção'})).toContainText('—');
+});
+
+test('manual references never turn an empty diary into zero consumption and survive a save or refresh',async({page})=>{
+ const state=await setup(page),panel=await openPlanning(page);await panel.getByLabel('Meta de energia (kcal)',{exact:true}).fill('1800');
+ const remaining=panel.getByRole('group',{name:'Diferença para as referências'});await expect(remaining).toContainText('Sem balanço completo');
+ await fillProduct(panel);await panel.getByRole('button',{name:'Adicionar produto à refeição',exact:true}).click();await page.getByRole('button',{name:'Guardar refeição',exact:true}).click();
+ await expect(panel.getByLabel('Meta de energia (kcal)',{exact:true})).toHaveValue('1800');await expect(remaining).toContainText('1500');
+ await page.getByRole('button',{name:'Atualizar registos',exact:true}).click();await expect(panel.getByLabel('Meta de energia (kcal)',{exact:true})).toHaveValue('1800');expect(state.saved()).toBe(1);
+});
+
+test('mobile planning draft participates in the profile guard and stays usable at 320px',async({page})=>{
+ await page.setViewportSize({width:320,height:900});await setup(page);const panel=await openPlanning(page);await fillProduct(panel);
+ await panel.getByLabel('Meta de energia (kcal)',{exact:true}).fill('1800');
+ page.once('dialog',d=>d.dismiss());await page.getByRole('combobox',{name:'Área da ficha',exact:true}).selectOption('overview');
+ await expect(panel.getByLabel('Marca do produto (opcional)',{exact:true})).toHaveValue('Marca fictícia');
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2)).toBe(true);
+ await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0);});await page.screenshot({path:'.aura-integration/nutrition-planning-320.png',fullPage:true});
+});
+
+test('read-only users do not receive product planning or adding controls',async({page})=>{
+ await setup(page,{write:false});await expect(page.getByText('Sem edição disponível neste contexto.')).toBeVisible();
+ await expect(page.getByRole('button',{name:'Adicionar produto à refeição'})).toHaveCount(0);await expect(page.getByRole('button',{name:'Calcular quantidade'})).toHaveCount(0);
+});
+
+test('finishing multiple diary pages never claims a consistent daily target balance',async({page})=>{
+ await setup(page);const all=Array.from({length:21},(_,i)=>({mealId:`00000000-0000-0000-0000-${String(5000+i).padStart(12,'0')}`,revision:1,consumedOn:today,mealKind:'other',status:'recorded',items:[{label:'Exemplo paginado',source:'manual',quantity:{amount:100,unit:'g'},composition:{contractVersion:1,basis:{amount:100,unit:'g'},nutrients:{calories:10,protein:1,carbs:1,fat:0}}}]}));
+ await page.route('**/rpc/aura_nutrition_diary',r=>reply(r,r.request().postDataJSON().p_after?{meals:all.slice(20),nextCursor:null}:{meals:all.slice(0,20),nextCursor:all[19].mealId}));
+ await page.getByRole('button',{name:'Atualizar registos',exact:true}).click();const panel=await openPlanning(page);await panel.getByLabel('Meta de energia (kcal)',{exact:true}).fill('1800');
+ await page.getByRole('button',{name:'Carregar mais registos',exact:true}).click();await expect(page.getByText('21 registos carregados', {exact:false})).toBeVisible();
+ await expect(panel.getByRole('group',{name:'Diferença para as referências'})).toContainText('Sem balanço completo');
+});
+
+test('revocation hides planning controls and preserves its draft until authorized refresh',async({page})=>{
+ await setup(page);const panel=await openPlanning(page);await fillProduct(panel);
+ await page.route('**/rpc/aura_nutrition_diary',r=>reply(r,{code:'42501'},403));await page.getByRole('button',{name:'Atualizar registos',exact:true}).click();
+ await expect(page.getByRole('region',{name:'Nutrição persistente'})).toContainText('Sem acesso a estes registos.');await expect(panel).toBeHidden();
+ await page.route('**/rpc/aura_nutrition_diary',r=>reply(r,{meals:[],nextCursor:null}));await page.getByRole('button',{name:'Atualizar registos',exact:true}).click();
+ await expect(panel.getByLabel('Marca do produto (opcional)',{exact:true})).toHaveValue('Marca fictícia');
+ await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0);});await page.screenshot({path:'.aura-integration/nutrition-planning-desktop.png',fullPage:true});
+});
 test('read-only nutrition has no writing controls; missing RPC never falls back to invented meals',async({page})=>{
  await setup(page,{write:false});await expect(page.getByRole('region',{name:'Nutrição persistente'})).toContainText('Sem edição disponível');await expect(page.getByRole('button',{name:'Guardar refeição'})).toHaveCount(0);
 });
