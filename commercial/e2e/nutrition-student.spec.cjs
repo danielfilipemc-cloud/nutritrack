@@ -1,4 +1,4 @@
-const {test,expect}=require('@playwright/test');const {fixture,A,B,C,U,today}=require('./fixtures.cjs');
+const {test,expect}=require('@playwright/test');const {fixture,A,B,C}=require('./fixtures.cjs');
 test.skip(process.env.NEXT_PUBLIC_AURA_PERSONAL_NUTRITION!=='1','Own-account local opt-in build only');
 const D='00000000-0000-0000-0000-000000000200',reply=(r,data,status=200)=>r.fulfill({status,contentType:'application/json',body:JSON.stringify(data)});
 async function setup(page,{conflict=false,uncertain=false,missing=false,two=false,delayed=false}={}){
@@ -40,7 +40,7 @@ test('student drafts survive tabs and cancelled route or logout navigation',asyn
  page.once('dialog',d=>d.dismiss());await page.getByRole('link',{name:'Conta',exact:true}).click();await expect(page).toHaveURL(/\/aluno$/);page.once('dialog',d=>d.dismiss());await page.getByRole('button',{name:'Terminar sessão',exact:true}).click();await expect(panel.getByLabel('Referência de energia (kcal)',{exact:true})).toHaveValue('1800');
 });
 test('cancelling a day change preserves unsaved individual references',async({page})=>{
- await setup(page);const panel=await editTargets(page);page.once('dialog',d=>d.dismiss());await page.getByLabel('Dia do diário',{exact:true}).fill('2000-01-01');await expect(page.getByLabel('Dia do diário',{exact:true})).toHaveValue(today);await expect(panel.getByLabel('Referência de energia (kcal)',{exact:true})).toHaveValue('1800');
+ await setup(page);const panel=await editTargets(page),date=page.getByLabel('Dia do diário',{exact:true}),initialDay=await date.inputValue();page.once('dialog',d=>d.dismiss());await date.fill('2000-01-01');await expect(date).toHaveValue(initialDay);await expect(panel.getByLabel('Referência de energia (kcal)',{exact:true})).toHaveValue('1800');
 });
 test('late private target response from organization A never enters organization B',async({page})=>{
  const s=await setup(page,{two:true,delayed:true});await expect(page.getByRole('heading',{name:'Conta própria fictícia A'})).toBeVisible();await page.getByRole('combobox',{name:'Acompanhamento',exact:true}).selectOption(D);await expect(page.getByRole('heading',{name:'Conta própria fictícia B'})).toBeVisible();s.release();const panel=page.getByRole('region',{name:'Referências privadas do dia'});await expect(panel).toContainText('Sem referências guardadas neste dia.');await expect(panel).not.toContainText('1111');
