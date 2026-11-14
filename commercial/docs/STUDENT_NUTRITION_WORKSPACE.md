@@ -1,5 +1,10 @@
 # Own-account workspace and local synchronization evidence
 
+Follow-up: `PRIVATE_ACTIVATION_20261114.md` describes the separate own-nutrition
+export, real authenticated browser proof, private-entry opt-in and newly approved
+private destination. The generic shared-measurement export remains separate.
+Earlier local API evidence below retains its original scope; it is not cloud proof.
+
 Depends on PR #86 (private own-account journal) and #87 (private daily references),
 on top of #85. No merge, cloud SQL, account provisioning or publication authorized.
 
