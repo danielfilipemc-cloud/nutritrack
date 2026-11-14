@@ -2,7 +2,7 @@
 set -euo pipefail
 umask 077
 instance=${1:-baseline}
-case "$instance" in baseline|restore|rehearsal|cloud-recovery|nutrition) ;; *) printf '%s\n' 'Only named synthetic local runtimes are permitted' >&2; exit 1;; esac
+case "$instance" in baseline|restore|rehearsal|cloud-recovery|nutrition|personal) ;; *) printf '%s\n' 'Only named synthetic local runtimes are permitted' >&2; exit 1;; esac
 case "${2:-}" in ''|--keep-alive) ;; *) printf '%s\n' 'Optional second argument: --keep-alive' >&2; exit 1;; esac
 grep -qx AURA-Dev /etc/aura-development-runtime || { printf '%s\n' 'Dedicated AURA-Dev runtime marker required' >&2; exit 1; }
 host_storage=$(cat /etc/aura-development-storage)
@@ -39,6 +39,8 @@ elif test "$instance" = cloud-recovery; then
  sed -e 's/aura-foundations-local/aura-foundations-cloud-recovery/g' -e 's/573/603/g' "$template" > "$runtime/config.expected.toml"
 elif test "$instance" = nutrition; then
  sed -e 's/aura-foundations-local/aura-nutrition-local/g' -e 's/573/613/g' "$template" > "$runtime/config.expected.toml"
+elif test "$instance" = personal; then
+ sed -e 's/aura-foundations-local/aura-personal-nutrition-local/g' -e 's/573/623/g' "$template" > "$runtime/config.expected.toml"
 else
  cat "$template" > "$runtime/config.expected.toml"
 fi
@@ -48,7 +50,7 @@ else
  cp --no-clobber "$runtime/config.expected.toml" "$runtime/supabase/config.toml"
 fi
 npm exec --cache /var/cache/aura-npm --yes --package=supabase@2.120.0 -- supabase --workdir "$runtime" --network-id "$network" start --exclude studio,postgres-meta,realtime,storage-api,imgproxy,edge-runtime,logflare,vector,supavisor > "$runtime/start.private.log" 2>&1
-if test "$instance" = nutrition; then
+if test "$instance" = nutrition || test "$instance" = personal; then
  npm exec --cache /var/cache/aura-npm --yes --package=supabase@2.120.0 -- supabase --workdir "$runtime" status --output json > "$runtime/status.private.json" 2> "$runtime/status.private.log"
 fi
 printf '%s\n' "Local $instance runtime started. Private startup output is ignored by Git. No AURA migrations applied by this script."

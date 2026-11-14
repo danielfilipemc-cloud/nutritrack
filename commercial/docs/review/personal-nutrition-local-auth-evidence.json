@@ -1,0 +1,66 @@
+{
+  "scope": "public-synthetic-personal-nutrition-auth-evidence",
+  "result": "PASS",
+  "apiUrl": "http://127.0.0.1:62321",
+  "runnerSha256": "8b4186aa895317eec98871980ec116c207ad506512c69401aa1e6ccdc0a6f67e",
+  "sources": {
+    "baseline": "c1ba6ba353bde58f9dc737efdb2eddcacca0f5324ea2fa5506d2636f29742ebd",
+    "upgrade": "8e2abbe4e1693e726e62c363b6a6697bc42994ccbcb5ebf9c0c6709b2ab53fc5",
+    "candidates": [
+      "e41d442234cb8a5248143367ae223fcc68b457875520535b3276c965e987d18f",
+      "8945479ce87cf9239eba0d60841ddfdaee3745c20c702379c31b931a639691f0"
+    ]
+  },
+  "canonicalMigrationCount": 19,
+  "checks": [
+    {
+      "name": "effective canonical checksums, self INVOKER wrappers, RLS and DML grants",
+      "result": "PASS"
+    },
+    {
+      "name": "own diary and independent-account/organization negatives",
+      "result": "PASS"
+    },
+    {
+      "name": "second independent account records its own diary and references without sharing",
+      "result": "PASS"
+    },
+    {
+      "name": "assigned professional and raw RLS cannot see personal history",
+      "result": "PASS"
+    },
+    {
+      "name": "two real GoTrue sessions and concurrent idempotent meal requests",
+      "result": "PASS"
+    },
+    {
+      "name": "private references synchronize and concurrent CAS preserves one conflicting draft",
+      "result": "PASS"
+    },
+    {
+      "name": "revocation committed during a blocked target write prevents a new version or receipt",
+      "result": "PASS"
+    },
+    {
+      "name": "link revocation denies reads and receipts with unchanged JWT",
+      "result": "PASS"
+    },
+    {
+      "name": "archive keeps private history and removes writing",
+      "result": "PASS"
+    },
+    {
+      "name": "real TOTP policy rejects old AAL1 and permits verified AAL2",
+      "result": "PASS"
+    },
+    {
+      "name": "global logout rejects the same old AAL2 JWT for private meals and references",
+      "result": "PASS"
+    }
+  ],
+  "limits": [
+    "Local GoTrue/PostgREST only; not cloud or operational recovery",
+    "Synthetic fixtures only; no deployment or real-data approval",
+    "UI browser tests are separate fixture-based evidence"
+  ]
+}
