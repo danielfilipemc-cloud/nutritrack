@@ -20,6 +20,10 @@ Private nutrition, shared measurements and privacy have separate navigation.
 Switching areas keeps drafts mounted; changing context, route, day, reload or
 logout participates in the existing pending/draft guard. A fresh signed-out or
 different-account context cannot retain the previous authorized projection.
+The existing privacy action also blocks a voluntary accompaniment switch while
+its mutation is pending, including in the normal build. Session termination from
+another tab is involuntary: it immediately removes the private panel and ignores
+the eventual successful response. Separate browser cases cover both behaviours.
 
 Daily manual references have explicit save, reason, version, history and receipt
 reconciliation. They do not represent consumption or prescribe calorie deficits.

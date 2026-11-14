@@ -32,11 +32,22 @@ test('student switching accompaniment discards late private context without lock
  await expect(page.getByRole('button',{name:'Pedir exportação completa'})).toBeEnabled();await expect(page.getByText(/Eliminação · Pedido registado/)).toHaveCount(0);
 });
 
-test('student switching during a pending mutation never applies the previous result to the new accompaniment',async({page})=>{
+test('student cannot abandon a pending privacy mutation and its result does not enter the next accompaniment',async({page})=>{
  await fixture(page);const other='00000000-0000-0000-0000-000000000200';
  await page.route('**/rest/v1/client_users**',r=>reply(r,[{organization_id:A,client_id:C,clients:{full_name:'Synthetic A'}},{organization_id:B,client_id:other,clients:{full_name:'Synthetic B'}}]));
  await page.route('**/rpc/aura_student_assessments',r=>reply(r,[]));await page.route('**/rpc/aura_privacy_context',r=>reply(r,{can_review:false,consents:[],requests:[]}));let complete;
  await page.route('**/rpc/aura_privacy_request_create',async r=>{expect(r.request().postDataJSON().p_org).toBe(A);await new Promise(resolve=>complete=resolve);return reply(r,'synthetic-request');});
  await page.goto('/aluno');const button=page.getByRole('button',{name:'Pedir exportação completa',exact:true});await expect(button).toBeEnabled();await button.click();await expect(button).toBeDisabled();
- await page.getByRole('combobox',{name:'Acompanhamento',exact:true}).selectOption(other);await expect(button).toBeEnabled();complete?.();await expect(page.getByRole('heading',{name:'Synthetic B',exact:true})).toBeVisible();await expect(page.getByText('Registo guardado.',{exact:true})).toHaveCount(0);
+ const selector=page.getByRole('combobox',{name:'Acompanhamento',exact:true});await selector.selectOption(other);await expect(selector).toHaveValue(C);await expect(page.getByText('Aguarda a confirmação da operação antes de sair.',{exact:true})).toBeVisible();await expect(button).toBeDisabled();
+ complete();await expect(button).toBeEnabled();await expect(page.getByText('Registo guardado.',{exact:true})).toBeVisible();await selector.selectOption(other);await expect(page.getByRole('heading',{name:'Synthetic B',exact:true})).toBeVisible();await expect(page.getByText('Registo guardado.',{exact:true})).toHaveCount(0);
+});
+
+test('an external session end during a privacy mutation discards its late success',async({page})=>{
+ await fixture(page);let release,started=false,settled=false;const pending=new Promise(resolve=>release=resolve);
+ await page.route('**/rest/v1/client_users**',r=>reply(r,[{organization_id:A,client_id:C,clients:{full_name:'Synthetic A'}}]));
+ await page.route('**/rpc/aura_student_assessments',r=>reply(r,[]));await page.route('**/rpc/aura_privacy_context',r=>reply(r,{can_review:false,consents:[],requests:[]}));
+ await page.route('**/rpc/aura_privacy_request_create',async r=>{started=true;await pending;try{await reply(r,'synthetic-request');}finally{settled=true;}});
+ await page.goto('/aluno');await page.getByRole('button',{name:'Pedir exportação completa',exact:true}).click();await expect.poll(()=>started).toBe(true);
+ await page.evaluate(()=>{const channel=new BroadcastChannel('sb-aura-test-auth-token');channel.postMessage({event:'SIGNED_OUT',session:null});setTimeout(()=>channel.close(),100);});
+ await expect(page.getByRole('link',{name:'Iniciar sessão',exact:true})).toBeVisible();release();await expect.poll(()=>settled).toBe(true);await expect(page.getByRole('region',{name:'Privacidade e dados',exact:true})).toHaveCount(0);await expect(page.getByText('Registo guardado.',{exact:true})).toHaveCount(0);
 });
