@@ -1,4 +1,4 @@
 import path from "node:path";
 import type {NextConfig} from "next";
-const config:NextConfig={outputFileTracingRoot:path.resolve(process.cwd()),poweredByHeader:false,async headers(){return [{source:"/:path*",headers:[{key:"X-Content-Type-Options",value:"nosniff"},{key:"X-Frame-Options",value:"DENY"},{key:"Referrer-Policy",value:"no-referrer"},{key:"Permissions-Policy",value:"camera=(), microphone=(), geolocation=()"},{key:"Cache-Control",value:"no-store"}]}]}};
+const config:NextConfig={outputFileTracingRoot:path.resolve(process.cwd()),poweredByHeader:false,async headers(){return [{source:"/:path*",headers:[{key:"X-Content-Type-Options",value:"nosniff"},{key:"X-Frame-Options",value:"DENY"},{key:"Referrer-Policy",value:"no-referrer"},{key:"Permissions-Policy",value:"camera=(), microphone=(), geolocation=()"},{key:"Cache-Control",value:"no-store"},...(process.env.NEXT_PUBLIC_AURA_PRIVATE_PORTAL==='1'?[{key:"X-Robots-Tag",value:"noindex, nofollow"}]:[])]}]}};
 export default config;

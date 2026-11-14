@@ -1,0 +1,28 @@
+{
+  "scope": "synthetic-local-personal-browser",
+  "result": "PASS",
+  "apiUrl": "http://127.0.0.1:62321",
+  "sourceSha256": "a4c48772e8e015dfc76bad939198be5d1f3c4e91fe5b16d10f62f4558fef6d7d",
+  "runnerSha256": "2548b812485500e3683646cd4660078a3a2deb720e58b5215fb4f96076a3c618",
+  "uiSha256": {
+    "app/page.tsx": "1b6ff6cf22bc69d209bd37a1c762637ad7b9aeb2695ef2ac0cbaefdb86276f7a",
+    "app/aluno/page.tsx": "185c0c89c676ab16c992d460622c992897c584f0957dce34960e63620911e717",
+    "app/manifest.ts": "0267177cf332b4d22bd39d7bd50eaa5a02ecef355ea88fcfbe3309c4d76027a1",
+    "components/LoginExperience.tsx": "461b184d2bb319e64fd5e63230489436cba176a693412fb86dbd0506437cd395",
+    "components/PersonalNutritionExport.tsx": "42c1be2a09bc041504be406d108770bb535f5e76fad002f07a346dc0d93ad32c",
+    "next.config.ts": "051ca09fa116459e7e530d84a79be4c1cc4a16d1ca8b15edc23e88996948b6c5"
+  },
+  "browserSha256": "7cb8f781a9efbd38bbdbaa9453dc4ba6ebf4daf30f33408b134cb896d604fab9",
+  "checks": [
+    "real browser password login and TOTP/AAL2",
+    "two independent browser sessions read the same saved meal and references",
+    "another account at320px has no access to those records",
+    "complete own export downloaded through real Auth/PostgREST",
+    "global logout removes the other retained-session projection"
+  ],
+  "limits": [
+    "synthetic local only",
+    "not cloud activation or operational recovery",
+    "not Android hardware, TalkBack, native zoom, Safari or Firefox"
+  ]
+}
