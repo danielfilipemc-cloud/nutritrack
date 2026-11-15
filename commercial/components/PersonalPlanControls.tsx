@@ -1,0 +1,47 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import {db} from '../lib/supabase';
+import {createPersonalPlanChanges,parsePlanChange,type PlanChange,type PlanEntry,type PlanChangeReceipt} from '../lib/nutrition-personal-plan-changes';
+import type {PersonalPlanScope,PersonalPlanState} from '../lib/nutrition-personal-plan';
+import {mealDraft,planBody,type MealDraft} from '../lib/nutrition-plan-editor';
+import {NutritionPersistenceError} from '../lib/nutrition-persistence';
+import NutritionPlanEditor from './NutritionPlanEditor';
+import NutritionUncertain from './NutritionUncertain';
+type Draft={base:number;title:string;notes:string;meals:MealDraft[];reason:string};
+export default function PersonalPlanControls({scope,plan,active,onSaved,onDirtyChange}:{scope:PersonalPlanScope;plan:PersonalPlanState|null;active:boolean;onSaved:()=>void;onDirtyChange?:(dirty:boolean,pending?:boolean)=>void}){
+ const [draft,setDraft]=useState<Draft|null>(null),[feedback,setFeedback]=useState(''),[feedbackBase,setFeedbackBase]=useState<number|null>(null),[entries,setEntries]=useState<PlanEntry[]>([]),[historyError,setHistoryError]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[uncertain,setUncertain]=useState<PlanChange|null>(null),[abandoned,setAbandoned]=useState(false),[historyAttempt,setHistoryAttempt]=useState(0),[limit,setLimit]=useState(5);
+ const repo=useRef<ReturnType<typeof createPersonalPlanChanges>|null>(null),alive=useRef(false),report=useRef(onDirtyChange);report.current=onDirtyChange;
+ const allowed=active&&plan?.status==='available'&&!!plan.body,locked=busy||!!uncertain;
+ useEffect(()=>{alive.current=true;if(db)repo.current=createPersonalPlanChanges(db,scope);return()=>{alive.current=false;repo.current?.dispose();repo.current=null;report.current?.(false,false);};},[scope.organizationId,scope.clientId,scope.userId]);
+ useEffect(()=>{report.current?.(!!draft||feedback.length>0,busy||!!uncertain&&!abandoned);},[draft,feedback,busy,uncertain,abandoned]);
+ useEffect(()=>{setEntries([]);setHistoryError('');if(!allowed||!repo.current)return;let valid=true;void repo.current.entries().then(e=>{if(valid)setEntries(e.entries);}).catch(()=>{if(valid)setHistoryError('Não foi possível carregar o histórico de ajustes e feedback.');});return()=>{valid=false;};},[allowed,plan?.revision,historyAttempt]);
+ function confirmed(c:PlanChange,r:PlanChangeReceipt){if(r.requestId!==c.requestId||r.kind!==c.operation||r.planRevision!==c.expectedRevision+(c.operation==='revise'?1:0))throw new NutritionPersistenceError('uncertain');if(c.operation==='revise')setDraft(null);else{setFeedback('');setFeedbackBase(null);}setUncertain(null);setAbandoned(false);setMessage(c.operation==='revise'?`Plano guardado · versão ${r.planRevision}. A versão anterior foi preservada.`:'Feedback guardado no teu histórico privado. Não foi enviada nenhuma mensagem.');setHistoryAttempt(v=>v+1);onSaved();}
+ async function save(operation:PlanChange['operation']){
+  if(!allowed||locked||!repo.current)return;let command:PlanChange;
+  try{command=parsePlanChange({contractVersion:1,requestId:crypto.randomUUID(),expectedRevision:operation==='revise'?draft?.base:feedbackBase??plan!.revision,operation,body:operation==='revise'&&draft?planBody(draft.title,draft.notes,draft.meals):null,comment:operation==='revise'?draft?.reason:feedback});}catch(e){setMessage(e instanceof Error?e.message:'Revê o formulário.');return;}
+  setBusy(true);setMessage('');try{const r=await repo.current.save(command);if(alive.current)confirmed(command,r);}catch(e){if(!alive.current)return;if(e instanceof NutritionPersistenceError&&e.kind==='conflict')setMessage('A versão mudou ou o pedido entrou em conflito. O teu rascunho foi preservado. Atualiza o plano e compara antes de substituir o rascunho.');else if(e instanceof NutritionPersistenceError&&e.kind==='denied')setMessage('Acesso recusado. Confirma o segundo fator e o vínculo da conta. O rascunho foi preservado.');else{setUncertain(command);setAbandoned(false);setMessage('A ligação falhou e o resultado ficou por confirmar. O rascunho foi preservado.');}}finally{if(alive.current)setBusy(false);}
+ }
+ async function check(){if(!uncertain||busy||!repo.current)return;const c=uncertain;setBusy(true);try{const r=await repo.current.status(c.requestId);if(!alive.current)return;if(r)confirmed(c,r);else setMessage('Ainda não existe recibo. Isto não confirma cancelamento. Não repitas o pedido; atualiza a consulta do recibo mais tarde.');}catch{if(alive.current)setMessage('Não foi possível confirmar o recibo. Verifica a ligação e o segundo fator. O pedido continua bloqueado para evitar duplicações.');}finally{if(alive.current)setBusy(false);}}
+ async function download(){if(busy||!repo.current)return;setBusy(true);try{const all=await repo.current.entries();if(!alive.current)return;const url=URL.createObjectURL(new Blob([JSON.stringify(all,null,2)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download='aura-ajustes-feedback-privado.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch{if(alive.current)setMessage('Não foi possível exportar todo o histórico. Nenhum ficheiro parcial foi criado.');}finally{if(alive.current)setBusy(false);}}
+ const begin=()=>{if(!plan?.body||locked)return;if(draft&&!window.confirm('Substituir o rascunho pela versão atual? As alterações do rascunho serão descartadas.'))return;setDraft({base:plan.revision,title:plan.body.title,notes:plan.body.notes||'',meals:plan.body.meals.map(mealDraft),reason:''});setMessage('');};
+ return <section className="aura-personal-plan-controls" aria-label="Ajustes e feedback do plano" aria-busy={busy}>
+  {message&&<p role="status">{message}</p>}
+  {uncertain&&<NutritionUncertain requestId={uncertain.requestId} busy={busy} abandoned={abandoned} onCheck={()=>void check()} onAbandon={()=>setAbandoned(true)}/>}
+  {!allowed&&(draft||feedback)&&<p>O rascunho continua nesta sessão. Volta a validar o acesso para o consultar; não foi enviado.</p>}
+  <div hidden={!allowed}>
+   <div className="heading"><div><h3>Ajustar o meu plano</h3><p>Alterações pessoais ficam identificadas e mantêm as versões anteriores. Não alteram o diário nem substituem uma revisão profissional.</p></div><button className="outline" disabled={locked} onClick={begin}>{draft?'Recomeçar da versão atual':'Editar o meu plano'}</button></div>
+   {draft&&<form aria-label="Editar o meu plano" onSubmit={e=>{e.preventDefault();void save('revise');}}>
+    <p>Rascunho sobre a versão {draft.base}. {plan&&draft.base!==plan.revision&&`A versão disponível é ${plan.revision}; o teu rascunho foi preservado e não será sobreposto automaticamente.`}</p>
+    <fieldset disabled={locked}><label>Título do plano<input required maxLength={120} value={draft.title} onChange={e=>setDraft({...draft,title:e.target.value})}/></label><label>Notas do plano<textarea maxLength={2000} value={draft.notes} onChange={e=>setDraft({...draft,notes:e.target.value})}/></label>
+     <NutritionPlanEditor value={draft.meals} onChange={meals=>setDraft({...draft,meals})} recipes={[]} disabled={locked} manualOnly/>
+     <label>Motivo do ajuste<input required minLength={3} maxLength={300} value={draft.reason} onChange={e=>setDraft({...draft,reason:e.target.value})}/></label>
+    </fieldset><button type="submit" disabled={locked||draft.base!==plan?.revision}>Guardar ajustes do plano</button><button type="button" className="outline" disabled={locked} onClick={()=>{if(window.confirm('Descartar o rascunho de alterações do plano?'))setDraft(null);}}>Descartar ajustes</button>
+   </form>}
+   <form aria-label="Dar feedback sobre o plano" onSubmit={e=>{e.preventDefault();void save('feedback');}}><h3>Como está a correr?</h3><p>Regista fome, saciedade, preferências ou dificuldades. Fica apenas no teu histórico privado; não abre uma conversa nem cria recomendações automáticas.</p><label>O meu feedback<textarea required minLength={3} maxLength={1000} disabled={locked} value={feedback} onChange={e=>{setFeedback(e.target.value);if(feedbackBase===null)setFeedbackBase(plan!.revision);}}/></label>
+    {feedbackBase!==null&&feedbackBase!==plan?.revision&&<p>Este comentário refere-se à versão {feedbackBase}.<button type="button" className="outline" disabled={locked} onClick={()=>setFeedbackBase(plan!.revision)}>Associar comentário à versão atual</button></p>}
+    <button disabled={locked||!feedback.trim()||feedbackBase!==null&&feedbackBase!==plan?.revision}>Guardar feedback privado</button>
+   </form>
+   <details className="aura-personal-plan-history"><summary>O meu histórico de ajustes e feedback</summary>{historyError?<p role="alert">{historyError}<button className="outline" onClick={()=>setHistoryAttempt(v=>v+1)}>Tentar carregar histórico</button></p>:<>{entries.length===0?<p>Ainda não há ajustes ou feedback guardados.</p>:<ol>{entries.slice(-limit).reverse().map(e=><li key={e.entryRevision}><strong>{e.kind==='revise'?'Ajuste pessoal':'Feedback'} · plano v{e.planRevision}</strong><time dateTime={e.recordedAt}>{new Date(e.recordedAt).toLocaleString('pt-PT')}</time><p>{e.comment}</p></li>)}</ol>}{entries.length>limit&&<button className="outline" onClick={()=>setLimit(n=>n+5)}>Mostrar mais registos</button>}</>}<button className="outline" disabled={busy} onClick={()=>void download()}>Exportar ajustes e feedback</button></details>
+  </div>
+ </section>;
+}

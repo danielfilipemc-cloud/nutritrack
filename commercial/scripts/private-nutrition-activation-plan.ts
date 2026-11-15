@@ -1,5 +1,5 @@
 /** Prepare a reviewable plan only. No network, credentials or remote execution. */
-import {readFile,writeFile,mkdir} from 'node:fs/promises';import {createHash} from 'node:crypto';import {migrationBundle} from './migration-bundle';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';import {createHash} from 'node:crypto';import {resolve} from 'node:path';import {fileURLToPath} from 'node:url';import {migrationBundle} from './migration-bundle';
 export const privateActivationTarget={projectId:'ivwrvaycolqlpsjvdaod',organizationId:'opdpdwwgvtdzsmebuqey',renderServiceId:'srv-dbrqt061egvs73bvnvg0',url:'https://aura-business-private.onrender.com'} as const;
 export const personalCandidates=['20261113225824_nutrition_personal_access.sql','20261113225825_nutrition_personal_targets.sql','20261114003207_nutrition_personal_export.sql'];
 const hash=(v:string)=>createHash('sha256').update(v.replace(/\r\n/g,'\n')).digest('hex');
@@ -24,4 +24,4 @@ notify pgrst,'reload schema';
 commit;\n`;
  return {sql,freeze,manifest:{scope:'aura-private-activation-plan',target:privateActivationTarget,sources,bundleSha256:hash(sql),canonicalCount:19,preparedCount:3,requiresExplicitSchemaAuthorization:true,requiresEmptyDestination:true,createsAccounts:false,importsPersonalData:false}};
 }
-if(process.argv.includes('--prepare'))void(async()=>{const plan=await privateNutritionActivationPlan(),root=new URL('../.aura-integration/private-activation/',import.meta.url);await mkdir(root,{recursive:true});await writeFile(new URL('activation.sql',root),plan.sql);await writeFile(new URL('freeze-writes.sql',root),plan.freeze);await writeFile(new URL('plan.json',root),JSON.stringify(plan.manifest,null,2)+'\n');console.log('PREPARED ONLY: canonical19 + three personal candidates, exact private target, empty guard and emergency write freeze. No remote operation.');})();
+if(process.argv.includes('--prepare')&&resolve(process.argv[1]||'')===fileURLToPath(import.meta.url))void(async()=>{const plan=await privateNutritionActivationPlan(),root=new URL('../.aura-integration/private-activation/',import.meta.url);await mkdir(root,{recursive:true});await writeFile(new URL('activation.sql',root),plan.sql);await writeFile(new URL('freeze-writes.sql',root),plan.freeze);await writeFile(new URL('plan.json',root),JSON.stringify(plan.manifest,null,2)+'\n');console.log('PREPARED ONLY: canonical19 + three personal candidates, exact private target, empty guard and emergency write freeze. No remote operation.');})();

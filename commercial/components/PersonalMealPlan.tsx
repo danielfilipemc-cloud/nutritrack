@@ -6,10 +6,11 @@ import {NutritionPersistenceError} from '../lib/nutrition-persistence';
 import {nutritionTotals,nutrientKeys} from '../lib/nutrition-contract';
 import type {FrozenDish} from '../lib/nutrition-document-command';
 import type {NutritionItemV1} from '../lib/nutrition-command';
+import PersonalPlanControls from './PersonalPlanControls';
 const labels={calories:'Energia',protein:'Proteína',carbs:'Hidratos',fat:'Gordura'};
 const format=(n:number|null)=>n===null?'—':new Intl.NumberFormat('pt-PT',{maximumFractionDigits:0}).format(n);
 const foods=(dish:FrozenDish):NutritionItemV1[]=>dish.source==='manual'?dish.items:dish.snapshot.items;
-export default function PersonalMealPlan({org,clientId,userId,active}:{org:string;clientId:string;userId:string;active:boolean}){
+export default function PersonalMealPlan({org,clientId,userId,active,onDirtyChange}:{org:string;clientId:string;userId:string;active:boolean;onDirtyChange?:(dirty:boolean,pending?:boolean)=>void}){
  const [state,setState]=useState<PersonalPlanState|null>(null),[loading,setLoading]=useState(false),[message,setMessage]=useState(''),[attempt,setAttempt]=useState(0),[choices,setChoices]=useState<Record<string,string>>({});
  const generation=useRef(0),reader=useRef<ReturnType<typeof createPersonalPlanReader>|null>(null),identity=`${userId}:${org}:${clientId}`,shown=state&&state.scope.userId===userId&&state.scope.organizationId===org&&state.scope.clientId===clientId?state:null;
  const [exporting,setExporting]=useState(false);
@@ -44,5 +45,6 @@ export default function PersonalMealPlan({org,clientId,userId,active}:{org:strin
    })}</div>
    <p>Consultar ou mudar de opção não cria registos no diário. As quantidades referem-se ao estado indicado em cada alimento; não equivalem automaticamente ao mesmo peso em cru.</p>
   </>}
+  <PersonalPlanControls key={identity} scope={{organizationId:org,clientId,userId}} plan={shown} active={active} onSaved={()=>setAttempt(v=>v+1)} onDirtyChange={onDirtyChange}/>
  </section>;
 }
