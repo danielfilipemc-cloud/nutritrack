@@ -16,6 +16,7 @@ export default function SecurityWorkspace({org}:{org:string}){
  return <>
  <section className="panel" aria-label="Segundo fator da conta" aria-busy={busy}><h2>Segundo fator</h2><p>Usa uma aplicação autenticadora TOTP. A confirmação recente é exigida pelo servidor nas operações protegidas.</p>
  <p>Nível desta sessão: {level==='aal2'?'segundo fator confirmado':'password ou primeiro fator'}.</p>
+ {process.env.NEXT_PUBLIC_AURA_PRIVATE_PORTAL==='1'&&<p>Este nível técnico não confirma que o acesso protegido ainda esteja dentro do prazo. Mesmo que diga segundo fator confirmado, introduz um código atual e toca em Confirmar segundo fator para renovar os 10 minutos de acesso. Atualizar segurança ou iniciar sessão não substituem esse passo.</p>}
  <button className="outline" disabled={busy} onClick={()=>setReload(v=>v+1)}>Atualizar segurança</button>
  {ready&&!seed&&!factors.length&&!unverified.length&&<button disabled={busy} onClick={()=>void run(enroll)}>Configurar aplicação autenticadora</button>}
  {ready&&unverified.filter(f=>f.id!==seed?.id).map(f=><div key={f.id}><p>Existe uma configuração por concluir. Cancela-a antes de começar uma nova configuração.</p><button className="outline" disabled={busy} onClick={()=>void run(async()=>{if(!db)return;const r=await db.auth.mfa.unenroll({factorId:f.id});if(r.error)throw Error();})}>Cancelar configuração pendente</button></div>)}
@@ -25,5 +26,5 @@ export default function SecurityWorkspace({org}:{org:string}){
  <p>O logout termina as sessões de atualização. Um JWT emitido pode continuar válido até expirar; permissões revogadas no estabelecimento são verificadas no banco em cada novo pedido. Nas operações com MFA obrigatório, o servidor também verifica a existência da sessão.</p>
  </section>
  {org&&<section className="panel"><h2>Política do estabelecimento</h2>{policy?<><p>Segundo fator recente nas operações sensíveis: {policy.required?'obrigatório':'ainda não exigido'}.</p><p>Inclui leitura das fichas e dados dos alunos, gestão de acessos, partilha/correção de avaliações, exportação, associação NutriTrack e revisão de privacidade. As restantes competências continuam necessárias. A confirmação expira após 10 minutos; configurar TOTP sem ativar esta política não bloqueia o acesso de primeiro fator.</p>{policy.can_configure&&<button disabled={busy||!ready} onClick={()=>void run(savePolicy)}>{policy.required?'Desativar exigência MFA':'Exigir MFA nas operações sensíveis'}</button>}</>:<p>Configuração reservada à gestão ou indisponível. A leitura de dados não configura a política automaticamente.</p>}</section>}
- <p role="status">{message}</p></>;
+ <p role="status">{message}</p>{process.env.NEXT_PUBLIC_AURA_PRIVATE_PORTAL==='1'&&<a className="outline link" href="/aluno">Voltar ao meu plano</a>}</>;
 }
