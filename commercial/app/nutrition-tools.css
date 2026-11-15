@@ -6,3 +6,15 @@
 .aura-personal-workspace .aura-nutrition-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0}.aura-personal-workspace .aura-nutrition-tabs [aria-pressed=true]{border-color:var(--brand-accent,#137F79);background:color-mix(in srgb,var(--brand-accent,#137F79) 20%,#161D1D)}.aura-personal-workspace fieldset{min-width:0;margin:18px 0;border:1px solid #304443;border-radius:12px;padding:16px}.aura-personal-workspace legend{padding:0 8px}.aura-personal-workspace form>button{margin:6px 8px 0 0}.aura-personal-workspace button{min-height:44px}.aura-personal-workspace input[type=checkbox]{display:inline-block;width:auto;margin:0 10px 0 0}
 @media(max-width:650px){.aura-personal-workspace>header .aura-institutional-logo{width:168px;height:auto}.aura-personal-workspace>header{gap:12px}.aura-personal-workspace input,.aura-personal-workspace select{font-size:16px}.aura-personal-workspace .panel{padding:16px}.aura-personal-workspace fieldset{padding:12px}}
 @media(max-width:400px){.aura-personal-targets .aura-nutrition-tools-metrics strong{grid-row:1 / span 3}}
+.aura-personal-plan{--plan-border:var(--border,#304443);--plan-surface:var(--surface-secondary,#1D2626);--plan-brand:var(--brand-accent,#137F79)}
+.aura-personal-plan-intro{padding:1.25rem;border:1px solid var(--plan-border);border-radius:1rem;background:linear-gradient(120deg,color-mix(in srgb,var(--plan-brand) 12%,transparent),transparent)}
+.aura-personal-plan-macros{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.75rem;margin:1rem 0}
+.aura-personal-plan-macros article{padding:1rem;background:var(--plan-surface);border:1px solid var(--plan-border);border-radius:.8rem;display:grid;gap:.5rem}
+.aura-personal-plan-macros strong{font-size:1.5rem}.aura-personal-plan-macros small{font-size:.8rem;font-weight:400}
+.aura-personal-plan-meals{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:1rem;margin:1.5rem 0}
+.aura-personal-plan-meal{border:1px solid var(--plan-border);border-radius:1rem;padding:1.25rem;min-width:0;background:var(--plan-surface)}
+.aura-personal-plan-meal>header{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:1rem}.aura-personal-plan-meal>header>strong{margin-left:auto}
+.aura-personal-plan-meal h3{margin:0}.aura-personal-plan-meal header p{margin:.25rem 0}.aura-personal-plan-number{color:var(--plan-brand);font-size:1.5rem;font-weight:700}
+.aura-personal-plan-meal ul{list-style:none;padding:0;margin:1rem 0}.aura-personal-plan-meal li{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--plan-border)}
+.aura-personal-plan-meal li span{overflow-wrap:anywhere}.aura-personal-plan-meal li strong{white-space:nowrap}.aura-personal-plan-meal select{max-width:100%;width:100%}
+@media(max-width:640px){.aura-personal-plan-macros{grid-template-columns:repeat(2,minmax(0,1fr))}.aura-personal-plan-meal{padding:1rem}.aura-personal-plan .heading{align-items:stretch}.aura-personal-plan .heading button{width:100%}}

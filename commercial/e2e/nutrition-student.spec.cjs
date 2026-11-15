@@ -18,7 +18,7 @@ async function setup(page,{conflict=false,uncertain=false,missing=false,two=fals
  });
  await page.route('**/rpc/aura_student_nutrition_targets_request_status',r=>reply(r,targetReceipt));await page.route('**/rpc/aura_student_nutrition_targets_history',r=>reply(r,{versions:targetVersions,nextCursor:null}));
  await page.route('**/rest/v1/nutrition_capabilities**',()=>{throw Error('Student must not request staff nutrition capabilities');});
- await page.goto('/aluno');return {saved:()=>saved,targetsSaved:()=>targetsSaved,revoke:()=>{revoked=true;},restore:()=>{revoked=false;},release:()=>release()};
+ await page.goto('/aluno');if(process.env.NEXT_PUBLIC_AURA_PERSONAL_PLAN==='1')await page.getByRole('button',{name:'Nutrição privada',exact:true}).click();return {saved:()=>saved,targetsSaved:()=>targetsSaved,revoke:()=>{revoked=true;},restore:()=>{revoked=false;},release:()=>release()};
 }
 async function editTargets(page){const panel=page.getByRole('region',{name:'Referências privadas do dia'});await panel.getByText('Editar referências deste dia',{exact:true}).click();await panel.getByLabel('Referência de energia (kcal)',{exact:true}).fill('1800');await panel.getByLabel('Motivo da referência',{exact:true}).fill('Referência fictícia');return panel;}
 
