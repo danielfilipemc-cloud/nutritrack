@@ -5,11 +5,12 @@
   "sourceSha256": "a4c48772e8e015dfc76bad939198be5d1f3c4e91fe5b16d10f62f4558fef6d7d",
   "planSourceSha256": "c39171f3594f80091c1d4f17993f796b83fd7681b97170bf5d9b5b745dca17d3",
   "changesSourceSha256": "090f64d4c680ace18270696535e709accd0aae2ddc201da4971207ad27cdc13d",
-  "runnerSha256": "e1c179a46c0d65606b2c644c64b5f71e70a9476c20fbba2c3e41be8d3787cb51",
+  "runnerSha256": "1401e84df84858d4961e2e6f4ca9497459342cd583989911694c9b5d653fa271",
   "uiSha256": {
     "app/page.tsx": "1b6ff6cf22bc69d209bd37a1c762637ad7b9aeb2695ef2ac0cbaefdb86276f7a",
     "app/aluno/page.tsx": "803aee5c2bc543631edaa85c9523b89c69add5f6d6404d382c83b80607feec40",
-    "components/PersonalMealPlan.tsx": "870725cfb22fa97f9faec8a0e3bc5ed25ca853372caf40a8acda93b2924799d8",
+    "components/PersonalMealPlan.tsx": "1db9d3bef522ab0a290d9daa59c8061695d7453ff0dec2c68c7de9b86e8fba03",
+    "components/SecurityWorkspace.tsx": "f31016acf3f3b6ed1d2ac5c5dc53ef174ce3624aeeb7a6c0e6cfb5af2d0f425a",
     "components/PersonalPlanControls.tsx": "58faf571937ecc649ab76070ec48905bae11e2b8730e43eab8f5b004bfa99bb2",
     "components/NutritionPlanEditor.tsx": "2af65bfd39edf518219cc33ffc317f6e6fbd9372f959c57d3a6909e4c6d050ff",
     "lib/nutrition-personal-plan.ts": "9f370e2b7b0f5bb02f6d93a289a9ff34f34c201b0ae38506b9096310260823b8",
@@ -20,7 +21,7 @@
     "components/PersonalNutritionExport.tsx": "42c1be2a09bc041504be406d108770bb535f5e76fad002f07a346dc0d93ad32c",
     "next.config.ts": "051ca09fa116459e7e530d84a79be4c1cc4a16d1ca8b15edc23e88996948b6c5"
   },
-  "browserSha256": "df993a7ab4c82e6584048c3ab083d503681198a8c16d5b91b6be8f8113350fd3",
+  "browserSha256": "af6146bcfd4da76f564c61968ce0b72cf38f609d01e879a7fe9f932da896beeb",
   "checks": [
     "real browser password login and TOTP/AAL2",
     "private own plan and alternatives load through real Auth with no diary write; other account has no plan; full plan history exports; own adjustments and feedback synchronize with preserved history and export",
