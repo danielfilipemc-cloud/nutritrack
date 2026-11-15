@@ -9,13 +9,14 @@ import PrivacyPanel from '../../components/PrivacyPanel';
 import SecurityRequirement from '../../components/SecurityRequirement';
 import NutritionWorkspace from '../../components/NutritionWorkspace';
 import PersonalNutritionExport from '../../components/PersonalNutritionExport';
+import PersonalMealPlan from '../../components/PersonalMealPlan';
 import SessionActions from '../../components/SessionActions';
 import {useDraftNavigation} from '../../lib/use-draft-navigation';
 type Link={organization_id:string;client_id:string;clients:{full_name:string}|null};
 type Record={id:string;assessed_on:string;weight_kg:number|null;height_cm:number|null;waist_cm:number|null};
 export default function Student(){
- const {user,authLoading}=useProfessional(),personal=process.env.NEXT_PUBLIC_AURA_PERSONAL_NUTRITION==='1';
- const [links,setLinks]=useState<Link[]>([]),[choice,setChoice]=useState(''),[rows,setRows]=useState<Record[]>([]),[page,setPage]=useState(0),[message,setMessage]=useState(''),[loading,setLoading]=useState(true),[linkedFor,setLinkedFor]=useState(''),[area,setArea]=useState('nutrition');
+ const {user,authLoading}=useProfessional(),personal=process.env.NEXT_PUBLIC_AURA_PERSONAL_NUTRITION==='1',plans=personal&&process.env.NEXT_PUBLIC_AURA_PERSONAL_PLAN==='1';
+ const [links,setLinks]=useState<Link[]>([]),[choice,setChoice]=useState(''),[rows,setRows]=useState<Record[]>([]),[page,setPage]=useState(0),[message,setMessage]=useState(''),[loading,setLoading]=useState(true),[linkedFor,setLinkedFor]=useState(''),[area,setArea]=useState(plans?'plan':'nutrition');
  const scope=useRef(new RequestScope()),read=useRef(new RequestScope());
  const drafts=useRef({nutrition:{dirty:false,pending:false},privacy:{dirty:false,pending:false}});
  const draftState=()=>({dirty:Object.values(drafts.current).some(v=>v.dirty),pending:Object.values(drafts.current).some(v=>v.pending)});
@@ -40,7 +41,8 @@ export default function Student(){
    {currentLinks.length>1&&<label>Acompanhamento<select value={choice} onChange={e=>{if(!leave())return;read.current.invalidate();setRows([]);setPage(0);setChoice(e.target.value);}}>{currentLinks.map(l=><option key={l.client_id} value={l.client_id}>{l.clients?.full_name||'Acompanhamento'}</option>)}</select></label>}
    {selected&&<>
     <SecurityRequirement key={selected.organization_id} org={selected.organization_id}/><h2>{selected.clients?.full_name||'O teu acompanhamento'}</h2>
-    {personal&&<nav className="aura-nutrition-tabs" aria-label="Áreas do teu acompanhamento">{[['nutrition','Nutrição privada'],['measurements','Medições'],['privacy','Privacidade']].map(([value,label])=><button key={value} className="outline" aria-pressed={area===value} onClick={()=>{if(draftState().pending){blocked();return;}setArea(value);}}>{label}</button>)}</nav>}
+    {personal&&<nav className="aura-nutrition-tabs" aria-label="Áreas do teu acompanhamento">{[...(plans?[['plan','O meu plano']]:[]),['nutrition','Nutrição privada'],['measurements','Medições'],['privacy','Privacidade']].map(([value,label])=><button key={value} className="outline" aria-pressed={area===value} onClick={()=>{if(draftState().pending){blocked();return;}setArea(value);}}>{label}</button>)}</nav>}
+    {plans&&<div hidden={area!=='plan'}><PersonalMealPlan key={`plan:${user.id}:${selected.organization_id}:${selected.client_id}`} org={selected.organization_id} clientId={selected.client_id} userId={user.id} active={area==='plan'}/></div>}
     {personal&&<div hidden={area!=='nutrition'}><NutritionWorkspace key={`self:${user.id}:${selected.organization_id}:${selected.client_id}`} access="student" org={selected.organization_id} clientId={selected.client_id} userId={user.id} onDirtyChange={(dirty,pending=false)=>{drafts.current.nutrition={dirty,pending};}}/></div>}
     <div hidden={personal&&area!=='measurements'}><section className="panel"><h3>Medições partilhadas</h3><p>Apenas medições partilhadas pelo profissional. Notas internas não são apresentadas.</p><div className="tablewrap"><table><thead><tr><th>Data</th><th>Peso</th><th>Altura</th><th>Cintura</th></tr></thead><tbody>{rows.map(r=><tr key={r.id}><td>{r.assessed_on}</td><td>{r.weight_kg??'—'}</td><td>{r.height_cm??'—'}</td><td>{r.waist_cm??'—'}</td></tr>)}</tbody></table></div>{!loading&&!rows.length&&<p>Sem medições partilhadas nesta página.</p>}<button className="outline" disabled={loading||page===0} onClick={()=>setPage(p=>p-1)}>Anterior</button><button className="outline" disabled={loading||rows.length<25} onClick={()=>setPage(p=>p+1)}>Seguinte</button></section></div>
     <div hidden={personal&&area!=='privacy'}>{personal&&<PersonalNutritionExport key={`export:${user.id}:${selected.organization_id}:${selected.client_id}`} org={selected.organization_id} clientId={selected.client_id} userId={user.id}/>}<PrivacyPanel key={`${user.id}:${selected.organization_id}:${selected.client_id}`} org={selected.organization_id} clientId={selected.client_id} student onDirtyChange={(dirty,pending=false)=>{drafts.current.privacy={dirty,pending};}}/>{personal&&<p>A exportação nutricional é separada da exportação de medições partilhadas. Retenção e pedidos de eliminação continuam sujeitos a análise.</p>}</div>
