@@ -7,6 +7,7 @@ import {RequestScope} from '../../lib/request-scope';
 import {foundationError} from '../../lib/foundations';
 import PrivacyPanel from '../../components/PrivacyPanel';
 import SecurityRequirement from '../../components/SecurityRequirement';
+import ParticipantSessionRequirement from '../../components/ParticipantSessionRequirement';
 import NutritionWorkspace from '../../components/NutritionWorkspace';
 import PersonalNutritionExport from '../../components/PersonalNutritionExport';
 import PersonalMealPlan from '../../components/PersonalMealPlan';
@@ -40,7 +41,7 @@ export default function Student(){
    {loading&&<p role="status">A carregar registos...</p>}{!loading&&!currentLinks.length&&<p>A tua conta ainda não está ligada a um acompanhamento. Aceita o convite pessoal enviado pelo teu profissional.</p>}
    {currentLinks.length>1&&<label>Acompanhamento<select value={choice} onChange={e=>{if(!leave())return;read.current.invalidate();setRows([]);setPage(0);setChoice(e.target.value);}}>{currentLinks.map(l=><option key={l.client_id} value={l.client_id}>{l.clients?.full_name||'Acompanhamento'}</option>)}</select></label>}
    {selected&&<>
-    <SecurityRequirement key={selected.organization_id} org={selected.organization_id}/><h2>{selected.clients?.full_name||'O teu acompanhamento'}</h2>
+    {process.env.NEXT_PUBLIC_AURA_PRIVATE_DAILY_SESSION==='1'&&area!=='privacy'?<ParticipantSessionRequirement key={`${user.id}:${selected.organization_id}:${selected.client_id}`} org={selected.organization_id} clientId={selected.client_id}/>:<SecurityRequirement key={selected.organization_id} org={selected.organization_id} label={process.env.NEXT_PUBLIC_AURA_PRIVATE_DAILY_SESSION==='1'&&area==='privacy'?'Exportações e ações de privacidade exigem confirmação MFA nos últimos 10 minutos.':undefined}/>}<h2>{selected.clients?.full_name||'O teu acompanhamento'}</h2>
     {personal&&<nav className="aura-nutrition-tabs" aria-label="Áreas do teu acompanhamento">{[...(plans?[['plan','O meu plano']]:[]),['nutrition','Nutrição privada'],['measurements','Medições'],['privacy','Privacidade']].map(([value,label])=><button key={value} className="outline" aria-pressed={area===value} onClick={()=>{if(draftState().pending){blocked();return;}setArea(value);}}>{label}</button>)}</nav>}
     {plans&&<div hidden={area!=='plan'}><PersonalMealPlan key={`plan:${user.id}:${selected.organization_id}:${selected.client_id}`} org={selected.organization_id} clientId={selected.client_id} userId={user.id} active={area==='plan'} onDirtyChange={(dirty,pending=false)=>{drafts.current.plan={dirty,pending};}}/></div>}
     {personal&&<div hidden={area!=='nutrition'}><NutritionWorkspace key={`self:${user.id}:${selected.organization_id}:${selected.client_id}`} access="student" org={selected.organization_id} clientId={selected.client_id} userId={user.id} onDirtyChange={(dirty,pending=false)=>{drafts.current.nutrition={dirty,pending};}}/></div>}

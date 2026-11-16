@@ -381,6 +381,8 @@ async function fixture(
         "content-range": `0-${assessments.length - 1}/${assessments.length}`,
       });
     }
+    if(path.endsWith('/rpc/aura_student_session_requirement'))return respond({mode:'recent',satisfied:true,sessionExpiresAt:null,reason:'none',maximumDays:null});
+    if(path.endsWith('/rpc/aura_student_nutrition_plan_feedback_history')){const c=request.postDataJSON();return respond({scope:{organizationId:c.p_org,clientId:c.p_client,userId:U},entries:[],nextBefore:null});}
     // Deny unimplemented endpoints instead of making accidental cloud requests.
     return respond(
       { message: "Fixture endpoint unavailable", code: "42501" },
