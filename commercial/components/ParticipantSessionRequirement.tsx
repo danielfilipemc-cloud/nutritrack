@@ -1,0 +1,13 @@
+'use client';
+import {useEffect,useState} from 'react';import {db} from '../lib/supabase';import {nutritionRequest} from '../lib/nutrition-request';
+type Status={mode:'daily'|'recent';satisfied:boolean;sessionExpiresAt:string|null;reason:'none'|'login-required'|'mfa-required';maximumDays:7|30|null};
+export default function ParticipantSessionRequirement({org,clientId}:{org:string;clientId:string}){
+ const identity=org+':'+clientId,[result,setResult]=useState<{identity:string;value:Status|null;error:boolean}>({identity,value:null,error:false}),[attempt,setAttempt]=useState(0);
+ useEffect(()=>{let alive=true,version=0;const controller=new AbortController();async function load(){const n=++version;setResult({identity,value:null,error:false});try{if(!db)throw Error();const r=await nutritionRequest(controller.signal,s=>db!.rpc('aura_student_session_requirement',{p_org:org,p_client:clientId}).abortSignal(s));const v=r.data as Status;if(r.error||!v||(v.mode==='daily'?![7,30].includes(v.maximumDays as number):v.maximumDays!==null)||!['daily','recent'].includes(v.mode)||typeof v.satisfied!=='boolean'||!['none','login-required','mfa-required'].includes(v.reason)||(v.satisfied!==(v.reason==='none'))||v.sessionExpiresAt!==null&&(typeof v.sessionExpiresAt!=='string'||!Number.isFinite(Date.parse(v.sessionExpiresAt))))throw Error();if(alive&&n===version)setResult({identity,value:v,error:false});}catch{if(alive&&n===version)setResult({identity,value:null,error:true});}}void load();const refresh=()=>void load();window.addEventListener('focus',refresh);const sub=db?.auth.onAuthStateChange(()=>{setTimeout(()=>{if(alive)void load();},0);});return()=>{alive=false;version++;controller.abort();window.removeEventListener('focus',refresh);sub?.data.subscription.unsubscribe();};},[identity,org,clientId,attempt]);
+ const current=result.identity===identity?result:null,v=current?.value;
+ if(!current||!v&&!current.error)return <p role="status">A verificar a sessão privada…</p>;
+ if(current.error)return <p role="alert">Não foi possível verificar a sessão privada. As permissões continuam a ser verificadas no servidor. <button className="outline" onClick={()=>setAttempt(n=>n+1)}>Verificar sessão privada</button></p>;
+ if(!v)return null;
+ if(v.satisfied)return v.mode==='daily'?<p className="status">Sessão privada para uso diário · até {v.maximumDays} dias por início de sessão. Exportações e alterações de segurança pedem confirmação recente.</p>:null;
+ return <p role="alert">{v.reason==='login-required'?'A sessão privada expirou ou foi revogada. Termina a sessão e volta a entrar para continuar.':'Confirma o segundo fator para iniciar o acesso protegido nesta sessão.'} {v.reason!=='login-required'&&<a href="/seguranca">Confirmar em Segurança</a>}</p>;
+}

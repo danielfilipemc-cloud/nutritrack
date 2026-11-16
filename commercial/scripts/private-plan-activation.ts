@@ -1,5 +1,5 @@
 /** PREPARE ONLY. No remote connection and no personal content. */
-import {readFile,writeFile,mkdir} from 'node:fs/promises';import {createHash} from 'node:crypto';
+import {readFile,writeFile,mkdir} from 'node:fs/promises';import {createHash} from 'node:crypto';import {resolve} from 'node:path';import {fileURLToPath} from 'node:url';
 import {privateNutritionActivationPlan,privateActivationTarget} from './private-nutrition-activation-plan';import {migrationBundle} from './migration-bundle';
 const hash=(s:string)=>createHash('sha256').update(s.replace(/\r\n/g,'\n')).digest('hex');
 const quote=(s:string)=>"'"+s.replaceAll("'","''")+"'";
@@ -23,4 +23,4 @@ notify pgrst,'reload schema';
 commit;\n`;
  return {sql,manifest:{...manifest,bundleSha256:hash(sql)}};
 }
-if(process.argv.includes('--prepare'))void(async()=>{const plan=await privatePlanActivation(),root=new URL('../.aura-integration/private-meal-plan/',import.meta.url);await mkdir(root,{recursive:true});await writeFile(new URL('schema-activation.sql',root),plan.sql);await writeFile(new URL('schema-activation.json',root),JSON.stringify(plan.manifest,null,2)+'\n');console.log(JSON.stringify({preparedOnly:true,target:plan.manifest.target.projectId,bundleSha256:plan.manifest.bundleSha256,sources:plan.manifest.sources,includesPersonalContent:false}));})().catch(()=>{console.error('Private plan preparation failed. No remote operation attempted.');process.exitCode=1;});
+if(process.argv.includes('--prepare')&&resolve(process.argv[1]||'')===fileURLToPath(import.meta.url))void(async()=>{const plan=await privatePlanActivation(),root=new URL('../.aura-integration/private-meal-plan/',import.meta.url);await mkdir(root,{recursive:true});await writeFile(new URL('schema-activation.sql',root),plan.sql);await writeFile(new URL('schema-activation.json',root),JSON.stringify(plan.manifest,null,2)+'\n');console.log(JSON.stringify({preparedOnly:true,target:plan.manifest.target.projectId,bundleSha256:plan.manifest.bundleSha256,sources:plan.manifest.sources,includesPersonalContent:false}));})().catch(()=>{console.error('Private plan preparation failed. No remote operation attempted.');process.exitCode=1;});

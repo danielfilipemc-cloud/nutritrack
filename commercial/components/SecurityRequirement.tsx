@@ -2,7 +2,7 @@
 import {useEffect,useState} from 'react';
 import {db} from '../lib/supabase';
 type State='loading'|'error'|'blocked'|'clear';
-export default function SecurityRequirement({org}:{org:string}){
+export default function SecurityRequirement({org,label}:{org:string;label?:string}){
  const [result,setResult]=useState<{org:string;state:State}>({org,state:'loading'});
  const [attempt,setAttempt]=useState(0);
  useEffect(()=>{
@@ -27,5 +27,5 @@ export default function SecurityRequirement({org}:{org:string}){
  if(state==='clear')return null;
  if(state==='loading')return <p role="status">A verificar os requisitos de segurança…</p>;
  if(state==='error')return <p role="alert">Não foi possível verificar a obrigação de segundo fator. O acesso continua sujeito às verificações do servidor. <button type="button" onClick={()=>setAttempt(n=>n+1)}>Tentar verificar novamente</button></p>;
- return <p role="alert">Este estabelecimento exige segundo fator recente para aceder aos dados dos alunos. <a href={'/seguranca?org='+encodeURIComponent(org)}>Confirmar em Segurança</a></p>;
+ return <p role="alert">{label||'Este estabelecimento exige segundo fator recente para aceder aos dados dos alunos.'} <a href={'/seguranca?org='+encodeURIComponent(org)}>Confirmar em Segurança</a></p>;
 }
